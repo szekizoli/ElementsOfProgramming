@@ -18,6 +18,7 @@
 #define Transformation(...)
 #define UnaryPredicate(...)
 #define BinaryOperation(...)
+#define Relation(...)
 #define Integer(...)
 
 #define pointer(T) T*

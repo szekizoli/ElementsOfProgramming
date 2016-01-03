@@ -518,4 +518,133 @@ namespace eop {
 	bool odd(I n) {
 		return (n & I{ 1 }) == I{ 1 };
 	}
+
+	// Chapter 4 - Linear Orderings
+	template<typename R>
+		requires(Relation(R))
+	const Domain(R)& select_0_2(const Domain(R)& a,
+	                 			const Domain(R)& b, R r) {
+		// Precondition: weak_ordering(r)
+		if (r(b, a)) return b;
+		return a;
+	}
+
+	template<typename R>
+		requires(Relation(R))
+	const Domain(R)& select_1_2(const Domain(R)& a,
+	                 			const Domain(R)& b, R r) {
+		// Precondition: weak_ordering(r)
+		if (r(b, a)) return a;
+		return b;
+	}
+
+	template<typename R>
+		requires(Relation(R))
+	const Domain(R)& select_0_3(const Domain(R)& a,
+								const Domain(R)& b,
+	                 			const Domain(R)& c, R r) {
+		// Precondition: weak_ordering(r)
+		return select_0_2(select_0_2(a, b, r), c, r);
+	}
+
+	template<typename R>
+		requires(Relation(R))
+	const Domain(R)& select_2_3(const Domain(R)& a,
+								const Domain(R)& b,
+	                 			const Domain(R)& c, R r) {
+		// Precondition: weak_ordering(r)
+		return select_1_2(select_1_2(a, b, r), c, r);
+	}
+
+	/* select_1_3 */
+
+	template<typename R>
+		requires(Relation(R))
+	const Domain(R)& select_1_3_ab(const Domain(R)& a,
+								   const Domain(R)& b,
+	                 			   const Domain(R)& c, R r) {
+		// Precondition: weak_ordering(r)
+		if (!r(c, b)) return b;     // a, b, c are sorted
+		return select_1_2(a, c, r); // b is not the median
+	}
+
+	template<typename R>
+		requires(Relation(R))
+	const Domain(R)& select_1_3(const Domain(R)& a,
+								const Domain(R)& b,
+	                 			const Domain(R)& c, R r) {
+		// Precondition: weak_ordering(r)
+		if (r(b, a)) return select_1_3_ab(b, a, c, r);
+		return              select_1_3_ab(a, b, c, r);
+	}
+
+	/* select_1_4 */
+
+	template<typename R>
+		requires(Relation(R))
+	const Domain(R)& select_1_4_ab_cd(const Domain(R)& a,
+								      const Domain(R)& b,
+								      const Domain(R)& c,
+	                 			      const Domain(R)& d, R r) {
+		// Precondition: weak_ordering(r)
+		if (r(c, a)) return select_0_2(a, d, r);
+		return              select_0_2(b, c, r);
+	}
+
+	template<typename R>
+		requires(Relation(R))
+	const Domain(R)& select_1_4_ab(const Domain(R)& a,
+								   const Domain(R)& b,
+								   const Domain(R)& c,
+	                 			   const Domain(R)& d, R r) {
+		// Precondition: weak_ordering(r)
+		if (r(d, c)) return select_1_4_ab_cd(a, b, d, c, r);
+		return              select_1_4_ab_cd(a, b, c, d, r);
+	}
+
+	template<typename R>
+		requires(Relation(R))
+	const Domain(R)& select_1_4(const Domain(R)& a,
+								const Domain(R)& b,
+								const Domain(R)& c,
+	                 			const Domain(R)& d, R r) {
+		// Precondition: weak_ordering(r)
+		if (r(b, a)) return select_1_4_ab(b, a, c, d, r);
+		return              select_1_4_ab(a, b, c, d, r);
+	}
+
+	/* select_2_4 */
+		template<typename R>
+		requires(Relation(R))
+	const Domain(R)& select_2_4_ab_cd(const Domain(R)& a,
+								      const Domain(R)& b,
+								      const Domain(R)& c,
+	                 			      const Domain(R)& d, R r) {
+		// Precondition: weak_ordering(r)
+		if (r(d, b)) return select_1_2(a, d, r);
+		return              select_1_2(b, c, r);
+	}
+
+	template<typename R>
+		requires(Relation(R))
+	const Domain(R)& select_2_4_ab(const Domain(R)& a,
+								   const Domain(R)& b,
+								   const Domain(R)& c,
+	                 			   const Domain(R)& d, R r) {
+		// Precondition: weak_ordering(r)
+		if (r(d, c)) return select_2_4_ab_cd(a, b, d, c, r);
+		return              select_2_4_ab_cd(a, b, c, d, r);
+	}
+
+	template<typename R>
+		requires(Relation(R))
+	const Domain(R)& select_2_4(const Domain(R)& a,
+								const Domain(R)& b,
+								const Domain(R)& c,
+	                 			const Domain(R)& d, R r) {
+		// Precondition: weak_ordering(r)
+		if (r(b, a)) return select_2_4_ab(b, a, c, d, r);
+		return              select_2_4_ab(a, b, c, d, r);
+	}
+
 } // namespace eop

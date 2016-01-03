@@ -11,9 +11,10 @@
 
 using namespace eop;
 
-//#define CHAPTER_1
-//#define CHAPTER_2
-#define CHAPTER_3
+#define CHAPTER_1 0
+#define CHAPTER_2 0
+#define CHAPTER_3 0
+#define CHAPTER_4 1
 
 std::linear_congruential_engine<std::uint_fast32_t, 16807, 0, 2147483647> r;
 
@@ -55,14 +56,14 @@ std::ostream& operator<<(std::ostream& o, std::tuple<T, U, V> t) {
 int main() {
 	std::cout << "Elements of Programming exercises.\n";
 
-#ifdef CHAPTER_1
+#if CHAPTER_1
 	std::cout << "Chapter 1 - Foundations.\n";
 	std::cout << "auto x = square(4, multiply);\n";
 	auto x_1 = square(4, multiply);
 	std::cout << "x = " << x_1 << std::endl;
-#endif
+#endif // CHAPTER_1
 
-#ifdef CHAPTER_2
+#if CHAPTER_2
 	std::cout << "Chapter 2 - Transformations and Their Orbits.\n";
 	std::cout << "auto x = power_unary(0, 10, increment);\n";
 	auto x_2 = power_unary(0, 10, increment);
@@ -95,9 +96,9 @@ int main() {
 	std::cout << "auto orbit_structure = orbit_structure_nonterminating_orbit("<< seed << ", next_rand);\n";
 	auto orbit_structure_1 = orbit_structure_nonterminating_orbit(seed, next_rand);
 	std::cout << "orbit_structure = " << orbit_structure_1 << std::endl;
-#endif
+#endif // CHAPTER_2
 
-#ifdef CHAPTER_3
+#if CHAPTER_3
 	std::cout << "Chapter 3 - Associative Operations.\n";
 	std::cout << "Applying power_left_associated\n";
 	// Computing a^n
@@ -259,5 +260,9 @@ int main() {
 		std::cout << "F(" << i << ") = " << result << std::endl;
 	}
 
-#endif
+#endif // CHAPTER_3
+
+#if CHAPTER_4
+
+#endif // CHAPTER_4
 }
