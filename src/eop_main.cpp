@@ -7,6 +7,7 @@
 #include "eop.h"
 #include "common.h"
 #include "type_functions.h"
+#include "linear_recurrences.h"
 
 using namespace eop;
 
@@ -245,5 +246,18 @@ int main() {
 	std::cout << "(" << a << ", " << n << ", mul) = " << r << std::endl;
 	for (int i = 0; i < 15; ++i)
 		std::cout << "fibonacci(" << i << ") = " << fibonacci(i) << std::endl;
+
+	auto coefficients = make_coefficients(1, 1);
+	auto matrix = make_matrix(coefficients);
+	auto res = matrix_2_2_multiply(matrix, matrix);
+	std::cout << res.first.first << ", " << res.first.second << std::endl;
+	std::cout << res.second.first << ", " << res.second.second << std::endl;
+
+	auto starting_elements = std::make_pair<int, int>(0, 1);
+	for (int i = 0; i < 10; ++i) {
+		auto result = calculate(coefficients, starting_elements, i);
+		std::cout << "F(" << i << ") = " << result << std::endl;
+	}
+
 #endif
 }
