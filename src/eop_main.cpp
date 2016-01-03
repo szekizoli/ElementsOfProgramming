@@ -13,7 +13,7 @@ using namespace eop;
 
 #define CHAPTER_1 0
 #define CHAPTER_2 0
-#define CHAPTER_3 0
+#define CHAPTER_3 1
 #define CHAPTER_4 1
 
 std::linear_congruential_engine<std::uint_fast32_t, 16807, 0, 2147483647> r;
@@ -248,16 +248,23 @@ int main() {
 	for (int i = 0; i < 15; ++i)
 		std::cout << "fibonacci(" << i << ") = " << fibonacci(i) << std::endl;
 
-	auto coefficients = make_coefficients(1, 1);
-	auto matrix = make_matrix(coefficients);
+	auto fibonnacci_coefficients = make_coefficients(1, 1);
+	auto matrix = make_matrix(fibonnacci_coefficients);
 	auto res = matrix_2_2_multiply(matrix, matrix);
 	std::cout << res.first.first << ", " << res.first.second << std::endl;
 	std::cout << res.second.first << ", " << res.second.second << std::endl;
 
-	auto starting_elements = std::make_pair<int, int>(0, 1);
+	auto fibonacci_starting_elements = std::make_pair<int, int>(1, 0);
 	for (int i = 0; i < 10; ++i) {
-		auto result = calculate(coefficients, starting_elements, i);
+		auto result = calculate(fibonnacci_coefficients, fibonacci_starting_elements, i);
 		std::cout << "F(" << i << ") = " << result << std::endl;
+	}
+
+	auto v_coefficients = make_coefficients(1, 1);
+	auto v_starting_elements = std::make_pair<int, int>(1, 2);
+	for (int i = 0; i < 10; ++i) {
+		auto result = calculate(v_coefficients, v_starting_elements, i);
+		std::cout << "V(" << i << ") = " << result << std::endl;
 	}
 
 #endif // CHAPTER_3

@@ -58,10 +58,11 @@ namespace eop {
 	template<typename N, typename I>
 		requires(Numeric(N) & Integer(I))
 	N calculate(const eop::Coefficients<N>& coeff, const eop::Starting_elements<N> se, I n) {
-		if (zero(n)) return se.first;
+		if (zero(n)) return se.second;
+		if (one(n))  return se.first;
 		auto m = make_matrix(coeff);
 		auto result = power(m,
-			                n,
+			                n-1,
 			                matrix_2_2_multiply<N>);
 		return result.first.first * se.first + result.first.second * se.second;
 	}
