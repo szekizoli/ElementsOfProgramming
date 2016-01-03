@@ -647,4 +647,138 @@ namespace eop {
 		return              select_2_4_ab(a, b, c, d, r);
 	}
 
+	/* maintaining stability */
+
+	template<bool strict, typename R>
+		requires(Relation(R))
+	struct compare_strict_or_reflexive;
+
+	/* specializing for two cases:
+	 * (1): stability indices in increasing order
+	 * (2): decreasing order
+	 */
+
+	template<typename R>
+		requires(Relation(R))
+	struct compare_strict_or_reflexive<true, R>
+	{
+		bool operator()(const Domain(R)& a,
+						const Domain(R)& b, R r) {
+			return r(a, b);
+		}
+	};
+
+	template<typename R>
+		requires(Relation(R))
+	struct compare_strict_or_reflexive<false, R>
+	{
+		bool operator()(const Domain(R)& a,
+						const Domain(R)& b, R r) {
+			return !r(b, a); // complement_of_connverse r (a,b)
+		}
+	};
+
+	template<int ia, int ib, typename R>
+		requires(Relation(R))
+	const Domain(R)& select_0_2(const Domain(R)& a,
+								const Domain(R)& b, R r) {
+		compare_strict_or_reflexive < (ia < ib), R> cmp;
+		if (cmp(b, a, r)) return b;
+		return a;
+	}
+
+	/* select_1_4 with stability indices*/
+
+	template<int ia, int ib, int ic, int id, typename R>
+		requires(Relation(R))
+	const Domain(R)& select_1_4_ab_cd(const Domain(R)& a,
+								      const Domain(R)& b,
+								      const Domain(R)& c,
+	                 			      const Domain(R)& d, R r) {
+		// Precondition: weak_ordering(r)
+		compare_strict_or_reflexive<(ia < ic), R> cmp;
+		if (cmp(c, a, r)) return select_0_2<ia, id>(a, d, r);
+		return                   select_0_2<ib, ic>(b, c, r);
+	}
+
+	template<int ia, int ib, int ic, int id, typename R>
+		requires(Relation(R))
+	const Domain(R)& select_1_4_ab(const Domain(R)& a,
+								   const Domain(R)& b,
+								   const Domain(R)& c,
+	                 			   const Domain(R)& d, R r) {
+		// Precondition: weak_ordering(r)
+		compare_strict_or_reflexive<(ic < id), R> cmp;
+		if (cmp(d, c, r)) return select_1_4_ab_cd<ia, ib, id, ic>(a, b, d, c, r);
+		return	                 select_1_4_ab_cd<ia, ib, ic, id>(a, b, c, d, r);
+	}
+
+	template<int ia, int ib, int ic, int id, typename R>
+		requires(Relation(R))
+	const Domain(R)& select_1_4(const Domain(R)& a,
+								const Domain(R)& b,
+								const Domain(R)& c,
+	                 			const Domain(R)& d, R r) {
+		// Precondition: weak_ordering(r)
+		compare_strict_or_reflexive<(ia < ib), R> cmp;
+		if (cmp(b, a, r)) return select_1_4_ab<ib, ia, ic, id>(b, a, c, d, r);
+		return		             select_1_4_ab<ia, ib, ic, id>(a, b, c, d, r);
+	}
+
+	template<int ia, int ib, int ic, int id, int ie, typename R>
+		requires(Relation(R))
+	const Domain(R)& select_2_5_ab_cd(const Domain(R)& a,
+									  const Domain(R)& b,
+									  const Domain(R)& c,
+									  const Domain(R)& d,
+	                 				  const Domain(R)& e, R r) {
+		// Precondition: weak_ordering(r)
+		compare_strict_or_reflexive<(ia < ic), R> cmp;
+		if (cmp(c, a, r)) return 
+			select_1_4_ab<ia, ib, id, ie>(a, b, d, e, r);
+		return 
+			select_1_4_ab<ic, id, ib, ie>(c, d, b, e, r);
+	}
+
+	template<int ia, int ib, int ic, int id, int ie, typename R>
+		requires(Relation(R))
+	const Domain(R)& select_2_5_ab(const Domain(R)& a,
+								   const Domain(R)& b,
+								   const Domain(R)& c,
+								   const Domain(R)& d,
+	                 		  	   const Domain(R)& e, R r) {
+		// Precondition: weak_ordering(r)
+		compare_strict_or_reflexive<(ic < id), R> cmp;
+		if (cmp(d, c, r)) return 
+			select_2_5_ab_cd<ia, ib, id, ic, ie>(a, b, d, c, e, r);
+		return 
+			select_2_5_ab_cd<ia, ib, ic, id, ie>(a, b, c, d, e, r);
+	}
+
+	template<int ia, int ib, int ic, int id, int ie, typename R>
+		requires(Relation(R))
+	const Domain(R)& select_2_5(const Domain(R)& a,
+								const Domain(R)& b,
+								const Domain(R)& c,
+								const Domain(R)& d,
+	                 		  	const Domain(R)& e, R r) {
+		// Precondition: weak_ordering(r)
+		compare_strict_or_reflexive<(ia < ib), R> cmp;
+		if (cmp(b, a, r)) return 
+			select_2_5_ab<ib, ia, ic, id, ie>(b, a, c, d, e, r);
+		return 
+			select_2_5_ab<ia, ib, ic, id, ie>(a, b, c, d, e, r);
+	}
+
+	template<typename R>
+		requires(Relation(R))
+	const Domain(R)& median_5(const Domain(R)& a,
+							  const Domain(R)& b,
+							  const Domain(R)& c,
+							  const Domain(R)& d,
+	                 		  const Domain(R)& e, R r) {
+		// Precondition: weak_ordering(r)
+		return select_2_5<0, 1, 2, 3, 4>(a, b, c, d, e, r);
+	}
+
 } // namespace eop
