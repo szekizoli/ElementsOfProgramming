@@ -21,6 +21,23 @@ project "eop"
         defines {"NDEBUG"}
         optimize "On"
 
+project "epwc"
+    kind      "ConsoleApp"
+    language  "C++"
+    targetdir "build/bin/%{cfg.buildcfg}"
+
+    files { "src/epwc/**.h", 
+            "src/epwc/**.cpp" }
+
+    includedirs { "src" }
+    filter "configurations:Debug"
+        defines {"DEBUG"}
+        flags {"Symbols"}
+    
+    filter "configurations:Release"
+        defines {"NDEBUG"}
+        optimize "On"
+
 project "GoogleTest"
     kind      "StaticLib"
     language  "C++"
@@ -48,9 +65,9 @@ project "eop-unittest"
     files { "src/unittest/**.h", 
             "src/unittest/**.cpp" }
 
-    links {"eop", "GoogleTest"}
+    links {"eop", "epwc", "GoogleTest"}
     libdirs { "../3rd/" }
-    includedirs {"../3rd/gtest-1.7.0", "../3rd/gtest-1.7.0/include", "src/eop" }
+    includedirs {"../3rd/gtest-1.7.0", "../3rd/gtest-1.7.0/include", "src/eop", "src/epwc" }
     filter "configurations:Debug"
         defines {"DEBUG"}
         flags {"Symbols"}
