@@ -69,3 +69,10 @@ struct distance_type<int> {
 };
 
 #define DistanceType(T) typename distance_type<Domain(T)>::type
+
+// ValueType
+template< typename I>
+	requires(Readable(I))
+struct value_type;
+
+#define ValueType(I) typename I::value_type

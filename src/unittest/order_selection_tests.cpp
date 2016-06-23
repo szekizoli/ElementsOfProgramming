@@ -172,4 +172,39 @@ namespace eoptest
 
 		expect_median_5({ 0, 0, 1, 1, 1 }, 2);
 	}
+
+	TEST(iteratorstest, testsource)
+	{
+		vector<int> v{ 1 };
+		auto r = eop::source(begin(v));
+		EXPECT_EQ(1, r);
+	}
+
+	TEST(iteratorstest, testincrement)
+	{
+		vector<int> v{ 1, 2 };
+		auto r = eop::increment(begin(v));
+		EXPECT_EQ(2, eop::source(r));
+	}
+
+	TEST(iteratorstest, test_operator_plus)
+	{
+		vector<int> v{ 1, 2, 3, 4 };
+		auto r = begin(v) + 2;
+		EXPECT_EQ(3, eop::source(r));
+	}
+
+	struct sum {
+		int _sum = 0;
+		void operator()(int value) {
+			_sum += value;
+		}
+	};
+
+	TEST(iteratorstest, test_for_each)
+	{
+		vector<int> v{ 1, 2, 3, 4 };
+		auto r = eop::for_each(v.begin(), v.end(), sum());
+		EXPECT_EQ(10, r._sum);
+	}
 }

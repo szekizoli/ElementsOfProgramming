@@ -19,6 +19,7 @@
 #define UnaryPredicate(...)
 #define BinaryOperation(...)
 #define Relation(...)
+#define Readable(...)
 #define Integer(...)
 
 #define pointer(T) T*
