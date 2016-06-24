@@ -272,4 +272,71 @@ namespace eoptest
 		EXPECT_EQ(end(v), r) << "error in not found";
 	}
 
+	TEST(iteratorstest, test_all)
+	{
+		vector<int> v{ 1, 4, 3, 2 };
+		bool all = eop::all(v.begin(), v.end(), less_Than(10));
+		EXPECT_EQ(true, all);
+		all = eop::all(v.begin(), v.end(), less_Than(4));
+		EXPECT_EQ(false, all);
+	}
+
+	TEST(iteratorstest, test_all_empty)
+	{
+		vector<int> v{ };
+		bool all = eop::all(v.begin(), v.end(), less_Than(10));
+		EXPECT_EQ(true, all);
+	}
+
+	TEST(iteratorstest, test_none)
+	{
+		vector<int> v{ 1, 4, 3, 2 };
+		bool none = eop::none(v.begin(), v.end(), less_Than(0));
+		EXPECT_EQ(true, none);
+		none = eop::none(v.begin(), v.end(), equals_To(0));
+		EXPECT_EQ(true, none);
+		none = eop::none(v.begin(), v.end(), equals_To(3));
+		EXPECT_EQ(false, none);
+	}
+
+	TEST(iteratorstest, test_none_empty)
+	{
+		vector<int> v{};
+		bool none = eop::none(v.begin(), v.end(), less_Than(10));
+		EXPECT_EQ(true, none);
+	}
+
+	TEST(iteratorstest, test_not_all)
+	{
+		vector<int> v{ 1, 4, 3, 2 };
+		bool not_all = eop::not_all(v.begin(), v.end(), less_Than(10));
+		EXPECT_EQ(false, not_all);
+		not_all = eop::not_all(v.begin(), v.end(), less_Than(4));
+		EXPECT_EQ(true, not_all);
+	}
+
+	TEST(iteratorstest, test_not_all_empty)
+	{
+		vector<int> v{};
+		bool not_all = eop::not_all(v.begin(), v.end(), less_Than(10));
+		EXPECT_EQ(false, not_all);
+	}
+
+	TEST(iteratorstest, test_some)
+	{
+		vector<int> v{ 1, 4, 3, 2 };
+		bool some = eop::some(v.begin(), v.end(), less_Than(0));
+		EXPECT_EQ(false, some);
+		some = eop::some(v.begin(), v.end(), equals_To(0));
+		EXPECT_EQ(false, some);
+		some = eop::some(v.begin(), v.end(), equals_To(3));
+		EXPECT_EQ(true, some);
+	}
+
+	TEST(iteratorstest, test_some_empty)
+	{
+		vector<int> v{};
+		bool some = eop::some(v.begin(), v.end(), less_Than(10));
+		EXPECT_EQ(false, some);
+	}
 }

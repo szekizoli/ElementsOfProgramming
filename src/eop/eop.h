@@ -857,4 +857,36 @@ namespace eop {
 		return f;
 	}
 
+	template<typename I, typename P>
+		requires(Readable(I) && Iterator(I) && UnaryPredicate(P)
+			&& ValueType(I) == Domain(P))
+	bool all(I f, I l, P p) {
+		// Precondition: readable_bounded_range(f, l)
+		return find_if_not(f, l, p) == l;
+	}
+
+	template<typename I, typename P>
+		requires(Readable(I) && Iterator(I) && UnaryPredicate(P)
+			&& ValueType(I) == Domain(P))
+	bool none(I f, I l, P p) {
+		// Precondition: readable_bounded_range(f, l)
+		return find_if(f, l, p) == l;
+	}
+
+	template<typename I, typename P>
+		requires(Readable(I) && Iterator(I) && UnaryPredicate(P)
+			&& ValueType(I) == Domain(P))
+	bool not_all(I f, I l, P p) {
+		// Precondition: readable_bounded_range(f, l)
+		return !all(f, l, p);
+	}
+
+	template<typename I, typename P>
+		requires(Readable(I) && Iterator(I) && UnaryPredicate(P)
+			&& ValueType(I) == Domain(P))
+	bool some(I f, I l, P p) {
+		// Precondition: readable_bounded_range(f, l)
+		return !none(f, l, p);
+	}
+
 } // namespace eop
