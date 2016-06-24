@@ -831,4 +831,30 @@ namespace eop {
 		return proc;
 	}
 
+	template<typename I>
+		requires(Readable(I) && Iterator(I))
+	I find(I f, I l, const ValueType(I)& x) {
+		// Precondition: readable_bounded_range(f, l)
+		while (f != l && source(f) != x) f = successor(f);
+		return f;
+	}
+
+	template<typename I, typename P>
+		requires(Readable(I) && Iterator(I) && UnaryPredicate(P)
+			&& ValueType(I) == Domain(P))
+	I find_if(I f, I l, P p) {
+		// Precondition: readable_bounded_range(f, l)
+		while (f != l && !p(source(f))) f = successor(f);
+		return f;
+	}
+
+	template<typename I, typename P>
+		requires(Readable(I) && Iterator(I) && UnaryPredicate(P)
+		&& ValueType(I) == Domain(P))
+	I find_if_not(I f, I l, P p) {
+		// Precondition: readable_bounded_range(f, l)
+		while (f != l && p(source(f))) f = successor(f);
+		return f;
+	}
+
 } // namespace eop

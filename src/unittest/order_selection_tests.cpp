@@ -204,7 +204,72 @@ namespace eoptest
 	TEST(iteratorstest, test_for_each)
 	{
 		vector<int> v{ 1, 2, 3, 4 };
-		auto r = eop::for_each(v.begin(), v.end(), sum());
+		sum r = eop::for_each(v.begin(), v.end(), sum());
 		EXPECT_EQ(10, r._sum);
 	}
+
+	TEST(iteratorstest, test_find)
+	{
+		vector<int> v{ 1, 2, 3, 4 };
+		auto r = eop::find(v.begin(), v.end(), 2);
+		EXPECT_EQ(2, eop::source(r));
+		r = eop::find(v.begin(), v.end(), -1);
+		EXPECT_EQ(end(v), r) << "error in not found";
+	}
+
+	TEST(iteratorstest, test_find_empty)
+	{
+		vector<int> v{ };
+		auto r = eop::find(v.begin(), v.end(), 2);
+		EXPECT_EQ(end(v), r) << "error in not found";
+	}
+
+	struct equals_To {
+		const int value;
+		equals_To(int v) : value(v) {};
+		bool operator()(int x) {
+			return value == x;
+		}
+	};
+
+	TEST(iteratorstest, test_find_if)
+	{
+		vector<int> v{ 1, 4, 3, 2 };
+		auto r = eop::find_if(v.begin(), v.end(), equals_To(3));
+		EXPECT_EQ(3, eop::source(r));
+		r = eop::find_if(v.begin(), v.end(), equals_To(-1));
+		EXPECT_EQ(end(v), r) << "error in not found";
+	}
+
+	TEST(iteratorstest, test_find_if_empty)
+	{
+		vector<int> v{};
+		auto r = eop::find_if(v.begin(), v.end(), equals_To(2));
+		EXPECT_EQ(end(v), r) << "error in not found";
+	}
+
+	struct less_Than {
+		const int value;
+		less_Than(int v) : value(v) {};
+		bool operator()(int x) {
+			return x < value;
+		}
+	};
+
+	TEST(iteratorstest, test_find_if_not)
+	{
+		vector<int> v{ 1, 4, 3, 2 };
+		auto r = eop::find_if_not(v.begin(), v.end(), less_Than(3));
+		EXPECT_EQ(4, eop::source(r));
+		r = eop::find_if(v.begin(), v.end(), less_Than(-1));
+		EXPECT_EQ(end(v), r) << "error in not found";
+	}
+
+	TEST(iteratorstest, test_find_if_not_empty)
+	{
+		vector<int> v{};
+		auto r = eop::find_if(v.begin(), v.end(), less_Than(2));
+		EXPECT_EQ(end(v), r) << "error in not found";
+	}
+
 }
