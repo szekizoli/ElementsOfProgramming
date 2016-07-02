@@ -15,12 +15,15 @@
 
 #define requires(...)
 
+#define Arity(...)
+#define BinaryOperation(...)
+#define Integer(...)
+#define Iterator(...)
+#define Procedure(...)
+#define Readable(...)
+#define Relation(...)
 #define Transformation(...)
 #define UnaryPredicate(...)
-#define BinaryOperation(...)
-#define Relation(...)
-#define Readable(...)
-#define Integer(...)
 
 #define pointer(T) T*
 

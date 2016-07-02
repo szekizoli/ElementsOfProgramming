@@ -783,6 +783,20 @@ namespace eop {
 
 	// Chapter 6 - Iterators
 
+	template<typename T>
+	struct is_Even {
+		bool operator()(T value) {
+			return eop::even(value);
+		}
+	};
+
+	template<typename T>
+	struct is_Odd {
+		bool operator()(T value) {
+			return eop::odd(value);
+		}
+	};
+
 	template<typename I>
 	requires(Iterator(I))
 		I increment(I& x) {
@@ -889,4 +903,14 @@ namespace eop {
 		return !none(f, l, p);
 	}
 
+	template<typename I, typename P, typename J>
+		requires(Readable(I) && Iterator(I) && UnaryPredicate(P)
+			&& ValueType(I) == Domain(P))
+	J count_if(I f, I l, P p, J j) {
+		while (f != l) {
+			if (p(source(f))) j = successor(j);
+			f = successor(f);
+		}
+		return j;
+	}
 } // namespace eop

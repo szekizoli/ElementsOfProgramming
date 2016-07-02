@@ -339,4 +339,19 @@ namespace eoptest
 		bool some = eop::some(v.begin(), v.end(), less_Than(10));
 		EXPECT_EQ(false, some);
 	}
+
+	TEST(iteratorstest, test_count_if)
+	{
+		vector<int> v{ 1, 2, 3, 4, 5};
+		int count_even = eop::count_if(v.begin(), v.end(), eop::is_Even<int>(), 0);
+		EXPECT_EQ(2, count_even);
+		int count_odd = eop::count_if(v.begin(), v.end(), eop::is_Odd<int>(), 0);
+		EXPECT_EQ(3, count_odd);
+		int count_less_than_3 = eop::count_if(v.begin(), v.end(), less_Than(3), 0);
+		EXPECT_EQ(2, count_less_than_3);
+		int count_less_than_1 = eop::count_if(v.begin(), v.end(), less_Than(1), 0);
+		EXPECT_EQ(0, count_less_than_1);
+		int count_less_than_7 = eop::count_if(v.begin(), v.end(), less_Than(7), 0);
+		EXPECT_EQ(5, count_less_than_7);
+	}
 }
