@@ -911,7 +911,7 @@ namespace eop {
 		J j;
 		P p;
 		counter_if(P p, J j) : p(p), j(j) {}
-		void operator()(PredicateDomain(P) x) {
+		void operator()(Domain(P) x) {
 			if (p(x)) j = successor(j);
 		}
 	};
@@ -929,4 +929,10 @@ namespace eop {
 	DistanceType(I) count_if(I f, I l, P p) {
 		return count_if(f, l, p, DistanceType(I){0});
 	}
+
+	/*template<typename I, typename Op, typename F>
+	requires(Iterator(I) && BinaryOperation(Op) &&
+		UnaryFunction(F) &&
+		I == Domain(F) && Codomain(F) == Domain(Op))
+	Domain(Op) reduce_nonempty*/
 } // namespace eop

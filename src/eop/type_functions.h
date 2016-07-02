@@ -23,8 +23,6 @@ struct input_type;
 
 #define Domain(T) InputType(T, 0)
 
-#define PredicateDomain(T) typename T::type
-
 // Binary Operation
 template <typename T>
 requires(Regular(T))
@@ -56,6 +54,12 @@ template <typename T>
 requires(Regular(T))
 struct input_type<T(*) (const T& x), 0> {
 	typedef T type;
+};
+
+template <typename T>
+requires(Regular(T))
+struct input_type<T, 0> {
+	typedef typename T::type type;
 };
 
 // Chapter 2
