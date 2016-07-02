@@ -23,6 +23,8 @@ struct input_type;
 
 #define Domain(T) InputType(T, 0)
 
+#define PredicateDomain(T) typename T::type
+
 // Binary Operation
 template <typename T>
 requires(Regular(T))
@@ -68,7 +70,7 @@ struct distance_type<int> {
 	typedef int type;
 };
 
-#define DistanceType(T) typename distance_type<Domain(T)>::type
+#define DistanceType(T) typename T::difference_type
 
 // ValueType
 template< typename I>

@@ -785,6 +785,7 @@ namespace eop {
 
 	template<typename T>
 	struct is_Even {
+		typedef T type;
 		bool operator()(T value) {
 			return eop::even(value);
 		}
@@ -792,6 +793,7 @@ namespace eop {
 
 	template<typename T>
 	struct is_Odd {
+		typedef T type;
 		bool operator()(T value) {
 			return eop::odd(value);
 		}
@@ -903,14 +905,28 @@ namespace eop {
 		return !none(f, l, p);
 	}
 
+	template<typename P, typename J>
+		requires(UnaryPredicate(P))
+	struct counter_if {
+		J j;
+		P p;
+		counter_if(P p, J j) : p(p), j(j) {}
+		void operator()(PredicateDomain(P) x) {
+			if (p(x)) j = successor(j);
+		}
+	};
+
 	template<typename I, typename P, typename J>
 		requires(Readable(I) && Iterator(I) && UnaryPredicate(P)
 			&& ValueType(I) == Domain(P))
 	J count_if(I f, I l, P p, J j) {
-		while (f != l) {
-			if (p(source(f))) j = successor(j);
-			f = successor(f);
-		}
-		return j;
+		return for_each(f, l, counter_if<P, J>(p, j)).j;
+	}
+
+	template<typename I, typename P>
+	requires(Readable(I) && Iterator(I) && UnaryPredicate(P)
+		&& ValueType(I) == Domain(P))
+	DistanceType(I) count_if(I f, I l, P p) {
+		return count_if(f, l, p, DistanceType(I){0});
 	}
 } // namespace eop

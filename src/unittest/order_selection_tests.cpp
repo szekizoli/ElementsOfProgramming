@@ -250,6 +250,7 @@ namespace eoptest
 
 	struct less_Than {
 		const int value;
+		typedef int type;
 		less_Than(int v) : value(v) {};
 		bool operator()(int x) {
 			return x < value;
@@ -345,9 +346,13 @@ namespace eoptest
 		vector<int> v{ 1, 2, 3, 4, 5};
 		int count_even = eop::count_if(v.begin(), v.end(), eop::is_Even<int>(), 0);
 		EXPECT_EQ(2, count_even);
+		count_even = eop::count_if(v.begin(), v.end(), eop::is_Even<int>());
+		EXPECT_EQ(2, count_even);
 		int count_odd = eop::count_if(v.begin(), v.end(), eop::is_Odd<int>(), 0);
 		EXPECT_EQ(3, count_odd);
 		int count_less_than_3 = eop::count_if(v.begin(), v.end(), less_Than(3), 0);
+		EXPECT_EQ(2, count_less_than_3);
+		count_less_than_3 = eop::count_if(v.begin(), v.end(), less_Than(3));
 		EXPECT_EQ(2, count_less_than_3);
 		int count_less_than_1 = eop::count_if(v.begin(), v.end(), less_Than(1), 0);
 		EXPECT_EQ(0, count_less_than_1);
