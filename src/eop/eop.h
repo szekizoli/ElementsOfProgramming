@@ -785,7 +785,7 @@ namespace eop {
 
 	template<typename T>
 	struct is_Even {
-		typedef T type;
+		typedef T input_type;
 		bool operator()(T value) {
 			return eop::even(value);
 		}
@@ -793,7 +793,7 @@ namespace eop {
 
 	template<typename T>
 	struct is_Odd {
-		typedef T type;
+		typedef T input_type;
 		bool operator()(T value) {
 			return eop::odd(value);
 		}
@@ -920,6 +920,7 @@ namespace eop {
 		requires(Readable(I) && Iterator(I) && UnaryPredicate(P)
 			&& ValueType(I) == Domain(P))
 	J count_if(I f, I l, P p, J j) {
+		// Precondition: readable_bounded_range(f, l)
 		return for_each(f, l, counter_if<P, J>(p, j)).j;
 	}
 
@@ -927,12 +928,52 @@ namespace eop {
 	requires(Readable(I) && Iterator(I) && UnaryPredicate(P)
 		&& ValueType(I) == Domain(P))
 	DistanceType(I) count_if(I f, I l, P p) {
+		// Precondition: readable_bounded_range(f, l)
 		return count_if(f, l, p, DistanceType(I){0});
 	}
 
-	/*template<typename I, typename Op, typename F>
+	template<typename T>
+	struct sum {
+		typedef T input_type;
+		T operator()(T a, T b) {
+			return a + b;
+		}
+	};
+
+	template<typename I>
+	struct source_function {
+		typedef I input_type;
+		ValueType(I) operator()(I i) {
+			return source(i);
+		}
+	};
+
+	template<typename I, typename Op, typename F>
 	requires(Iterator(I) && BinaryOperation(Op) &&
 		UnaryFunction(F) &&
 		I == Domain(F) && Codomain(F) == Domain(Op))
-	Domain(Op) reduce_nonempty*/
+	Domain(Op) reduce_nonempty(I f, I l, Op op, F fun) {
+		// Precondition: bounded_range(f, l) && f != l
+		// Precondition: partially_associative(op)
+		// Precondition: (All x in [f, l)) fun(x) is defined
+		Domain(Op) r = fun(f);
+		f = successor(f);
+		while (f != l) {
+			r = op(r, fun(f));
+			f = successor(f);
+		}
+		return r;
+	}
+
+	template<typename I, typename Op, typename F>
+	requires(Iterator(I) && BinaryOperation(Op) &&
+		UnaryFunction(F) &&
+		I == Domain(F) && Codomain(F) == Domain(Op))
+	Domain(Op) reduce_nonempty(I f, I l, Op op, F fun, const Domain(Op)& z) {
+		// Precondition: bounded_range(f, l) && f != l
+		// Precondition: partially_associative(op)
+		// Precondition: (All x in [f, l)) fun(x) is defined
+		if (f == l) return z;
+		return reduce_nonempty(f, l, op, fun);
+	}
 } // namespace eop

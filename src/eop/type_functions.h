@@ -59,7 +59,7 @@ struct input_type<T(*) (const T& x), 0> {
 template <typename T>
 requires(Regular(T))
 struct input_type<T, 0> {
-	typedef typename T::type type;
+	typedef typename T::input_type type;
 };
 
 // Chapter 2
