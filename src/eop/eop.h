@@ -990,6 +990,9 @@ namespace eop {
 		UnaryFunction(F) &&
 		I == Domain(F) && Codomain(F) == Domain(Op))
 	Domain(Op) reduce_nonzeros(I f, I l, Op op, F fun, const Domain(Op)& z) {
+		// Precondition: bounded_range(f, l)
+		// Precondition: partially_associative(op)
+		// Precondition: (All x in [f, l)) fun(x) is defined
 		Domain(Op) x;
 		do {
 			if (f == l) return z;
@@ -1003,4 +1006,19 @@ namespace eop {
 		}
 		return x;
 	}
+
+	template<typename I, typename Proc>
+	requires(Readable(I) && Iterator(I) && 
+		Procedure(Proc) && Arity(Proc) == 1 &&
+		ValueType(I) == InputType(Proc, 0))
+	std::pair<Proc, I> for_each_n(I f, DistanceType(I) n, Proc proc) {
+		// Precondition: readable_weak_range(f, n)
+		while (!zero(n)) {
+			n = predecessor(n);
+			proc(source(f));
+			f = successor(f);
+		}
+		return std::pair<Proc, I>(proc, f);
+	}
+
 } // namespace eop

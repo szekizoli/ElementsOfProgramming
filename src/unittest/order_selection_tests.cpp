@@ -378,4 +378,20 @@ namespace eoptest
 		int product = eop::reduce_nonzeros(begin(v), end(v), eop::multiplies<int>(), eop::source_function<vector<int>::iterator>(), 0);
 		EXPECT_EQ(120, product);
 	}
+
+	TEST(iteratorstest, test_for_each_n)
+	{
+		vector<int> v{ 1, 2, 3, 4 };
+		auto r0 = eop::for_each_n(v.begin(), 2, sum());
+		EXPECT_EQ(3, r0.first._sum);
+		auto r1 = eop::for_each_n(r0.second, 2, sum());
+		EXPECT_EQ(7, r1.first._sum);
+	}
+
+	TEST(iteratorstest, test_for_each_n_empty)
+	{
+		vector<int> v{};
+		auto r0 = eop::for_each_n(v.begin(), 0, sum());
+		EXPECT_EQ(0, r0.first._sum);
+	}
 }
