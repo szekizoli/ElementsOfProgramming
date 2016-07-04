@@ -358,12 +358,24 @@ namespace eoptest
 		EXPECT_EQ(0, count_less_than_1);
 		int count_less_than_7 = eop::count_if(v.begin(), v.end(), less_Than(7), 0);
 		EXPECT_EQ(5, count_less_than_7);
-	}	
+	}
 
 	TEST(iteratorstest, test_reduce_nonempty)
 	{
 		vector<int> v{ 1, 2, 3, 4, 5 };
-		int sum = eop::reduce_nonempty(begin(v), end(v), eop::sum<int>(), eop::source_function<vector<int>::iterator>());
+		const int sum = eop::reduce_nonempty(begin(v), end(v), eop::plus<int>(), eop::source_function<vector<int>::iterator>());
 		EXPECT_EQ(15, sum);
+		const int product = eop::reduce_nonempty(begin(v), end(v), eop::multiplies<int>(), eop::source_function<vector<int>::iterator>());
+		EXPECT_EQ(120, product);
+		vector<int> v2{ 0, 0, 0, 1, 2, 0, 3, 0, 4, 0, 0, 5 };
+		const int product2 = eop::reduce_nonempty(begin(v2), end(v2), eop::multiplies<int>(), eop::source_function<vector<int>::iterator>());
+		EXPECT_EQ(0, product2);
+	}
+
+	TEST(iteratorstest, test_reduce_nonzeros)
+	{
+		vector<int> v{ 0, 0, 0, 1, 2, 0, 3, 0, 4, 0, 0, 5 };
+		int product = eop::reduce_nonzeros(begin(v), end(v), eop::multiplies<int>(), eop::source_function<vector<int>::iterator>(), 0);
+		EXPECT_EQ(120, product);
 	}
 }

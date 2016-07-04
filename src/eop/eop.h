@@ -933,10 +933,18 @@ namespace eop {
 	}
 
 	template<typename T>
-	struct sum {
+	struct plus {
 		typedef T input_type;
 		T operator()(T a, T b) {
 			return a + b;
+		}
+	};
+
+	template<typename T>
+	struct multiplies {
+		typedef T input_type;
+		T operator()(T a, T b) {
+			return a * b;
 		}
 	};
 
@@ -975,5 +983,24 @@ namespace eop {
 		// Precondition: (All x in [f, l)) fun(x) is defined
 		if (f == l) return z;
 		return reduce_nonempty(f, l, op, fun);
+	}
+
+	template<typename I, typename Op, typename F>
+	requires(Iterator(I) && BinaryOperation(Op) && 
+		UnaryFunction(F) &&
+		I == Domain(F) && Codomain(F) == Domain(Op))
+	Domain(Op) reduce_nonzeros(I f, I l, Op op, F fun, const Domain(Op)& z) {
+		Domain(Op) x;
+		do {
+			if (f == l) return z;
+			x = fun(f);
+			f = successor(f);
+		} while (x == z);
+		while (f != l) {
+			Domain(Op) y = fun(f);
+			if (z != y) x = op(x, y);
+			f = successor(f);
+		}
+		return x;
 	}
 } // namespace eop
