@@ -517,7 +517,6 @@ namespace eoptest
 		EXPECT_EQ(false, some);
 	}
 
-
 	TEST(iteratorstest, test_find_if_ungarded)
 	{
 		vector<int> v{ 1, 2, 3, 4 };
@@ -530,5 +529,14 @@ namespace eoptest
 		vector<int> v{ 1, 2, 3, 4 };
 		auto r = eop::find_if_not_ungarded(v.begin(), equals_To(1));
 		EXPECT_EQ(2, eop::source(r));
+	}
+
+	TEST(iteratorstest, test_find_mismatch)
+	{
+		vector<int> v0{ 1, 2, 3, 4 };
+		vector<int> v1{ 1, 2, 3, 4 };
+		auto r = eop::find_mismatch(v0.cbegin(), v0.cend(), v1.begin(), v1.end(), std::equal_to<int>());
+		EXPECT_EQ(v0.end(), r.first);
+		EXPECT_EQ(v1.end(), r.second);
 	}
 }
