@@ -1021,4 +1021,107 @@ namespace eop {
 		return std::pair<Proc, I>(proc, f);
 	}
 
+	template<typename I>
+		requires(Readable(I) && Iterator(I))
+	std::pair<I, DistanceType(I)> find_n(I f, DistanceType(I) n,
+				const ValueType(I)& x) 
+	{
+		// Precondition: readable_weak_range(f, n)
+		while (!zero(n) && source(f) != x) {
+			n = predecessor(n);
+			f = successor(f);
+		}
+		return std::pair<I, DistanceType(I)>(f, n);
+	}
+
+	// Exercise 6.3
+	template<typename I>
+		requires(Readable(I) && Iterator(I))
+	std::pair<I, DistanceType(I)> find_if_n(I f, DistanceType(I) n,
+		const ValueType(I)& x)
+	{
+		// Precondition: readable_weak_range(f, n)
+		while (!zero(n) && source(f) != x) {
+			n = predecessor(n);
+			f = successor(f);
+		}
+		return std::make_pair(f, n);
+	}
+
+	template<typename I>
+		requires(Readable(I) && Iterator(I))
+	std::pair<I, DistanceType(I)> find_if_not_n(I f, DistanceType(I) n,
+		const ValueType(I)& x)
+	{
+		// Precondition: readable_weak_range(f, n)
+		while (!zero(n) && source(f) == x) {
+			n = predecessor(n);
+			f = successor(f);
+		}
+		return std::make_pair(f, n);
+	}
+
+	template<typename I, typename P>
+	requires(Readable(I) && Iterator(I) && UnaryPredicate(P) &&
+		ValueType(I) == Domain(P))
+	bool all_n(I f, DistanceType(I) n, P p) 
+	{
+		// Precondition: readable_weak_range(f, l)
+		while (!zero(n) && p(source(f))) {
+			n = predecessor(n);
+			f = successor(f);
+		}
+		return zero(n);
+	}
+
+	template<typename I, typename P>
+	requires(Iterator(I) && Readable(I) && UnaryPredicate(P) &&
+		ValueType(I) == Domain(P))
+	bool none_n(I f, DistanceType(I) n, P p) 
+	{
+		// Precondition: readable_weak_range(f, n)
+		while (!zero(n) && !p(source(f))) {
+			n = predecessor(n);
+			f = successor(f);
+		}
+		return zero(n);
+	}
+
+	template<typename I, typename P>
+	requires(Iterator(I) && Readable(I) && UnaryPredicate(P) &&
+		ValueType(I) == Domain(P))
+	bool not_all_n(I f, DistanceType(I) n, P p) 
+	{
+		// Precondition: readable_weak_range(f, n)
+		return !all_n(f, n, p);
+	}
+
+	template<typename I, typename P>
+	requires(Iterator(I) && Readable(I) && UnaryPredicate(P) &&
+		ValueType(I) == Domain(P))
+	bool some_n(I f, DistanceType(I) n, P p)
+	{
+		// Precondition: readable_weak_range(f, n)
+		return !none_n(f, n, p);
+	}
+
+	template<typename I, typename P>
+		requires(Readable(I) && Iterator(I) &&
+			UnaryPredicate(P) && ValueType(I) == Domain(P))
+	I find_if_ungarded(I f, P p)
+	{
+		// Precondition: (Exists L) readable_bounded_range(f, l) && some(f, l, p)
+		while (!p(source(f))) f = successor(f);
+		return f;
+	}
+
+	template<typename I, typename P>
+		requires(Readable(I) && Iterator(I) &&
+			UnaryPredicate(P) && ValueType(I) == Domain(P))
+	I find_if_not_ungarded(I f, P p)
+	{
+		// Precondition: (Exists L) readable_bounded_range(f, l) && some(f, l, p)
+		while (p(source(f))) f = successor(f);
+		return f;
+	}
 } // namespace eop

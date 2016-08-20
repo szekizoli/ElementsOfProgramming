@@ -394,4 +394,141 @@ namespace eoptest
 		auto r0 = eop::for_each_n(v.begin(), 0, sum());
 		EXPECT_EQ(0, r0.first._sum);
 	}
+
+	TEST(iteratorstest, test_find_n)
+	{
+		vector<int> v = { 2, 3, 1, 3, 5, 2, 1, 2, 8 };
+		auto r0 = eop::find_n(begin(v), v.size(), 1);
+		EXPECT_EQ(1, *r0.first);
+		auto distance = std::distance(begin(v), r0.first);
+		EXPECT_EQ(2, distance);
+		EXPECT_EQ(7, r0.second);
+
+		auto r1 = eop::find_n(eop::successor(r0.first), eop::predecessor(r0.second), 1);
+		EXPECT_EQ(1, *r1.first);
+		auto distance1 = std::distance(begin(v), r1.first);
+		EXPECT_EQ(6, distance1);
+		EXPECT_EQ(3, r1.second);
+
+		auto r2 = eop::find_n(eop::successor(r1.first), eop::predecessor(r1.second), 1);
+		EXPECT_EQ(v.end(), r2.first);
+		auto distance2 = std::distance(begin(v), r2.first);
+		EXPECT_EQ(9, distance2);
+		EXPECT_EQ(0, r2.second);
+	}
+
+	TEST(iteratorstest, test_find_n_weak_range)
+	{
+		vector<int> v{ 1, 2, 3, 4 };
+		auto r = eop::find_n(v.begin(), v.size(), 2);
+		EXPECT_EQ(2, eop::source(r.first));
+		r = eop::find_n(v.begin(), v.size(), -1);
+		EXPECT_EQ(end(v), r.first) << "error in not found";
+	}
+
+	TEST(iteratorstest, test_find_n_empty_weak_range)
+	{
+		vector<int> v{};
+		auto r = eop::find_n(v.begin(), v.size(), 2);
+		EXPECT_EQ(end(v), r.first) << "error in not found";
+	}
+
+	TEST(iteratorstest, test_find_if_not_n_weak_range)
+	{
+		vector<int> v{ 1, 2, 3, 4 };
+		auto r = eop::find_if_not_n(v.begin(), v.size(), 1);
+		EXPECT_EQ(2, eop::source(r.first));
+		r = eop::find_if_not_n(r.first, r.second, 2);
+		EXPECT_EQ(3, eop::source(r.first));
+	}
+
+	TEST(iteratorstest, test_find_if_not_n_empty_weak_range)
+	{
+		vector<int> v{};
+		auto r = eop::find_if_not_n(v.begin(), v.size(), 2);
+		EXPECT_EQ(end(v), r.first) << "error in not found";
+	}
+
+	TEST(iteratorstest, test_all_n)
+	{
+		vector<int> v{ 1, 4, 3, 2 };
+		bool all = eop::all_n(v.begin(), v.size(), less_Than(10));
+		EXPECT_EQ(true, all);
+		all = eop::all_n(v.begin(), v.size(), less_Than(4));
+		EXPECT_EQ(false, all);
+	}
+
+	TEST(iteratorstest, test_all_n_empty)
+	{
+		vector<int> v{};
+		bool all = eop::all_n(v.begin(), v.size(), less_Than(10));
+		EXPECT_EQ(true, all);
+	}
+
+	TEST(iteratorstest, test_none_n)
+	{
+		vector<int> v{ 1, 4, 3, 2 };
+		bool none = eop::none_n(v.begin(), v.size(), less_Than(0));
+		EXPECT_EQ(true, none);
+		none = eop::none_n(v.begin(), v.size(), equals_To(0));
+		EXPECT_EQ(true, none);
+		none = eop::none_n(v.begin(), v.size(), equals_To(3));
+		EXPECT_EQ(false, none);
+	}
+
+	TEST(iteratorstest, test_none_n_empty)
+	{
+		vector<int> v{};
+		bool none = eop::none_n(v.begin(), v.size(), less_Than(10));
+		EXPECT_EQ(true, none);
+	}
+
+	TEST(iteratorstest, test_not_all_n)
+	{
+		vector<int> v{ 1, 4, 3, 2 };
+		bool not_all = eop::not_all_n(v.begin(), v.size(), less_Than(10));
+		EXPECT_EQ(false, not_all);
+		not_all = eop::not_all_n(v.begin(), v.size(), less_Than(4));
+		EXPECT_EQ(true, not_all);
+	}
+
+	TEST(iteratorstest, test_not_all_n_empty)
+	{
+		vector<int> v{};
+		bool not_all = eop::not_all_n(v.begin(), v.size(), less_Than(10));
+		EXPECT_EQ(false, not_all);
+	}
+
+	TEST(iteratorstest, test_some_n)
+	{
+		vector<int> v{ 1, 4, 3, 2 };
+		bool some = eop::some_n(v.begin(), v.size(), less_Than(0));
+		EXPECT_EQ(false, some);
+		some = eop::some_n(v.begin(), v.size(), equals_To(0));
+		EXPECT_EQ(false, some);
+		some = eop::some_n(v.begin(), v.size(), equals_To(3));
+		EXPECT_EQ(true, some);
+	}
+
+	TEST(iteratorstest, test_some_n_empty)
+	{
+		vector<int> v{};
+		bool some = eop::some_n(v.begin(), v.size(), less_Than(10));
+		EXPECT_EQ(false, some);
+	}
+
+
+	TEST(iteratorstest, test_find_if_ungarded)
+	{
+		vector<int> v{ 1, 2, 3, 4 };
+		auto r = eop::find_if_ungarded(v.begin(), equals_To(3));
+		EXPECT_EQ(3, eop::source(r));
+	}
+
+	TEST(iteratorstest, test_find_if_not_ungarded)
+	{
+		vector<int> v{ 1, 2, 3, 4 };
+		auto r = eop::find_if_not_ungarded(v.begin(), equals_To(1));
+		EXPECT_EQ(2, eop::source(r));
+	}
 }
