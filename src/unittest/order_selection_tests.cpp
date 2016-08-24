@@ -531,12 +531,42 @@ namespace eoptest
 		EXPECT_EQ(2, eop::source(r));
 	}
 
-	TEST(iteratorstest, test_find_mismatch)
+	TEST(iteratorstest, test_find_mismatch_same)
 	{
 		vector<int> v0{ 1, 2, 3, 4 };
 		vector<int> v1{ 1, 2, 3, 4 };
 		auto r = eop::find_mismatch(v0.cbegin(), v0.cend(), v1.begin(), v1.end(), std::equal_to<int>());
 		EXPECT_EQ(v0.end(), r.first);
 		EXPECT_EQ(v1.end(), r.second);
+	}
+
+	TEST(iteratorstest, test_find_mismatch_differ)
+	{
+		vector<int> v0{ 1, 2, 5, 4, 3 };
+		vector<int> v1{ 1, 2, 3, 4, 5 };
+		{
+			auto r = eop::find_mismatch(v0.cbegin(), v0.cend(), v1.begin(), v1.end(), std::equal_to<int>());
+			EXPECT_EQ(5, eop::source(r.first));
+			EXPECT_EQ(3, eop::source(r.second));
+		}
+		{
+			auto r = eop::find_mismatch(v0.cbegin(), v0.size(), v1.begin(), v1.end(), std::equal_to<int>());
+			EXPECT_EQ(5, eop::source(r.first.first));
+			EXPECT_EQ(3, r.first.second);
+			EXPECT_EQ(3, eop::source(r.second));
+		}
+		{
+			auto r = eop::find_mismatch(v0.cbegin(), v0.cend(), v1.begin(), v1.size(), std::equal_to<int>());
+			EXPECT_EQ(5, eop::source(r.first));
+			EXPECT_EQ(3, eop::source(r.second.first));
+			EXPECT_EQ(3, r.second.second);
+		}
+		{
+			auto r = eop::find_mismatch(v0.cbegin(), v0.size(), v1.begin(), v1.size(), std::equal_to<int>());
+			EXPECT_EQ(5, eop::source(r.first.first));
+			EXPECT_EQ(3, r.first.second);
+			EXPECT_EQ(3, eop::source(r.second.first));
+			EXPECT_EQ(3, r.second.second);
+		}
 	}
 }

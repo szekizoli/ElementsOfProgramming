@@ -1142,6 +1142,62 @@ namespace eop {
 		// Postcondition: 
 	}
 
+	template<typename I0, typename I1, typename R>
+	requires(Readable(I0) && Iterator(I0) &&
+		Readable(I1) && Iterator(I1) && Relation(R) &&
+		ValueType(I0) == ValueType(I1) &&
+		ValueType(I0) == Domain(R))
+	std::pair<std::pair<I0, DistanceType(I0)>, I1> find_mismatch(
+		I0 f0, DistanceType(I0) n0, I1 f1, I1 l1, R r)
+	{
+		// Precondition: readable_weak_range(f0, n0)
+		// Precondition: readable_bounded_range(f1, l1)
+		while (!zero(n0) && f1 != l1 && r(source(f0), source(f1))) {
+			f0 = successor(f0);
+			n0 = predecessor(n0);
+			f1 = successor(f1);
+		}
+		return std::make_pair(std::make_pair(f0, n0), f1);
+		// Postcondition: 
+	}
 
+	template<typename I0, typename I1, typename R>
+	requires(Readable(I0) && Iterator(I0) &&
+		Readable(I1) && Iterator(I1) && Relation(R) &&
+		ValueType(I0) == ValueType(I1) &&
+		ValueType(I0) == Domain(R))
+	std::pair<I0, std::pair<I1, DistanceType(I1)>> find_mismatch(
+		I0 f0, I0 l0, I1 f1, DistanceType(I1) n1, R r)
+	{
+		// Precondition: readable_bounded_range(f0, l0)
+		// Precondition: readable_weak_range(f1, n1)
+		while (f0 != l0 && !zero(n1) && r(source(f0), source(f1))) {
+			f0 = successor(f0);
+			f1 = successor(f1);
+			n1 = predecessor(n1);
+		}
+		return std::make_pair(f0, std::make_pair(f1, n1));
+		// Postcondition: 
+	}
+
+	template<typename I0, typename I1, typename R>
+	requires(Readable(I0) && Iterator(I0) &&
+		Readable(I1) && Iterator(I1) && Relation(R) &&
+		ValueType(I0) == ValueType(I1) &&
+		ValueType(I0) == Domain(R))
+	std::pair<std::pair<I0, DistanceType(I0)>, std::pair<I1, DistanceType(I1)>> find_mismatch(
+		I0 f0, DistanceType(I0) n0, I1 f1, DistanceType(I1) n1, R r)
+	{
+		// Precondition: readable_weak_range(f0, n0)
+		// Precondition: readable_weak_range(f1, n1)
+		while (!zero(n0) && !zero(n1) && r(source(f0), source(f1))) {
+			f0 = successor(f0);
+			n0 = predecessor(n0);
+			f1 = successor(f1);
+			n1 = predecessor(n1);
+		}
+		return std::make_pair(std::make_pair(f0, n0), std::make_pair(f1, n1));
+		// Postcondition: 
+	}
 
 } // namespace eop
