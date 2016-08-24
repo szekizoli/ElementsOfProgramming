@@ -1200,4 +1200,20 @@ namespace eop {
 		// Postcondition: 
 	}
 
+	template<typename I, typename R>
+	requires(Readable(I) && Iterator(I) && Relation(R) &&
+		ValueType(I) == Domain(R))
+	I find_adjacent_mismatch(I f, I l, R r) 
+	{
+		// Precondition: readable_bounded_range(f, l)
+		if (f == l) return f;
+		ValueType(I) x = source(f);
+		f = successor(f);
+		while (f != l && r(x, source(f))) {
+			x = source(f);
+			f = successor(f);
+		}
+		return f;
+	}
+
 } // namespace eop

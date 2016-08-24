@@ -569,4 +569,12 @@ namespace eoptest
 			EXPECT_EQ(3, r.second.second);
 		}
 	}
+
+	TEST(iteratorstest, test_find_adjacent_mismatch)
+	{
+		vector<int> v{ 1, 2, 3, 4, 5, 6, 8, 7 };
+		auto i = eop::find_adjacent_mismatch(v.cbegin(), v.cend(), std::less<int>());
+		ASSERT_NE(v.cend(), i);
+		EXPECT_EQ(7, eop::source(i));
+	}
 }
