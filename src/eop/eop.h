@@ -785,6 +785,8 @@ namespace eop {
 
 	template<typename T>
 	struct is_Even {
+		typedef T first_argument_type;
+		typedef bool result_type;
 		typedef T input_type;
 		bool operator()(T value) {
 			return eop::even(value);
@@ -793,6 +795,8 @@ namespace eop {
 
 	template<typename T>
 	struct is_Odd {
+		typedef T first_argument_type;
+		typedef bool result_type;
 		typedef T input_type;
 		bool operator()(T value) {
 			return eop::odd(value);
@@ -908,6 +912,7 @@ namespace eop {
 	template<typename P, typename J>
 		requires(UnaryPredicate(P))
 	struct counter_if {
+		typedef P first_argument_type;
 		J j;
 		P p;
 		counter_if(P p, J j) : p(p), j(j) {}
@@ -934,6 +939,9 @@ namespace eop {
 
 	template<typename T>
 	struct plus {
+		typedef T first_argument_type;
+		typedef T second_argument_type;
+		typedef T result_type;
 		typedef T input_type;
 		T operator()(T a, T b) {
 			return a + b;
@@ -942,6 +950,9 @@ namespace eop {
 
 	template<typename T>
 	struct multiplies {
+		typedef T first_argument_type;
+		typedef T second_argument_type;
+		typedef T result_type;
 		typedef T input_type;
 		T operator()(T a, T b) {
 			return a * b;
@@ -950,6 +961,9 @@ namespace eop {
 
 	template<typename I>
 	struct source_function {
+		typedef I first_argument_type;
+		typedef I second_argument_type;
+		typedef I result_type;
 		typedef I input_type;
 		ValueType(I) operator()(I i) {
 			return source(i);

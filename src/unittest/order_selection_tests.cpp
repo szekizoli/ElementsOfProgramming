@@ -250,6 +250,7 @@ namespace eoptest
 
 	struct less_Than {
 		const int value;
+		typedef int first_argument_type;
 		typedef int input_type;
 		less_Than(int v) : value(v) {};
 		bool operator()(int x) {
