@@ -1244,6 +1244,7 @@ namespace eop {
 		ValueType(I) == Domain(R))
 	bool strictly_increasing_range(I f, I l, R r) 
 	{
+		// Precondition: readable_bounded_range(f, l)
 		return relation_preserving(f, l, r);
 	}
 
@@ -1264,6 +1265,7 @@ namespace eop {
 		ValueType(I) == Domain(R))
 	bool increasing_range(I f, I l, R r) 
 	{
+		// Precondition: readable_bounded_range(f, l)
 		return relation_preserving(f, l, complement_of_converse<R>(r));
 	}
 
