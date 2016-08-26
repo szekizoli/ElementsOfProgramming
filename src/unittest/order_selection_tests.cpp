@@ -364,12 +364,12 @@ namespace eoptest
 	TEST(iteratorstest, test_reduce_nonempty)
 	{
 		vector<int> v{ 1, 2, 3, 4, 5 };
-		const int sum = eop::reduce_nonempty(begin(v), end(v), eop::plus<int>(), eop::source_function<vector<int>::iterator>());
+		const int sum = eop::reduce_nonempty(begin(v), end(v), std::plus<int>(), eop::source_function<vector<int>::iterator>());
 		EXPECT_EQ(15, sum);
-		const int product = eop::reduce_nonempty(begin(v), end(v), eop::multiplies<int>(), eop::source_function<vector<int>::iterator>());
+		const int product = eop::reduce_nonempty(begin(v), end(v), std::multiplies<int>(), eop::source_function<vector<int>::iterator>());
 		EXPECT_EQ(120, product);
 		vector<int> v2{ 0, 0, 0, 1, 2, 0, 3, 0, 4, 0, 0, 5 };
-		const int product2 = eop::reduce_nonempty(begin(v2), end(v2), eop::multiplies<int>(), eop::source_function<vector<int>::iterator>());
+		const int product2 = eop::reduce_nonempty(begin(v2), end(v2), std::multiplies<int>(), eop::source_function<vector<int>::iterator>());
 		EXPECT_EQ(0, product2);
 	}
 
