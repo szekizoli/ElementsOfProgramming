@@ -1230,4 +1230,41 @@ namespace eop {
 		return f;
 	}
 
+	template<typename I, typename R>
+	requires(Readable(I) && Iterator(I) && Relation(R) &&
+		ValueType(I) == Domain(R))
+	bool relation_preserving(I f, I l, R r) 
+	{
+		// Precondition: readable_bounded_range(f, l)
+		return l == find_adjacent_mismatch(f, l, r);
+	}
+
+	template<typename I, typename R>
+	requires(Readable(I) && Iterator(I) && Relation(R) &&
+		ValueType(I) == Domain(R))
+	bool strictly_increasing_range(I f, I l, R r) 
+	{
+		return relation_preserving(f, l, r);
+	}
+
+	template<typename R>
+	struct complement_of_converse
+	{
+		typedef Domain(R) T;
+		R r;
+		complement_of_converse(const R& r) : r(r) {}
+		bool operator()(const T& a, const T& b) 
+		{
+			return !r(b, a);
+		}
+	};
+
+	template<typename I, typename R>
+	requires(Readable(I) && Iterator(I) && Relation(R) &&
+		ValueType(I) == Domain(R))
+	bool increasing_range(I f, I l, R r) 
+	{
+		return relation_preserving(f, l, complement_of_converse<R>(r));
+	}
+
 } // namespace eop

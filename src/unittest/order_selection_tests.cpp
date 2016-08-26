@@ -578,4 +578,62 @@ namespace eoptest
 		ASSERT_NE(v.cend(), i);
 		EXPECT_EQ(7, eop::source(i));
 	}
+
+	TEST(iteratorstest, test_strictly_increasing_range)
+	{
+		{
+			vector<int> v{};
+			bool r = eop::strictly_increasing_range(begin(v), end(v), std::less<int>());
+			EXPECT_EQ(true, r) << "empty case failed";
+		}
+		{
+			vector<int> v{ 1 };
+			bool r = eop::strictly_increasing_range(begin(v), end(v), std::less<int>());
+			EXPECT_EQ(true, r) << "one element case failed";
+		}
+		{
+			vector<int> v{ 1, 2 };
+			bool r = eop::strictly_increasing_range(begin(v), end(v), std::less<int>());
+			EXPECT_EQ(true, r) << "two elements strictly increasing case failed";
+		}
+		{
+			vector<int> v{ 1, 1 };
+			bool r = eop::strictly_increasing_range(begin(v), end(v), std::less<int>());
+			EXPECT_EQ(false, r) << "two elements increasing case failed";
+		}
+		{
+			vector<int> v{ 2, 1 };
+			bool r = eop::strictly_increasing_range(begin(v), end(v), std::less<int>());
+			EXPECT_EQ(false, r) << "two elements non increasing case failed";
+		}
+	}
+
+	TEST(iteratorstest, test_increasing_range)
+	{
+		{
+			vector<int> v{};
+			bool r = eop::increasing_range(begin(v), end(v), std::less<int>());
+			EXPECT_EQ(true, r) << "empty case failed";
+		}
+		{
+			vector<int> v{ 1 };
+			bool r = eop::increasing_range(begin(v), end(v), std::less<int>());
+			EXPECT_EQ(true, r) << "one element case failed";
+		}
+		{
+			vector<int> v{ 1, 2 };
+			bool r = eop::increasing_range(begin(v), end(v), std::less<int>());
+			EXPECT_EQ(true, r) << "two elements strictly increasing case failed";
+		}
+		{
+			vector<int> v{ 1, 1 };
+			bool r = eop::increasing_range(begin(v), end(v), std::less<int>());
+			EXPECT_EQ(true, r) << "two elements increasing case failed";
+		}
+		{
+			vector<int> v{ 2, 1 };
+			bool r = eop::increasing_range(begin(v), end(v), std::less<int>());
+			EXPECT_EQ(false, r) << "two elements non increasing case failed";
+		}
+	}
 }
