@@ -636,4 +636,11 @@ namespace eoptest
 			EXPECT_EQ(false, r) << "two elements non increasing case failed";
 		}
 	}
+
+	TEST(iteratorstest, test_partitioned)
+	{
+		vector<int> v{ 7, 9, 6, 8, 3, 4, 1, 5, 2 };
+		auto r0 = eop::partitioned(begin(v), end(v), less_Than(6));
+		EXPECT_EQ(true, r0);
+	}
 }

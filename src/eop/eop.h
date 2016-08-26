@@ -1263,10 +1263,30 @@ namespace eop {
 	template<typename I, typename R>
 	requires(Readable(I) && Iterator(I) && Relation(R) &&
 		ValueType(I) == Domain(R))
-	bool increasing_range(I f, I l, R r) 
+	bool increasing_range(I f, I l, R r)
 	{
 		// Precondition: readable_bounded_range(f, l)
 		return relation_preserving(f, l, complement_of_converse<R>(r));
+	}
+
+	template<typename I, typename P>
+	requires(Readable(I) && Iterator(I) && UnaryPredicate(P) &&
+		ValueType(I) == Domain(P))
+	bool partitioned(I f, I l, P p) 
+	{
+		// Precondition: readable_bounded_range(f, l)
+		return l == find_if_not(find_if(f, l, p), l, p);
+	}
+
+	template<typename I, typename P>
+	requires(Readable(I) && Iterator(I) && UnaryPredicate(P) &&
+		ValueType(I) == Domain(P))
+	bool partitioned_n(I f, DistanceType(I) n, P p) 
+	{
+		// Precondition: readable_counted_range(f, n)
+		auto r0 = find_if_n(f, n, p);
+		auto r1 = find_if_not_n(r0.first, r0.second, p);
+		return zero(r1.second);
 	}
 
 } // namespace eop
