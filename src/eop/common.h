@@ -17,6 +17,7 @@
 
 #define Arity(...)
 #define BinaryOperation(...)
+#define ForwardIterator(...)
 #define Integer(...)
 #define Iterator(...)
 #define Procedure(...)
