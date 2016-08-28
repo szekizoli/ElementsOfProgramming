@@ -643,4 +643,110 @@ namespace eoptest
 		auto r0 = eop::partitioned(begin(v), end(v), less_Than(6));
 		EXPECT_EQ(true, r0);
 	}
+
+	TEST(iteratorstest, test_partition_point_n) 
+	{
+		vector<int> v{ 9, 8, 7, 6, 5, 4, 3, 2, 1 };
+		auto r0 = eop::partition_point_n(begin(v), size(v), less_Than(6));
+		EXPECT_EQ(5, eop::source(r0));
+		auto r1 = eop::partition_point_n(begin(v), size(v), less_Than(4));
+		EXPECT_EQ(3, eop::source(r1));
+		auto r2 = eop::partition_point_n(begin(v), size(v), less_Than(9));
+		EXPECT_EQ(8, eop::source(r2));
+		auto r3 = eop::partition_point_n(begin(v), size(v), less_Than(1));
+		EXPECT_EQ(end(v), r3);
+		auto r4 = eop::partition_point_n(begin(v), size(v), less_Than(0));
+		EXPECT_EQ(end(v), r4);
+		auto r5 = eop::partition_point_n(begin(v), size(v), less_Than(10));
+		EXPECT_EQ(begin(v), r5);
+		EXPECT_EQ(9, eop::source(r5));
+
+		vector<int> v_empty {};
+		auto r_empty = eop::partition_point_n(begin(v_empty), 0, less_Than(0));
+		EXPECT_EQ(end(v_empty), r_empty);
+
+		vector<int> v_one_element{4};
+		auto r_one_element_0 = eop::partition_point_n(begin(v_one_element), 1, less_Than(4));
+		EXPECT_EQ(end(v_one_element), r_one_element_0);
+		auto r_one_element_1 = eop::partition_point_n(begin(v_one_element), 1, less_Than(5));
+		EXPECT_EQ(begin(v_one_element), r_one_element_1);
+	}
+
+	TEST(iteratorstest, test_partition_point)
+	{
+		vector<int> v{ 9, 8, 7, 6, 5, 4, 3, 2, 1 };
+		auto r0 = eop::partition_point(begin(v), end(v), less_Than(6));
+		EXPECT_EQ(5, eop::source(r0));
+		auto r1 = eop::partition_point(begin(v), end(v), less_Than(4));
+		EXPECT_EQ(3, eop::source(r1));
+		auto r2 = eop::partition_point(begin(v), end(v), less_Than(9));
+		EXPECT_EQ(8, eop::source(r2));
+		auto r3 = eop::partition_point(begin(v), end(v), less_Than(1));
+		EXPECT_EQ(end(v), r3);
+		auto r4 = eop::partition_point(begin(v), end(v), less_Than(0));
+		EXPECT_EQ(end(v), r4);
+		auto r5 = eop::partition_point(begin(v), end(v), less_Than(10));
+		EXPECT_EQ(begin(v), r5);
+		EXPECT_EQ(9, eop::source(r5));
+	}
+
+	TEST(iteratorstest, test_lower_bound_n)
+	{
+		vector<int> v{ 1, 2, 3, 4, 5, 5, 5, 5, 6, 7, 8, 9 };
+		auto r0 = eop::lower_bound_n(begin(v), size(v), 5, std::less<int>());
+		ASSERT_NE(end(v), r0);
+		EXPECT_EQ(5, eop::source(r0));
+		EXPECT_EQ(begin(v) + 4, r0);
+		auto r1 = eop::lower_bound_n(begin(v), size(v), 4, std::less<int>());
+		EXPECT_EQ(4, eop::source(r1));
+		auto r2 = eop::lower_bound_n(begin(v), size(v), 9, std::less<int>());
+		EXPECT_EQ(9, eop::source(r2));
+		auto r3 = eop::lower_bound_n(begin(v), size(v), 1, std::less<int>());
+		EXPECT_EQ(begin(v), r3);
+		auto r4 = eop::lower_bound_n(begin(v), size(v), 0, std::less<int>());
+		EXPECT_EQ(begin(v), r4);
+		auto r5 = eop::lower_bound_n(begin(v), size(v), 10, std::less<int>());
+		EXPECT_EQ(end(v), r5);
+
+		vector<int> v_empty{};
+		auto r_empty = eop::lower_bound_n(begin(v_empty), 0, 0, std::less<int>());
+		EXPECT_EQ(end(v_empty), r_empty);
+
+		vector<int> v_one_element{ 4 };
+		auto r_one_element_0 = eop::lower_bound_n(begin(v_one_element), 1, 4, std::less<int>());
+		EXPECT_EQ(begin(v_one_element), r_one_element_0);
+		auto r_one_element_1 = eop::lower_bound_n(begin(v_one_element), 1, 5, std::less<int>());
+		EXPECT_EQ(end(v_one_element), r_one_element_1);
+	}
+
+	TEST(iteratorstest, test_upper_bound_n)
+	{
+		vector<int> v{ 1, 2, 3, 4, 5, 5, 5, 5, 6, 7, 8, 9 };
+		auto r0 = eop::upper_bound_n(begin(v), size(v), 5, std::less<int>());
+		ASSERT_NE(end(v), r0);
+		EXPECT_EQ(6, eop::source(r0));
+		EXPECT_EQ(begin(v) + 8, r0);
+		auto r1 = eop::upper_bound_n(begin(v), size(v), 4, std::less<int>());
+		EXPECT_EQ(5, eop::source(r1));
+		auto r2 = eop::upper_bound_n(begin(v), size(v), 9, std::less<int>());
+		EXPECT_EQ(end(v), r2);
+		auto r3 = eop::upper_bound_n(begin(v), size(v), 1, std::less<int>());
+		EXPECT_EQ(begin(v) + 1, r3);
+		auto r4 = eop::upper_bound_n(begin(v), size(v), 0, std::less<int>());
+		EXPECT_EQ(begin(v), r4);
+		auto r5 = eop::upper_bound_n(begin(v), size(v), 10, std::less<int>());
+		EXPECT_EQ(end(v), r5);
+
+		vector<int> v_empty{};
+		auto r_empty = eop::upper_bound_n(begin(v_empty), 0, 0, std::less<int>());
+		EXPECT_EQ(end(v_empty), r_empty);
+
+		vector<int> v_one_element{ 4 };
+		auto r_one_element_0 = eop::upper_bound_n(begin(v_one_element), 1, 3, std::less<int>());
+		EXPECT_EQ(begin(v_one_element), r_one_element_0);
+		auto r_one_element_1 = eop::upper_bound_n(begin(v_one_element), 1, 4, std::less<int>());
+		EXPECT_EQ(end(v_one_element), r_one_element_1);
+		auto r_one_element_2 = eop::upper_bound_n(begin(v_one_element), 1, 5, std::less<int>());
+		EXPECT_EQ(end(v_one_element), r_one_element_2);
+	}
 }

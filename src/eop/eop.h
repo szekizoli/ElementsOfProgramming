@@ -1289,4 +1289,90 @@ namespace eop {
 		return zero(r1.second);
 	}
 
+	// Forward iterators
+
+	template<typename I, typename R>
+	requires(ForwardIterator(I) && Readable(I) && Relation(R) &&
+		ValueType(I) == Domain(R))
+	I find_adjacent_mismatch_forward(I f, I l, R r) 
+	{
+		// Precondition: readable_bounded_range(f, l)
+		if (f == l) return l;
+		I t;
+		do {
+			t = f;
+			f = successor(f);
+		} while (f != l && r(source(t), source(f)));
+		return f;
+ 	}
+
+	template<typename I, typename P>
+	requires(ForwardIterator(I) && Readable(I) && UnaryPredicate(P) &&
+		ValueType(I) == Domain(R))
+	I partition_point_n(I f, DistanceType(I) n, P p) 
+	{
+		// Precondition: readable_counted_range(f, n) & partitioned_n(f, n, p)
+		while (!zero(n)) {
+			DistanceType(I) h = half_nonnegative(n);
+			I m = f + h;
+			if (p(source(m))) {
+				n = h;
+			}
+			else {
+				n = n - successor(h);
+				f = successor(m);
+			}
+		}
+		return f;
+	}
+
+	template<typename I, typename P>
+	requires(ForwardIterator(I) && Readable(I) && UnaryPredicate(P) &&
+		ValueType(I) == Domain(P))
+	I partition_point(I f, I l, P p) 
+	{
+		// Precondition: readable_bounded_range(f, l) & partitioned(f, l, p)
+		return partition_point_n(f, l - f, p);
+	}
+
+	template<typename R>
+		requires(Relation(R))
+	struct lower_bound_predicate {
+		typedef Domain(R) T;
+		const T& a;
+		R r;
+		lower_bound_predicate(const T& a, R r) : a(a), r(r) {}
+		bool operator()(const T& x) { return !r(x, a); }
+	};
+
+	template<typename I, typename R>
+	requires(ForwardIterator(I) && Readable(R) && Relation(R) &&
+		ValueType(I) == Domain(R))
+	I lower_bound_n(I f, DistanceType(I) n, const ValueType(I)& a, R r) 
+	{
+		// Precondition: weak_increasing(r) && increasing_counted_range(f, n, r)
+		lower_bound_predicate<R> p(a, r);			
+		return partition_point_n(f, n, p);
+	}
+
+	template<typename R>
+		requires(Relation(R))
+	struct upper_bound_predicate {
+		typedef Domain(R) T;
+		const T& a;
+		R r;
+		upper_bound_predicate(const T& a, R r) : a(a), r(r) {}
+		bool operator()(const T& x) { return r(a, x); }
+	};
+
+	template<typename I, typename R>
+	requires(ForwardIterator(I) && Readable(I) && Relation(R) &&
+		ValueType(I) == Domain(R))
+	I upper_bound_n(I f, DistanceType(I) n, const ValueType(I)& a, R r) 
+	{
+		// Precondition: weak_increasing(r) && increasing_counted_range(f, n, r)
+		upper_bound_predicate<R> p(a, r);
+		return partition_point_n(f, n, p);
+	}
+
 } // namespace eop
