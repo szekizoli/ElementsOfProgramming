@@ -743,10 +743,22 @@ namespace eoptest
 
 		vector<int> v_one_element{ 4 };
 		auto r_one_element_0 = eop::upper_bound_n(begin(v_one_element), 1, 3, std::less<int>());
-		EXPECT_EQ(begin(v_one_element), r_one_element_0);
+		EXPECT_EQ(begin (v_one_element), r_one_element_0);
 		auto r_one_element_1 = eop::upper_bound_n(begin(v_one_element), 1, 4, std::less<int>());
 		EXPECT_EQ(end(v_one_element), r_one_element_1);
 		auto r_one_element_2 = eop::upper_bound_n(begin(v_one_element), 1, 5, std::less<int>());
 		EXPECT_EQ(end(v_one_element), r_one_element_2);
+	}
+
+	TEST(iteratorstest, test_equal_range_n)
+	{
+		vector<int> v{ 1, 2, 3, 4, 5, 5, 5, 5, 6, 7, 8, 9 };
+		auto r0 = eop::equal_range_n(begin(v), size(v), 5, std::less<int>());
+		ASSERT_NE(end(v), r0.first);
+		ASSERT_NE(end(v), r0.second);
+		EXPECT_EQ(5, eop::source(r0.first));
+		EXPECT_EQ(6, eop::source(r0.second));
+		EXPECT_EQ(begin(v) + 4, r0.first);
+		EXPECT_EQ(begin(v) + 8, r0.second);
 	}
 }
