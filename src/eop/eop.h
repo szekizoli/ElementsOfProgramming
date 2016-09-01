@@ -459,7 +459,7 @@ namespace eop {
 	template<typename I>
 		requires(Integer(I))
 	I predecessor(I n) {
-		return n - I{ 1 };
+		return --n;
 	}
 
 	template<typename I>
@@ -1413,6 +1413,33 @@ namespace eop {
 		I lower = lower_bound(f, l, a, r);
 		I upper = upper_bound(lower, l, a, r);
 		return std::pair<I, I>(lower, upper);
+	}
+
+	// Bidirectional iterators
+
+	template<typename I>
+	requires(BidirectionalIterator(I) && Readable(I))
+	I operator-(I l, DistanceType(I) n)
+	{
+		// Precondition: n >= 0 & Exists f in I => weak_range(f, l) & l = f + n
+		while (!zero(n)) {
+			l = predecessor(l);
+			n = predecessor(n);
+		}
+		return l;
+	}
+
+	template<typename I, typename P>
+	requires(Readable(I) && BidirectionalIterator(I) && UnaryPredicate(P) &&
+		ValueType(I) == Domain(P))
+	I find_backward_if(I f, I l, P p) 
+	{
+		// Precondition: (f, l] is a readable bounde half-open on left range
+		I i = l;
+		while (f != l && (i = predecessor(i), !p(source(i)))) {
+			l = i;
+		}
+		return l;
 	}
 
 } // namespace eop

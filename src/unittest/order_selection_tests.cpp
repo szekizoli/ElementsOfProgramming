@@ -761,4 +761,36 @@ namespace eoptest
 		EXPECT_EQ(begin(v) + 4, r0.first);
 		EXPECT_EQ(begin(v) + 8, r0.second);
 	}
+
+	TEST(iteratorstest, test_operator_minus)
+	{
+		vector<int> v{ 1, 2, 3, 4, 5, 5, 5, 5, 6, 7, 8, 9 };
+		auto i0 = end(v) - 2;
+		EXPECT_EQ(8, eop::source(i0));
+		auto i1 = i0 - 3;
+		EXPECT_EQ(5, eop::source(i1));
+		auto i2 = i1 - 7;
+		EXPECT_EQ(begin(v), i2);
+	}
+
+	TEST(iteratorstest, test_find_backward_if)
+	{
+		vector<int> v{ 1, 3, 4, 3, 2 };
+		auto r = eop::find_backward_if(v.begin(), v.end(), equals_To(3));
+		EXPECT_EQ(3, eop::source(eop::predecessor(r)));
+		EXPECT_EQ(2, eop::source(r));
+		r = eop::predecessor(r);
+		r = eop::find_backward_if(v.begin(), r, equals_To(3));
+		EXPECT_EQ(3, eop::source(eop::predecessor(r)));
+		EXPECT_EQ(4, eop::source(r));
+		r = eop::find_backward_if(v.begin(), v.end(), equals_To(-1));
+		EXPECT_EQ(begin(v), r) << "error in not found";
+	}
+
+	TEST(iteratorstest, test_find_backward_if_empty)
+	{
+		vector<int> v{};
+		auto r = eop::find_backward_if(v.begin(), v.end(), equals_To(2));
+		EXPECT_EQ(begin(v), r) << "error in not found";
+	}
 }

@@ -16,9 +16,11 @@
 #define requires(...)
 
 #define Arity(...)
+#define BidirectionalIterator(...)
 #define BinaryOperation(...)
 #define ForwardIterator(...)
 #define Integer(...)
+#define IndexedIterator(...)
 #define Iterator(...)
 #define Procedure(...)
 #define Readable(...)
