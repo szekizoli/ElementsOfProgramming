@@ -1445,27 +1445,39 @@ namespace eop {
 	// incomplete
 	template<typename I>
 		requires(BidirectionalIterator(I))
+	struct reverse_iterator {
+		reverse_iterator() : {}
+		reverse_iterator(I _i) : i(_i) {}
+		reverse_iterator(const reverse_iterator& x) : i(x.i) {}
+		reverse_iterator<I>& operator=(const reverse_iterator<I>& x)
 		{
 			i = x.i;
 			return *this;
 		}
+		bool operator==(const reverse_iterator<I>& x)
 		{
 			return i == x.i;
 		}
+		bool operator!=(const reverse_iterator<I>& x)
 		{
 			return !(i == x.i);
 		}
+		bool operator<(const reverse_iterator<I>& x)
 		{
 			return i < x.i;
 		}
+		bool operator>(const reverse_iterator<I>& x)
 		{
 			return x.i < i;
 		}
+		reverse_iterator<I>& operator++()
 		{
 			++i;
 			return *this;
 		}
+		reverse_iterator<I> operator++(int)
 		{
+			reverse_iterator<I> r(i);
 			++i;
 			return r;
 		}
@@ -1479,17 +1491,35 @@ namespace eop {
 
 	template<typename I>
 		requires(BidirectionalIterator(I))
+	reverse_iterator<I> successor(reverse_iterator<I> r)
 	{
+		return reverse_iterator<I>(predecessor(r.current()));
 	}
 
 	template<typename I>
 		requires(BidirectionalIterator(I))
+	reverse_iterator<I> predecessor(reverse_iterator<I> r)
 	{
+		return reverse_iterator<I>(successor(r.current()));
 	}
 
 	template<typename I>
 		requires(BidirectionalIterator(I) && Readable(I))
+	ValueType(I) source(reverse_iterator<I> r)
 	{
 		return source(predecessor(r.current()));
 	}
+
+	template<typename I>
+		requires(BidirectionalIterator(I) && Readable(I))
+	bool is_palindrom(I f, I l)
+	{
+		while (f != l && source(f) == source(predecessor(l))) {
+			f = successor(f);
+			if (f == l) return true;
+			l = predecessor(l);
+		}
+		return f == l;
+	}
+
 } // namespace eop

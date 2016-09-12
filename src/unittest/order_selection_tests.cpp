@@ -797,8 +797,12 @@ namespace eoptest
 	TEST(iteratorstest, test_reverse_iterator_adapter_source)
 	{
 		vector<int> v = { 1, 2, 3, 4, 5, 6 };
+		eop::reverse_iterator<vector<int>::iterator> ria_0( begin(v) + 1 );
 		EXPECT_EQ(1, eop::source(ria_0));
+		eop::reverse_iterator<vector<int>::iterator> ria_1(end(v));
 		EXPECT_EQ(6, eop::source(ria_1));
+		eop::reverse_iterator<vector<int>::iterator> begin(begin(v));
+		eop::reverse_iterator<vector<int>::iterator> end(end(v));
 		vector<int> reverse;
 		while (begin != end) {
 			reverse.push_back(eop::source(end));
@@ -809,5 +813,19 @@ namespace eoptest
 			EXPECT_EQ(i, *it_rbegin);
 			++it_rbegin;
 		}
+	}
+
+	TEST(iteratorstest, test_is_palindrom)
+	{
+		vector<int> v_0 = { };
+		EXPECT_TRUE(eop::is_palindrom(begin(v_0), end(v_0)));
+		vector<int> v_1 = { 1 };
+		EXPECT_TRUE(eop::is_palindrom(begin(v_1), end(v_1)));
+		vector<int> v_2 = { 1, 2, 2, 1 };
+		EXPECT_TRUE(eop::is_palindrom(begin(v_2), end(v_2)));
+		vector<int> v_3 = { 1, 2, 3, 2, 1 };
+		EXPECT_TRUE(eop::is_palindrom(begin(v_3), end(v_3)));
+		vector<int> v_4 = { 1, 2, 3, 4, 2, 1 };
+		EXPECT_FALSE(eop::is_palindrom(begin(v_4), end(v_4)));
 	}
 }
