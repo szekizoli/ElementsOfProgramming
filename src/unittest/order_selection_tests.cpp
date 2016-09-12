@@ -793,4 +793,21 @@ namespace eoptest
 		auto r = eop::find_backward_if(v.begin(), v.end(), equals_To(2));
 		EXPECT_EQ(begin(v), r) << "error in not found";
 	}
+
+	TEST(iteratorstest, test_reverse_iterator_adapter_source)
+	{
+		vector<int> v = { 1, 2, 3, 4, 5, 6 };
+		EXPECT_EQ(1, eop::source(ria_0));
+		EXPECT_EQ(6, eop::source(ria_1));
+		vector<int> reverse;
+		while (begin != end) {
+			reverse.push_back(eop::source(end));
+			end = eop::successor(end);
+		}
+		auto it_rbegin = reverse.rbegin();
+		for (int i : v) {
+			EXPECT_EQ(i, *it_rbegin);
+			++it_rbegin;
+		}
+	}
 }

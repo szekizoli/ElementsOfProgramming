@@ -1442,4 +1442,54 @@ namespace eop {
 		return l;
 	}
 
+	// incomplete
+	template<typename I>
+		requires(BidirectionalIterator(I))
+		{
+			i = x.i;
+			return *this;
+		}
+		{
+			return i == x.i;
+		}
+		{
+			return !(i == x.i);
+		}
+		{
+			return i < x.i;
+		}
+		{
+			return x.i < i;
+		}
+		{
+			++i;
+			return *this;
+		}
+		{
+			++i;
+			return r;
+		}
+		I current()
+		{
+			return i;
+		}
+	private:
+		I i;
+	};
+
+	template<typename I>
+		requires(BidirectionalIterator(I))
+	{
+	}
+
+	template<typename I>
+		requires(BidirectionalIterator(I))
+	{
+	}
+
+	template<typename I>
+		requires(BidirectionalIterator(I) && Readable(I))
+	{
+		return source(predecessor(r.current()));
+	}
 } // namespace eop
