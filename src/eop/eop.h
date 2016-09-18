@@ -833,9 +833,9 @@ namespace eop {
 		return n;
 	}
 
-	template<typename I>
-		//requires(Readable(I))
-	ValueType(I) source(I x) {
+	template<typename T>
+		requires(Readable(T))
+	ValueType(T) source(T x) {
 		return *x;
 	}
 
@@ -1514,12 +1514,112 @@ namespace eop {
 		requires(BidirectionalIterator(I) && Readable(I))
 	bool is_palindrom(I f, I l)
 	{
+		// Precondition: readable_bounded_range(f, l)
 		while (f != l && source(f) == source(predecessor(l))) {
 			f = successor(f);
 			if (f == l) return true;
 			l = predecessor(l);
 		}
 		return f == l;
+		// Postcondition: returns true, if the provided range is a palindrom
+	}
+
+	// Chapter 7 - Coordinate Structures
+
+	template<typename T>
+		requires(Regular(T))
+	struct tree_node
+	{
+		typedef typename T value_type;
+		typedef pointer(tree_node) Link;
+		T value;
+		Link left_successor_link;
+		Link right_successor_link;
+		tree_node() : left_successor_link(0), right_successor_link(0) {}
+		tree_node(T value, Link l = 0, Link r = 0) : 
+			value(value), 
+			left_successor_link(l), right_successor_link(r) {}
+	};
+
+	template<typename T>
+		requires(Regular(T))
+	struct tree_coordinate 
+	{
+		typedef typename T value_type;
+		typedef typename int weight_type;
+		typedef typename int difference_type;
+		pointer(tree_node<T>) ptr;
+		tree_coordinate(pointer(tree_node<T>) ptr = 0) : ptr(ptr) {}
+	};
+
+	template<typename T>
+		requires(Regular(T))
+	struct weight_type< tree_coordinate<T> >
+	{
+		typedef int type;
+	};
+
+	template<typename T>
+		requires(Regular(T))
+	struct value_type< tree_coordinate<T> >
+	{
+		typedef T type;
+	};
+
+	template<typename T>
+		requires(Regular(T))
+	bool empty(tree_coordinate<T> t)
+	{
+		typedef pointer(tree_node<T>) I;
+		return t.ptr == I{ 0 };
+	}
+
+	template<typename T>
+		requires(Regular(T))
+	tree_coordinate<T> left_successor(tree_coordinate<T> t)
+	{
+		return (*t.ptr).left_successor_link;
+	}
+
+	template<typename T>
+		requires(Regular(T))
+	bool has_left_successor(tree_coordinate<T> t)
+	{
+		return !empty(left_successor(t));
+	}
+
+	template<typename T>
+		requires(Regular(T))
+	tree_coordinate<T> right_successor(tree_coordinate<T> t)
+	{
+		return (*t.ptr).right_successor_link;
+	}
+
+	template<typename T>
+		requires(Regular(T))
+	bool has_right_successor(tree_coordinate<T> t)
+	{
+		return !empty(right_successor(t));
+	}
+
+	// algorithms
+
+	template<typename C>
+		requires(BifurcateCoordinate(C))
+	WeightType(C) weight_recursive(C c)
+	{
+		// Precondition: tree(c)
+		typedef WeightType(C) N;
+		if (empty(c)) return N{ 0 };
+		N l{ 0 };
+		N r{ 0 };
+		if (has_left_successor(c)) {
+			l = weight_recursive(left_successor(c));
+		}
+		if (has_right_successor(c)) {
+			r = weight_recursive(right_successor(c));
+		}
+		return successor(l + r);
 	}
 
 } // namespace eop

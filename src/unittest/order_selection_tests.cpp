@@ -828,4 +828,19 @@ namespace eoptest
 		vector<int> v_4 = { 1, 2, 3, 4, 2, 1 };
 		EXPECT_FALSE(eop::is_palindrom(begin(v_4), end(v_4)));
 	}
+
+	TEST(coordinatestest, test_weight_recursive)
+	{
+		//    n_2
+		//   /  \
+		// n_0  n_1
+		typedef eop::tree_node<int> Node;
+		typedef eop::tree_coordinate<int> Coordinate;
+		Node n_0{ 1 };
+		Node n_1{ 2 };
+		Node n_2{ 3 , &n_0 , &n_1};
+		Coordinate c{ &n_2 };
+		WeightType(Coordinate) weight = eop::weight_recursive(c);
+		EXPECT_EQ(3, weight) << "weight calculation wrong";
+	}
 }
