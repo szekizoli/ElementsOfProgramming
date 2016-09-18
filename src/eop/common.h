@@ -17,6 +17,7 @@
 
 #define Arity(...)
 #define BidirectionalIterator(...)
+#define BifurcateCoordinate(...)
 #define BinaryOperation(...)
 #define ForwardIterator(...)
 #define Integer(...)
@@ -25,6 +26,7 @@
 #define Procedure(...)
 #define Readable(...)
 #define Relation(...)
+#define Regular(...)
 #define Transformation(...)
 #define UnaryPredicate(...)
 
