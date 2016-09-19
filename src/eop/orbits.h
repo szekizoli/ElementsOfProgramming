@@ -1,6 +1,7 @@
 #pragma once
 
 #include "common.h"
+#include "type_functions.h"
 
 namespace eop {
 

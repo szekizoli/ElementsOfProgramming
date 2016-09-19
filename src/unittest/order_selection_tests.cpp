@@ -840,7 +840,7 @@ namespace eoptest
 		Node n_1{ 2 };
 		Node n_2{ 3 , &n_0 , &n_1};
 		Coordinate c{ &n_2 };
-		WeightType(Coordinate) weight = eop::weight_recursive(c);
+		auto weight = eop::weight_recursive(c);
 		EXPECT_EQ(3, weight) << "weight calculation wrong";
 	}
 }

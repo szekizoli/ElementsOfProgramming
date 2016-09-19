@@ -15,6 +15,7 @@
 
 #include "common.h"
 
+namespace eop {
 
 	template< typename T, int i >
 	requires(FunctionalProcedure(T))
@@ -80,17 +81,26 @@
 	// ValueType
 	template<typename T>
 		requires(Readable(T))
-	struct value_type;
+	struct value_type {
+		typedef T type;
+	};
 
 #define ValueType(T) typename T::value_type
+//#define ValueType(T) typename eop::value_type<T>::type;
 
 
 	// Chapter 7
 
 	// Weight Type : BifurcateCoordinate -> int
 	template<typename T>
-		requires(WeakBifurcateCoordinate(T))
-	struct weight_type;
+	requires(WeakBifurcateCoordinate(T))
+		struct weight_type;
 
 #define WeightType(T) typename weight_type<T>::type
-//#define WeightType(T) typename T::weight_type
+
+	template<typename T>
+		requires(Readable(T))
+	ValueType(T) source(T x) {
+		return *x;
+	}
+}
