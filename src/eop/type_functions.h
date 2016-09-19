@@ -13,13 +13,13 @@
 
 #pragma once
 
-#include "common.h"
+#include "intrinsics.h"
 
 namespace eop {
 
 	template< typename T, int i >
-	requires(FunctionalProcedure(T))
-		struct input_type;
+		requires(FunctionalProcedure(T))
+	struct input_type;
 
 #define InputType(T, i) typename input_type<T, i>::type
 
@@ -78,12 +78,17 @@ namespace eop {
 
 #define DistanceType(T) typename T::difference_type
 
-	// ValueType
-	template<typename T>
-		requires(Readable(T))
-	struct value_type {
-		typedef T type;
-	};
+// ValueType
+template<typename T>
+	requires(Readable(T))
+struct value_type;
+
+template<typename T>
+	requires(Readable(T))
+struct value_type 
+{
+	typedef T type;
+};
 
 #define ValueType(T) typename T::value_type
 //#define ValueType(T) typename eop::value_type<T>::type;

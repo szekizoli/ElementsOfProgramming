@@ -5,7 +5,8 @@
 #include <random>
 
 #include "eop.h"
-#include "common.h"
+#include "intrinsics.h"
+#include "pointers.h"
 #include "type_functions.h"
 #include "linear_recurrences.h"
 

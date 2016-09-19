@@ -16,6 +16,8 @@
 #include <tuple>
 #include <utility>
 
+#include "intrinsics.h"
+#include "pointers.h"
 #include "type_functions.h"
 
 namespace eop {
@@ -1533,6 +1535,33 @@ namespace eop {
 		tree_node(T value, Link l = 0, Link r = 0) : 
 			value(value), 
 			left_successor_link(l), right_successor_link(r) {}
+		tree_node(const tree_node& x) = default;
+		tree_node(tree_node&& x) : value(x.value),
+			left_successor_link(x.left_successor_link),
+			right_successor_link(x.right_successor_link)
+		{
+			x.left_successor_link = 0;
+			x.right_successor_link = 0;
+		}
+		tree_node& operator=(const tree_node& x)
+		{
+			value = x.value;
+			left_successor_link = x.left_successor_link;
+			right_successor_link = x.right_successor_link;
+		}
+		tree_node& operator=(tree_node&& x)
+		{
+			if (this != &x)
+			{
+				value = x.value;
+				left_successor_link = x.left_successor_link;
+				right_successor_link = x.right_successor_link;
+
+				x.left_successor_link = 0;
+				x.right_successor_link = 0;
+			}
+			return *this;
+		}
 	};
 
 	template<typename T>
@@ -1572,7 +1601,7 @@ namespace eop {
 		requires(Regular(T))
 	tree_coordinate<T> left_successor(tree_coordinate<T> t)
 	{
-		return source(t.ptr).left_successor_link;
+		return sink(t.ptr).left_successor_link;
 	}
 
 	template<typename T>
@@ -1586,7 +1615,7 @@ namespace eop {
 		requires(Regular(T))
 	tree_coordinate<T> right_successor(tree_coordinate<T> t)
 	{
-		return source(t.ptr).right_successor_link;
+		return sink(t.ptr).right_successor_link;
 	}
 
 	template<typename T>
@@ -1594,6 +1623,27 @@ namespace eop {
 	bool has_right_successor(tree_coordinate<T> t)
 	{
 		return !empty(right_successor(t));
+	}
+
+	template<typename T>
+		requires(Regular(T))
+	void set_left_successor(tree_coordinate<T> c, tree_coordinate<T> l)
+	{
+		sink(c.ptr).left_successor_link = l.ptr;
+	}
+
+	template<typename T>
+		requires(Regular(T))
+	void set_right_successor(tree_coordinate<T> c, tree_coordinate<T> r)
+	{
+		sink(c.ptr).right_successor_link = r.ptr;
+	}
+
+	template<typename T>
+		requires(Regular(T))
+	bool operator==(tree_coordinate<T> a, tree_coordinate<T> b)
+	{
+		return a.ptr == b.ptr;
 	}
 
 	// algorithms
@@ -1614,6 +1664,24 @@ namespace eop {
 			r = weight_recursive(right_successor(c));
 		}
 		return successor(l + r);
+	}
+
+	template<typename C>
+		requires(BifurcateCoordinate(C))
+	DistanceType(C) height_recursive(C c) 
+	{
+		// Precondition: tree(c)
+		typedef DistanceType(C) N;
+		if (empty(c)) return N{ 0 };
+		N l{ 0 };
+		N r{ 0 };
+		if (has_left_successor(c)) {
+			l = height_recursive(left_sucessor(c));
+		}
+		if (has_right_successor) {
+			r = height_recursive(right_successor(c));
+		}
+		return successor(select_1_2(l, r));
 	}
 
 } // namespace eop

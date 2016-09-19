@@ -5,8 +5,9 @@
 
 #include "gtest/gtest.h"
 
-#include "common.h"
 #include "eop.h"
+#include "intrinsics.h"
+#include "pointers.h"
 
 namespace eoptest
 {
