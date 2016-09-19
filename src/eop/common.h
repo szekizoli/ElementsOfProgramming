@@ -32,8 +32,6 @@
 
 #define pointer(T) T*
 
-#define ValueType(T) typename eop::value_type<T>::type;
-
 namespace eop {
 
 	template<typename T>
@@ -42,9 +40,8 @@ namespace eop {
 	}
 
 	template<typename T>
-	struct value_type
-	{
-		typedef T type;
-	};
+	T source(pointer(T) x) {
+		return *x;
+	}
 
 } // namespace eop
