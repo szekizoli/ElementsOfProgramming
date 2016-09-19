@@ -833,12 +833,6 @@ namespace eop {
 		return n;
 	}
 
-	template<typename T>
-		requires(Readable(T))
-	ValueType(T) source(T x) {
-		return *x;
-	}
-
 	template<typename I, typename Proc>
 		requires(Readable(I) && Iterator(I) && Procedure(Proc) && Arity(Proc) == 1 && 
 			ValueType(I) == InputType(Proc, 0))
@@ -1531,7 +1525,7 @@ namespace eop {
 	struct tree_node
 	{
 		typedef typename T value_type;
-		typedef pointer(tree_node) Link;
+		typedef pointer(tree_node<T>) Link;
 		T value;
 		Link left_successor_link;
 		Link right_successor_link;
@@ -1578,7 +1572,7 @@ namespace eop {
 		requires(Regular(T))
 	tree_coordinate<T> left_successor(tree_coordinate<T> t)
 	{
-		return (*t.ptr).left_successor_link;
+		return source(t.ptr).left_successor_link;
 	}
 
 	template<typename T>
@@ -1592,7 +1586,7 @@ namespace eop {
 		requires(Regular(T))
 	tree_coordinate<T> right_successor(tree_coordinate<T> t)
 	{
-		return (*t.ptr).right_successor_link;
+		return source(t.ptr).right_successor_link;
 	}
 
 	template<typename T>
