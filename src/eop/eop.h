@@ -1683,12 +1683,12 @@ namespace eop {
 		N l{ 0 };
 		N r{ 0 };
 		if (has_left_successor(c)) {
-			l = height_recursive(left_sucessor(c));
+			l = height_recursive(left_successor(c));
 		}
-		if (has_right_successor) {
+		if (has_right_successor(c)) {
 			r = height_recursive(right_successor(c));
 		}
-		return successor(select_1_2(l, r));
+		return successor(select_1_2(l, r, std::less<N>()));
 	}
 
 } // namespace eop
