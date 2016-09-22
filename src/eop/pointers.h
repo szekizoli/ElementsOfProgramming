@@ -26,7 +26,7 @@
 //};
 
 template<typename T>
-T sink(pointer(T) x) 
+T& sink(pointer(T) x) 
 {
 	return *x;
 }
