@@ -833,15 +833,52 @@ namespace eoptest
 	TEST(coordinatestest, test_weight_recursive)
 	{
 		//    n_2
-		//   /  \
-		// n_0  n_1
-		typedef eop::tree_node<int> Node;
-		typedef eop::tree_coordinate<int> Coordinate;
+		//   /   \
+		// n_0   n_1
+		//  \     /
+		//  n_3 n_4
+		typedef eop::stree_node<int> Node;
+		typedef eop::stree_coordinate<int> Coordinate;
 		Node n_0{ 1 };
 		Node n_1{ 2 };
 		Node n_2{ 3 , &n_0 , &n_1};
 		Coordinate c{ &n_2 };
-		auto weight = eop::weight_recursive(c);
-		EXPECT_EQ(3, weight) << "weight calculation wrong";
+		auto weight_0 = eop::weight_recursive(c);
+		EXPECT_EQ(3, weight_0) << "weight calculation wrong";
+		Node n_3{ 4 };
+		eop::set_right_successor(Coordinate{ addressof(n_0) }, Coordinate{ addressof(n_3) });
+		auto weight_1 = eop::weight_recursive(c);
+		EXPECT_EQ(4, weight_1) << "weight calculation wrong";
+
+		Node n_4{ 4 };
+		eop::set_left_successor(Coordinate{ addressof(n_1) }, Coordinate{ addressof(n_4) });
+		auto weight_2 = eop::weight_recursive(c);
+		EXPECT_EQ(5, weight_2) << "weight calculation wrong";
+	}
+
+	TEST(coordinatestest, test_height_recursive)
+	{
+		//    n_2
+		//   /   \
+		// n_0   n_1
+		//  \     /
+		//  n_3 n_4
+		typedef eop::stree_node<int> Node;
+		typedef eop::stree_coordinate<int> Coordinate;
+		Node n_0{ 1 };
+		Node n_1{ 2 };
+		Node n_2{ 3 , &n_0 , &n_1 };
+		Coordinate c{ &n_2 };
+		auto weight_0 = eop::height_recursive(c);
+		EXPECT_EQ(2, weight_0) << "height calculation wrong";
+		Node n_3{ 4 };
+		eop::set_right_successor(Coordinate{ addressof(n_0) }, Coordinate{ addressof(n_3) });
+		auto weight_1 = eop::height_recursive(c);
+		EXPECT_EQ(3, weight_1) << "height calculation wrong";
+
+		Node n_4{ 4 };
+		eop::set_left_successor(Coordinate{ addressof(n_1) }, Coordinate{ addressof(n_4) });
+		auto weight_2 = eop::height_recursive(c);
+		EXPECT_EQ(3, weight_2) << "height calculation wrong";
 	}
 }
