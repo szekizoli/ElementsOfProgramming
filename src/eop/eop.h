@@ -1572,7 +1572,7 @@ namespace eop {
 		typedef typename int weight_type;
 		typedef typename int difference_type;
 		pointer(stree_node<T>) ptr;
-		stree_coordinate(pointer(stree_node<T>) ptr = 0) : ptr(ptr) {}
+		explicit stree_coordinate(pointer(stree_node<T>) ptr = 0) : ptr(ptr) {}
 	};
 
 	template<typename T>
@@ -1601,7 +1601,7 @@ namespace eop {
 		requires(Regular(T))
 	stree_coordinate<T> left_successor(stree_coordinate<T> t)
 	{
-		return sink(t.ptr).left_successor_link;
+		return stree_coordinate<T>(sink(t.ptr).left_successor_link);
 	}
 
 	template<typename T>
@@ -1615,7 +1615,7 @@ namespace eop {
 		requires(Regular(T))
 	stree_coordinate<T> right_successor(stree_coordinate<T> t)
 	{
-		return sink(t.ptr).right_successor_link;
+		return stree_coordinate<T>(sink(t.ptr).right_successor_link);
 	}
 
 	template<typename T>
@@ -1689,6 +1689,27 @@ namespace eop {
 			r = height_recursive(right_successor(c));
 		}
 		return successor(select_1_2(l, r, std::less<N>()));
+	}
+
+	enum class visit {pre, in, post};
+
+	template<typename C, typename Proc>
+	requires(BifurcateCoordinate(C) && 
+		Procedure(Proc) && Arity(Proc) == 2 && 
+		visit == InputType(Proc, 0) && C == InputType(Proc, 1))
+	Proc traverse_nonempty(C c, Proc proc)
+	{
+		// Precondition: tree(c) && !empty(c)
+		proc(visit::pre, c);
+		if (has_left_successor(c)) {
+			proc = traverse_nonempty(left_successor(c), proc);
+		}
+		proc(visit::in, c);
+		if (has_right_successor(c)) {
+			proc = traverse_nonempty(right_successor(c), proc);
+		}
+		proc(visit::post, c);
+		return proc;
 	}
 
 } // namespace eop

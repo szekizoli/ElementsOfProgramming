@@ -881,4 +881,46 @@ namespace eoptest
 		auto weight_2 = eop::height_recursive(c);
 		EXPECT_EQ(3, weight_2) << "height calculation wrong";
 	}
+
+	struct traverse_result 
+	{
+		typedef eop::stree_coordinate<int> Coordinate;
+		vector<int> preorder;
+		vector<int> inorder;
+		vector<int> postorder;
+		void operator()(eop::visit v, Coordinate c)
+		{
+			if (v == eop::visit::pre)
+				preorder.push_back(sink(c.ptr).value);
+			else if (v == eop::visit::in)
+				inorder.push_back(sink(c.ptr).value);
+			else if (v == eop::visit::post)
+				postorder.push_back(sink(c.ptr).value);
+		}
+	};
+
+	TEST(coordinatestest, test_traverse_nonempty)
+	{
+		// TODO test with a complex tree
+		//    n_2
+		//   /   \
+		// n_0   n_1
+		//  \     /
+		//  n_3 n_4
+		typedef eop::stree_node<int> Node;
+		typedef eop::stree_coordinate<int> Coordinate;
+		Node n_3{ 4 };
+		Node n_4{ 5 };
+		Node n_0{ 1, 0, addressof(n_3) };
+		Node n_1{ 2, addressof(n_4), 0 };
+		Node n_2{ 3 , &n_0 , &n_1 };
+		Coordinate c{ &n_2 };
+		traverse_result r = eop::traverse_nonempty(c, traverse_result());
+		vector<int> pre_expected{ 3, 1, 4, 2, 5 };
+		EXPECT_EQ(pre_expected, r.preorder) << "pre order not as expected";
+		vector<int> in_expected{ 1, 4, 3, 5, 2 };
+		EXPECT_EQ(in_expected, r.inorder) << "in order not as expected";
+		vector<int> post_expected{ 4, 1, 5, 2, 3 };
+		EXPECT_EQ(post_expected, r.postorder) << "post order not as expected";
+	}
 }
