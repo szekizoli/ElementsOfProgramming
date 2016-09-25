@@ -1653,6 +1653,31 @@ namespace eop {
 		return source(t.ptr).value;
 	}
 
+
+	template<typename T>
+		requires(Regular(T))
+	struct stree_node_construct {
+		typedef typename stree_coordinate<T> C;
+		stree_node_construct() {}
+		C operator()(T x, C l = C(0), C r = C(0))
+		{
+			return C(new stree_node<T>(T, l.ptr, r.ptr));
+		}
+		C operator()(C c)           { return (*this) (source(c), left_successor(c),
+																 right_successor(c)); }
+		C operator()(C c, C l, C r) { return (*this) (source(c), l, r); }
+	};
+
+	template<typename T>
+		requires(Regular(T))
+	struct stree_node_destroy {
+		stree_node_destroy() {}
+		void operator()(stree_coordinate<T> c)
+		{
+			delete c.ptr;
+		}
+	};
+
 	// algorithms
 
 	template<typename C>
