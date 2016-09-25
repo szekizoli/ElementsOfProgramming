@@ -8,6 +8,7 @@
 #include "eop.h"
 #include "intrinsics.h"
 #include "pointers.h"
+#include "tree.h"
 
 namespace eoptest
 {

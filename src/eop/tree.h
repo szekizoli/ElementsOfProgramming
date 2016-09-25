@@ -149,7 +149,7 @@ namespace eop {
 		requires(Regular(T))
 	T& source(stree_coordinate<T> t)
 	{
-		return source(t.ptr).value;
+		return sink(t.ptr).value;
 	}
 
 	template<typename T>
@@ -163,7 +163,7 @@ namespace eop {
 		requires(Regular(T))
 	T& sink(stree_coordinate<T> t)
 	{
-		return t.ptr->value;
+		return sink(t.ptr).ptrvalue;
 	}
 
 	template<typename T>
