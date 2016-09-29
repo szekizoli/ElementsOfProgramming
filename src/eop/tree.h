@@ -11,6 +11,9 @@
 // purpose. It is provided "as is" without express or implied
 // warranty.
 
+// The origin of the contents of this file is
+// http://www.elementsofprogramming.com/code/eop.h
+
 #pragma once
 
 #include <stack>
@@ -35,32 +38,6 @@ namespace eop {
 			value(value),
 			left_successor_link(l), right_successor_link(r) {}
 		stree_node(const stree_node& x) = default;
-		stree_node(stree_node&& x) : value(x.value),
-			left_successor_link(x.left_successor_link),
-			right_successor_link(x.right_successor_link)
-		{
-			x.left_successor_link = 0;
-			x.right_successor_link = 0;
-		}
-		stree_node& operator=(const stree_node& x)
-		{
-			value = x.value;
-			left_successor_link = x.left_successor_link;
-			right_successor_link = x.right_successor_link;
-		}
-		stree_node& operator=(stree_node&& x)
-		{
-			if (this != &x)
-			{
-				value = x.value;
-				left_successor_link = x.left_successor_link;
-				right_successor_link = x.right_successor_link;
-
-				x.left_successor_link = 0;
-				x.right_successor_link = 0;
-			}
-			return *this;
-		}
 	};
 
 	template<typename T>
@@ -173,7 +150,7 @@ namespace eop {
 		stree_node_construct() {}
 		C operator()(T x, C l = C(0), C r = C(0))
 		{
-			return C(new stree_node<T>(T, l.ptr, r.ptr));
+			return C(new stree_node<T>(x, l.ptr, r.ptr));
 		}
 		C operator()(C c) {
 			return (*this) (source(c), left_successor(c),
@@ -226,4 +203,75 @@ namespace eop {
 		}
 	}
 
+	/*
+	The next function is based on MAKECOPY in this paper:
+
+	K. P. Lee.
+	A linear algorithm for copying binary trees using bounded workspace.
+	Commun. ACM 23, 3 (March 1980), 159-162. DOI=10.1145/358826.358835
+	http://doi.acm.org/10.1145/358826.358835
+	*/
+
+	template<typename C, typename Cons>
+	requires(EmptyLinkedBifurcateCoordinate(C) &&
+		TreeNodeConstructor(Cons) && NodeType(C) == NodeType(Cons))
+	C bifurcate_copy(C c)
+	{
+		Cons construct_node;
+		if (empty(c)) return c;              // Us      / Lee
+		C stack = construct_node(c, c, C()); // stack   / V'
+		C c_new = stack;                     // c\_new  / COPY
+		while (!empty(stack)) {              // empty() / null
+			c = left_successor(stack);       // c       / V
+			C l = left_successor(c);
+			C r = right_successor(c);
+			C top = stack;
+			if (!empty(l)) {
+				if (!empty(r)) {
+					r = construct_node(r, r, right_successor(stack));
+					stack = construct_node(l, l, r);
+				}
+				else {
+					r = C();
+					stack = construct_node(l, l, right_successor(stack));
+				}
+				l = stack;
+			}
+			else if (!empty(r)) {
+				stack = construct_node(r, r, right_successor(stack));
+				r = stack;
+			}
+			else
+				stack = right_successor(stack);
+			set_right_successor(top, r);
+			set_left_successor(top, l);
+		}
+		return c_new;
+	}
+
+	template<typename T>
+		requires(Regular(T))
+	struct stree
+	{
+		typedef stree_coordinate<T> C;
+		typedef stree_node_construct<T> Cons;
+		C root;
+		stree() : root(0) {}
+		stree(T x) : root(Cons()(x)) {}
+		stree(T x, const stree& left, const stree& right) : root(Cons()(x))
+		{
+			set_left_successor(root, bifurcate_copy<C, Cons>(left));
+			set_right_successor(root, bifurcate_copy<C, Cons>(right));
+		}
+		stree(const stree& x) : root(bifurcate_copy<C, Cons>(x.root)) {}
+		~stree() { bifurcate_erase(root, stree_node_destroy<T>{}); }
+		void operator=(stree x) { swap(root, x.root); }
+	};
+
+	/*template<typename T>
+		requires(Regular(T))
+	struct coordinate_type< stree<T> >
+	{
+		typedef stree_coordinate<T> type;
+	};*/
 } // namespace eop
