@@ -836,11 +836,18 @@ namespace eoptest
 	typedef eop::stree_node<int> SNode;
 	typedef eop::stree_coordinate<int> SCoordinate;
 	typedef eop::stree<int> STree;
+	typedef eop::tree<int> Tree;
 
 	STree create_stree() {
 		return STree{ 0,
 			STree{ 11 , STree{}, STree{ 13 } },
 			STree{ 12 , STree{ 14 }, STree{} } };
+	}
+
+	Tree create_tree() {
+		return Tree{ 0,
+			Tree{ 11 , Tree{}, Tree{ 13 } },
+			Tree{ 12 , Tree{ 14 }, Tree{} } };
 	}
 
 	TEST(coordinatestest, test_weight_recursive_stree_coordinate)
@@ -1046,5 +1053,16 @@ namespace eoptest
 			EXPECT_FALSE(eop::empty(t));
 		}
 		EXPECT_EQ(0, eop::stree_node_count);
+	}
+
+	TEST(tree_tests, construct_tree)
+	{
+		EXPECT_EQ(0, eop::tree_node_count) << "Before construct test";
+		{
+			Tree t = create_tree();
+			EXPECT_EQ(5, eop::tree_node_count);
+			EXPECT_FALSE(eop::empty(t));
+		}
+		EXPECT_EQ(0, eop::tree_node_count);
 	}
 }

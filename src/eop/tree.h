@@ -437,16 +437,147 @@ namespace eop {
 	}
 
 	template<typename T>
-	requires(Regular(T))
-		void set_right_successor(tree_coordinate<T> c, tree_coordinate<T> r)
+		requires(Regular(T))
+	void set_right_successor(tree_coordinate<T> c, tree_coordinate<T> r)
 	{
 		sink(c.ptr).right_successor_link = r.ptr;
 	}
 
 	template<typename T>
+		requires(Regular(T))
+	tree_coordinate<T> predecessor(tree_coordinate<T> c)
+	{
+		return sink(c.ptr).predecessor_link;
+	}
+
+	template<typename T>
+		requires(Regular(T))
+	bool has_predecessor(tree_coordinate<T> c)
+	{
+		return !empty(predecessor(c));
+	}
+
+	template<typename T>
+		requires(Regular(T))
+	void set_predecessor(tree_coordinate<T> c, tree_coordinate<T> p)
+	{
+		return sink(c.ptr).predecessor_link = p.ptr;
+	}
+
+	template<typename T>
 	T& source(tree_coordinate<T> c)
 	{
-		return source(c.ptr).value;
+		return sink(c.ptr).value;
+	}
+
+	template<typename T>
+	T& sink(tree_coordinate<T> c)
+	{
+		return sink(c.ptr).value;
+	}
+
+	static int tree_node_count = 0; /* ******* TESTING ******* */
+
+	template<typename T>
+		requires(Regular(T))
+	struct tree_node_construct 
+	{
+		typedef tree_coordinate<T> C;
+		tree_node_construct() {}
+		C operator()(T x, C l = C{ 0 }, C r = C{ 0 })
+		{
+			++tree_node_count;
+			return C(new tree_node<T>(x, l.ptr, r.ptr));
+		}
+		C operator()(C c)           { return (*this)(source(c), left_successor(c), 
+			                                                    right_successor(c)); }
+		C operator()(C c, C l, C r) { return (*this)(source(c), l, r); }
+	};
+
+	template<typename T>
+		requires(Regular(T))
+	struct tree_node_destroy
+	{
+		tree_node_destroy() = default;
+		void operator()(tree_coordinate<T> c)
+		{
+			--tree_node_count;
+			delete c.ptr;
+		}
+	};
+
+	template<typename T>
+		requires(Regular(T))
+	struct tree 
+	{
+		typedef tree_coordinate<T> C;
+		typedef tree_node_construct<T> Cons;
+		C root;
+		tree() : root(0) {}
+		tree(T value) : root(Cons{}(value)) {}
+		tree(T value, const tree& left, const tree& right) : root(Cons{}(value))
+		{
+			set_left_successor(root, bifurcate_copy<C, Cons>(left.root));
+			set_right_successor(root, bifurcate_copy<C, Cons>(right.root));
+		}
+		tree(const tree& x) : root(bifurcate_copy<C, Cons>(x.root)) {}
+		~tree()
+		{
+			bifurcate_erase(root, tree_node_destroy<T>{});
+		}
+		void operator=(tree&& t)
+		{
+			swap(root, t.root);
+		}
+	};
+
+	template<typename T>
+		requires(Regular(T))
+	struct coordinate_type<tree<T>>
+	{
+		typedef tree_coordinate<T> type;
+	};
+
+	template<typename T>
+		requires(Regular(T))
+	struct value_type<tree<T>> 
+	{
+		typedef ValueType(CoordinateType(tree<T>)) type;
+	};
+
+	template<typename T>
+		requires(Regular(T))
+	struct weight_type 
+	{
+		typedef WeightType(CoordinateType(tree<T>)) type;
+	};
+
+	template<typename T>
+		requires(Regular(T))
+	tree_coordinate<T> begin(const tree<T> x)
+	{
+		return x.root;
+	}
+
+	template<typename T>
+		requires(Regular(T))
+	bool empty(const tree<T>& x) 
+	{
+		return empty(x.root);
+	}
+
+	template<typename T>
+		requires(Regular(T))
+	bool operator==(const tree<T>& x, const tree<T>& y)
+	{
+		return bifurcate_equal(begin(x), begin(y));
+	}
+
+	template<typename T, typename Proc>
+		requires(Regular(T))
+	Proc traverse(const tree<T>& x)
+	{
+		return traverse(begin(x), proc);
 	}
 
 } // namespace eop

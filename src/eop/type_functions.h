@@ -120,4 +120,6 @@ struct value_type
 	template<typename T>
 		requires(Regular(T))
 	struct coordinate_type;
+
+#define CoordinateType(T) typename coordinate_type<T>::type
 } // namespace eop
