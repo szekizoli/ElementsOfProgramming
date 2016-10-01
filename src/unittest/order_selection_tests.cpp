@@ -831,7 +831,19 @@ namespace eoptest
 		EXPECT_FALSE(eop::is_palindrom(begin(v_4), end(v_4)));
 	}
 
-	TEST(coordinatestest, test_weight_recursive)
+	using eop::begin;
+
+	typedef eop::stree_node<int> SNode;
+	typedef eop::stree_coordinate<int> SCoordinate;
+	typedef eop::stree<int> STree;
+
+	STree create_stree() {
+		return STree{ 0,
+			STree{ 11 , STree{}, STree{ 13 } },
+			STree{ 12 , STree{ 14 }, STree{} } };
+	}
+
+	TEST(coordinatestest, test_weight_recursive_stree_coordinate)
 	{
 		//    n_2
 		//   /   \
@@ -855,6 +867,16 @@ namespace eoptest
 		eop::set_left_successor(Coordinate{ addressof(n_1) }, Coordinate{ addressof(n_4) });
 		auto weight_2 = eop::weight_recursive(c);
 		EXPECT_EQ(5, weight_2) << "weight calculation wrong";
+	}
+
+	TEST(coordinatestest, test_weight_recursive_stree)
+	{
+		EXPECT_EQ(0, eop::stree_node_count) << "Before construct test EOP";
+		{
+			STree x = create_stree();
+			EXPECT_EQ(5, eop::weight_recursive(begin(x)));
+		}
+		EXPECT_EQ(0, eop::stree_node_count) << "Before construct test EOP";
 	}
 
 	TEST(coordinatestest, test_height_recursive)
@@ -881,6 +903,16 @@ namespace eoptest
 		eop::set_left_successor(Coordinate{ addressof(n_1) }, Coordinate{ addressof(n_4) });
 		auto weight_2 = eop::height_recursive(c);
 		EXPECT_EQ(3, weight_2) << "height calculation wrong";
+	}
+
+	TEST(coordinatestest, test_height_recursive_stree)
+	{
+		EXPECT_EQ(0, eop::stree_node_count) << "Before construct test EOP";
+		{
+			STree x = create_stree();
+			EXPECT_EQ(3, eop::height_recursive(begin(x)));
+		}
+		EXPECT_EQ(0, eop::stree_node_count) << "Before construct test EOP";
 	}
 
 	struct traverse_result 
@@ -923,5 +955,96 @@ namespace eoptest
 		EXPECT_EQ(in_expected, r.inorder) << "in order not as expected";
 		vector<int> post_expected{ 4, 1, 5, 2, 3 };
 		EXPECT_EQ(post_expected, r.postorder) << "post order not as expected";
+	}
+
+
+	TEST(tree_tests, empty_coordinate_stree)
+	{
+		SCoordinate c{ 0 };
+		EXPECT_TRUE(eop::empty(c));
+	}
+
+	TEST(tree_tests, empty_coordinate_tree)
+	{
+		eop::tree_coordinate<int> c{ 0 };
+		EXPECT_TRUE(eop::empty(c));
+	}
+
+	TEST(tree_tests, stree_node_construct)
+	{
+		SNode n0{ 0 };
+		EXPECT_EQ(0, n0.value);
+		SCoordinate c0{ addressof(n0) };
+		EXPECT_FALSE(eop::has_left_successor(c0));
+		EXPECT_FALSE(eop::has_right_successor(c0));
+
+		SNode n1{ 1, addressof(n0) };
+		SCoordinate c1{ addressof(n1) };
+		ASSERT_TRUE(eop::has_left_successor(c1));
+		EXPECT_EQ(c0, eop::left_successor(c1));
+		EXPECT_FALSE(eop::has_right_successor(c1));
+
+		eop::set_right_successor(c1, c0);
+		ASSERT_TRUE(eop::has_right_successor(c1));
+		EXPECT_EQ(c0, eop::right_successor(c1));
+
+		SNode n2{ 2, 0, addressof(n0) };
+		SCoordinate c2{ addressof(n2) };
+		EXPECT_FALSE(eop::has_left_successor(c2));
+		ASSERT_TRUE(eop::has_right_successor(c2));
+		EXPECT_EQ(c0, eop::right_successor(c2));
+
+		eop::set_left_successor(c2, c0);
+		ASSERT_TRUE(eop::has_left_successor(c2));
+		EXPECT_EQ(c0, eop::left_successor(c2));
+	}
+
+	TEST(tree_tests, tree_node_construct)
+	{
+		typedef eop::tree_node<int> Node;
+		typedef eop::tree_coordinate<int> Coordinate;
+		Node n0{ 0 };
+		EXPECT_EQ(0, n0.value);
+		Coordinate c0{ addressof(n0) };
+		EXPECT_FALSE(eop::has_left_successor(c0));
+		EXPECT_FALSE(eop::has_right_successor(c0));
+
+		Node n1{ 1, addressof(n0) };
+		Coordinate c1{ addressof(n1) };
+		ASSERT_TRUE(eop::has_left_successor(c1));
+		EXPECT_EQ(c0, eop::left_successor(c1));
+		EXPECT_FALSE(eop::has_right_successor(c1));
+
+		eop::set_right_successor(c1, c0);
+		ASSERT_TRUE(eop::has_right_successor(c1));
+		EXPECT_EQ(c0, eop::right_successor(c1));
+
+		Node n2{ 2, 0, addressof(n0) };
+		Coordinate c2{ addressof(n2) };
+		EXPECT_FALSE(eop::has_left_successor(c2));
+		ASSERT_TRUE(eop::has_right_successor(c2));
+		EXPECT_EQ(c0, eop::right_successor(c2));
+
+		eop::set_left_successor(c2, c0);
+		ASSERT_TRUE(eop::has_left_successor(c2));
+		EXPECT_EQ(c0, eop::left_successor(c2));
+	}
+
+	TEST(tree_tests, source)
+	{
+		SNode n0{ 42 };
+		SCoordinate c0{ addressof(n0) };
+		EXPECT_EQ(42, eop::source(c0));
+	}
+
+	TEST(tree_tests, construct_stree)
+	{
+		EXPECT_EQ(0, eop::stree_node_count) << "Before construct test";
+		{
+			STree t = create_stree();
+			EXPECT_EQ(5, eop::stree_node_count);
+			EXPECT_FALSE(eop::empty(t));
+		}
+		EXPECT_EQ(0, eop::stree_node_count);
 	}
 }

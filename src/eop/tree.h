@@ -143,6 +143,8 @@ namespace eop {
 		return sink(t.ptr).ptrvalue;
 	}
 
+	static int stree_node_count = 0; /* ***** TESTING ***** */
+
 	template<typename T>
 		requires(Regular(T))
 	struct stree_node_construct {
@@ -150,6 +152,7 @@ namespace eop {
 		stree_node_construct() {}
 		C operator()(T x, C l = C(0), C r = C(0))
 		{
+			++stree_node_count;
 			return C(new stree_node<T>(x, l.ptr, r.ptr));
 		}
 		C operator()(C c) {
@@ -165,6 +168,7 @@ namespace eop {
 		stree_node_destroy() {}
 		void operator()(stree_coordinate<T> c)
 		{
+			--stree_node_count;
 			delete c.ptr;
 		}
 	};
@@ -254,24 +258,195 @@ namespace eop {
 	struct stree
 	{
 		typedef stree_coordinate<T> C;
+		typedef stree_coordinate<T> coordinate_type;
 		typedef stree_node_construct<T> Cons;
 		C root;
-		stree() : root(0) {}
-		stree(T x) : root(Cons()(x)) {}
-		stree(T x, const stree& left, const stree& right) : root(Cons()(x))
+		constexpr stree() : root(0) {}
+		constexpr stree(T x) : root(Cons()(x)) {}
+		constexpr stree(T x, const stree& left, const stree& right) : root(Cons()(x))
 		{
-			set_left_successor(root, bifurcate_copy<C, Cons>(left));
-			set_right_successor(root, bifurcate_copy<C, Cons>(right));
+			set_left_successor(root, bifurcate_copy<C, Cons>(left.root));
+			set_right_successor(root, bifurcate_copy<C, Cons>(right.root));
 		}
 		stree(const stree& x) : root(bifurcate_copy<C, Cons>(x.root)) {}
+		stree(stree&& x) : root(0) {
+			swap(root, x.root);
+		}
 		~stree() { bifurcate_erase(root, stree_node_destroy<T>{}); }
 		void operator=(stree x) { swap(root, x.root); }
 	};
 
-	/*template<typename T>
+	template<typename T>
 		requires(Regular(T))
-	struct coordinate_type< stree<T> >
+	struct coordinate_type<stree<T>>
 	{
 		typedef stree_coordinate<T> type;
-	};*/
+	};
+
+	template<typename T>
+		requires(Regular(T))
+	struct value_type<stree<T>>
+	{
+		typedef T type;
+	};
+
+	template<typename T>
+		requires(Regular(T))
+	struct weight_type<stree<T>>
+	{
+		typedef int type;
+	};
+
+	template<typename T>
+		requires(Regular(T))
+	stree_coordinate<T> begin(const stree<T>& x) { return x.root; }
+
+	template<typename T>
+		requires(Regular(T))
+	bool empty(const stree<T>& x) { return empty(x.root); }
+
+	template<typename T>
+		requires(Regular(T))
+	bool operator==(const stree<T>& x, const stree<T>& y) 
+	{
+		if (empty(x)) return empty(y);
+		if (empty(y)) return false;
+		return bifurcate_equivalent_nonempty(begin(x), begin(y), std::equal<T>());
+	}
+
+	template<typename T>
+		requires(Regular(T))
+	bool operator<(const stree<T>& x, const stree<T>& y)
+	{
+		if (empty(x)) return !empty(y);
+		if (empty(y)) return false;
+		less<T> lt;
+		return bifurcate_compare_non_empty(
+			begin(x), begin(y),
+			comparator_3_way<less<T>>(lt)
+		);
+	}
+
+	template<typename T, typename Proc>
+		requires(Regular(T) && Arity(Proc) == 2
+			visit == InputType(Proc, 0) && 
+			CoordinateType(stree<T>) == InputType(Proc, 1))
+	Proc traverse(const stree<T>& x, Proc proc)
+	{
+		if (empty(x)) return proc;
+		return traverse_nonempty(begin(x), proc);
+	}
+
+	template<typename T>
+		requires(Regular(T))
+	struct tree_node
+	{
+		typedef typename T value_type;
+		typedef pointer(tree_node<T>) Link;
+		T value;
+		Link predecessor_link;
+		Link left_successor_link;
+		Link right_successor_link;
+		tree_node() : predecessor_link(0),
+			left_successor_link(0), right_successor_link(0) {}
+		tree_node(T value, Link l = 0, Link r = 0, Link p = 0) : 
+			value(value),
+			left_successor_link(l), right_successor_link(r), 
+			predecessor_link(p) {}
+		tree_node(const tree_node&) = default;
+	};
+
+	template<typename T>
+		requires(Regular(T))
+	struct tree_coordinate
+	{
+		typedef typename int weight_type;
+		typedef typename T value_type;
+		pointer(tree_node<T>) ptr;
+		tree_coordinate(pointer(tree_node<T>) ptr = 0) : ptr(ptr) {}
+	};
+
+	template<typename T>
+		requires(Regular(T))
+	struct weight_type<tree_coordinate<T>>
+	{
+		typedef typename DistanceType(pointer(tree_node<T>)) type;
+	};
+
+	template<typename T>
+		requires(Regular(T))
+	struct value_type<tree_coordinate<T>>
+	{
+		typedef typename T type;
+	};
+
+	template<typename T>
+		requires(Regular(T))
+	bool empty(tree_coordinate<T> c)
+	{
+		return c.ptr == 0;
+	}
+
+	template<typename T>
+		requires(Regular(T))
+	bool operator==(const tree_coordinate<T>& x, const tree_coordinate<T>& y)
+	{
+		return x.ptr == y.ptr;
+	}
+
+	template<typename T>
+		requires(Regular(T))
+	tree_node<T>& sink(pointer(tree_node<T>) ptr)
+	{
+		return *ptr;
+	}
+
+	template<typename T>
+		requires(Regular(T))
+	tree_coordinate<T> left_successor(tree_coordinate<T> c)
+	{
+		return sink(c.ptr).left_successor_link;
+	}
+
+	template<typename T>
+		requires(Regular(T))
+	bool has_left_successor(tree_coordinate<T> c)
+	{
+		return !empty(left_successor(c));
+	}
+
+	template<typename T>
+		requires(Regular(T))
+	tree_coordinate<T> right_successor(tree_coordinate<T> c)
+	{
+		return sink(c.ptr).right_successor_link;
+	}
+
+	template<typename T>
+		requires(Regular(T))
+	bool has_right_successor(tree_coordinate<T> c)
+	{
+		return !empty(right_successor(c));
+	}
+
+	template<typename T>
+		requires(Regular(T))
+	void set_left_successor(tree_coordinate<T> c, tree_coordinate<T> l)
+	{
+		sink(c.ptr).left_successor_link = l.ptr;
+	}
+
+	template<typename T>
+	requires(Regular(T))
+		void set_right_successor(tree_coordinate<T> c, tree_coordinate<T> r)
+	{
+		sink(c.ptr).right_successor_link = r.ptr;
+	}
+
+	template<typename T>
+	T& source(tree_coordinate<T> c)
+	{
+		return source(c.ptr).value;
+	}
+
 } // namespace eop

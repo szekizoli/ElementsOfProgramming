@@ -76,7 +76,14 @@ namespace eop {
 		typedef int type;
 	};
 
-#define DistanceType(T) typename T::difference_type
+	template<typename T>
+	struct distance_type
+	{
+		typedef typename T::difference_type type;
+	};
+
+#define DifferenceType(T) typename T::difference_type
+#define DistanceType(T) typename distance_type<T>::type
 
 // ValueType
 template<typename T>
@@ -108,4 +115,9 @@ struct value_type
 	ValueType(T) source(T x) {
 		return *x;
 	}
-}
+
+	// CoordinateType
+	template<typename T>
+		requires(Regular(T))
+	struct coordinate_type;
+} // namespace eop

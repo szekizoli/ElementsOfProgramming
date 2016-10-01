@@ -25,8 +25,16 @@
 //	typedef T type;
 //};
 
-template<typename T>
-T& sink(pointer(T) x) 
-{
-	return *x;
+namespace eop {
+	template<typename T>
+	T& sink(pointer(T) x)
+	{
+		return *x;
+	}
+
+	template<typename T>
+	struct distance_type<pointer(T)>
+	{
+		typedef typename int type;
+	};
 }
