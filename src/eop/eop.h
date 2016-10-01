@@ -1578,4 +1578,27 @@ namespace eop {
 		return proc;
 	}
 
+	template<typename C>
+		requires(BifurcateCoordinate(C))
+	DistanceType(C) traverse_step(C& c, visit& v) 
+	{
+		// Precondition: !root(c) || v != visit.post
+		switch (v)
+		{
+		case pre:
+			if (has_left_successor(c)) {
+				c = left_successor(c);           return 1;
+			}   v = in;                          return 0;
+		case in:
+			if (has_right_successor(c)) {
+				v = pre; c = right_successor(c); return 1;
+			}   v = post;                        return 0;
+		case post:
+			if (is_left_successor(c))
+				v = in;
+			c = predecessor(c);                  return -1;
+			break;
+		}
+	}
+
 } // namespace eop
