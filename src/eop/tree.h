@@ -46,7 +46,6 @@ namespace eop {
 	{
 		typedef typename T value_type;
 		typedef typename int weight_type;
-		typedef typename int difference_type;
 		pointer(stree_node<T>) ptr;
 		explicit stree_coordinate(pointer(stree_node<T>) ptr = 0) : ptr(ptr) {}
 	};
@@ -461,7 +460,7 @@ namespace eop {
 		requires(Regular(T))
 	void set_predecessor(tree_coordinate<T> c, tree_coordinate<T> p)
 	{
-		return sink(c.ptr).predecessor_link = p.ptr;
+		sink(c.ptr).predecessor_link = p.ptr;
 	}
 
 	template<typename T>
@@ -484,13 +483,13 @@ namespace eop {
 	{
 		typedef tree_coordinate<T> C;
 		tree_node_construct() {}
-		C operator()(T x, C l = C{ 0 }, C r = C{ 0 })
+		C operator()(T x, C l = C{ 0 }, C r = C{ 0 }, C p = C{ 0 })
 		{
 			++tree_node_count;
-			return C(new tree_node<T>(x, l.ptr, r.ptr));
+			return C(new tree_node<T>(x, l.ptr, r.ptr, p.ptr));
 		}
 		C operator()(C c)           { return (*this)(source(c), left_successor(c), 
-			                                                    right_successor(c)); }
+			                                                         right_successor(c)); }
 		C operator()(C c, C l, C r) { return (*this)(source(c), l, r); }
 	};
 
@@ -506,9 +505,48 @@ namespace eop {
 		}
 	};
 
+	template<typename C, typename Cons>
+	requires(EmptyLinkedBifurcateCoordinate(C) &&
+		TreeNodeConstructor(Cons) && NodeType(C) == NodeType(Cons))
+	C bidirectional_bifurcate_copy(C c)
+	{
+		Cons construct_node;
+		if (empty(c)) return c;              // Us      / Lee
+		C stack = construct_node(c, c, C()); // stack   / V'
+		C c_new = stack;                     // c\_new  / COPY
+		while (!empty(stack)) {              // empty() / null
+			c = left_successor(stack);       // c       / V
+			C l = left_successor(c);
+			C r = right_successor(c);
+			C top = stack;
+			if (!empty(l)) {
+				if (!empty(r)) {
+					r = construct_node(r, r, right_successor(stack));
+					stack = construct_node(l, l, r);
+				}
+				else {
+					r = C();
+					stack = construct_node(l, l, right_successor(stack));
+				}
+				l = stack;
+			}
+			else if (!empty(r)) {
+				stack = construct_node(r, r, right_successor(stack));
+				r = stack;
+			}
+			else
+				stack = right_successor(stack);
+			set_right_successor(top, r);
+			set_left_successor(top, l);
+			if (!empty(r)) set_predecessor(r, top);
+			if (!empty(l)) set_predecessor(l, top);
+		}
+		return c_new;
+	}
+
 	template<typename T>
 		requires(Regular(T))
-	struct tree 
+	struct tree
 	{
 		typedef tree_coordinate<T> C;
 		typedef tree_node_construct<T> Cons;
@@ -517,10 +555,14 @@ namespace eop {
 		tree(T value) : root(Cons{}(value)) {}
 		tree(T value, const tree& left, const tree& right) : root(Cons{}(value))
 		{
-			set_left_successor(root, bifurcate_copy<C, Cons>(left.root));
-			set_right_successor(root, bifurcate_copy<C, Cons>(right.root));
+			set_left_successor(root, bidirectional_bifurcate_copy<C, Cons>(left.root));
+			set_right_successor(root, bidirectional_bifurcate_copy<C, Cons>(right.root));
+			if (has_left_successor(root))
+				set_predecessor(left_successor(root), root);
+			if (has_right_successor(root))
+				set_predecessor(right_successor(root), root);
 		}
-		tree(const tree& x) : root(bifurcate_copy<C, Cons>(x.root)) {}
+		tree(const tree& x) : root(bidirectional_bifurcate_copy<C, Cons>(x.root)) {}
 		~tree()
 		{
 			bifurcate_erase(root, tree_node_destroy<T>{});
@@ -554,7 +596,7 @@ namespace eop {
 
 	template<typename T>
 		requires(Regular(T))
-	tree_coordinate<T> begin(const tree<T> x)
+	tree_coordinate<T> begin(const tree<T>& x)
 	{
 		return x.root;
 	}
