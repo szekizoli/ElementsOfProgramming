@@ -28,6 +28,7 @@
 #define requires(...)
 
 #define Arity(...)
+#define BidirectionalBifurcateCoordinate(...)
 #define BidirectionalIterator(...)
 #define BifurcateCoordinate(...)
 #define BinaryOperation(...)
