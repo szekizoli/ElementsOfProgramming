@@ -1581,6 +1581,22 @@ namespace eop {
 	template<typename C>
 		requires(BifurcateCoordinate(C))
 	DistanceType(C) traverse_step(C& c, visit& v) 
+	bool is_left_successor(C c)
+	{
+		// Precondition: has_predecessor(c)
+		return c == left_successor(predecessor(c));
+	}
+
+	template<typename C>
+		requires(BifurcateCoordinate(C))
+	bool is_right_successor(C c)
+	{
+		// Precondition: has_predecessor(c)
+		return c == right_successor(predecessor(c));
+	}
+
+	template<typename C>
+		requires(BifurcateCoordinate(C))
 	{
 		// Precondition: !root(c) || v != visit.post
 		switch (v)
