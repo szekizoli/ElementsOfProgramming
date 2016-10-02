@@ -121,5 +121,5 @@ struct value_type
 		requires(Regular(T))
 	struct coordinate_type;
 
-#define CoordinateType(T) typename coordinate_type<T>::type
+#define CoordinateType(T) typename eop::coordinate_type<T>::type
 } // namespace eop
