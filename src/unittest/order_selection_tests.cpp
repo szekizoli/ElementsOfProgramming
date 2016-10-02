@@ -886,6 +886,16 @@ namespace eoptest
 		EXPECT_EQ(0, eop::stree_node_count) << "Before construct test EOP";
 	}
 
+	TEST(coordinatestest, test_weight_recursive_tree)
+	{
+		EXPECT_EQ(0, eop::tree_node_count) << "Before construct test";
+		{
+			Tree x = create_tree();
+			EXPECT_EQ(5, eop::weight_recursive(begin(x)));
+		}
+		EXPECT_EQ(0, eop::tree_node_count) << "After construct test";
+	}
+
 	TEST(coordinatestest, test_height_recursive)
 	{
 		//    n_2
@@ -914,12 +924,22 @@ namespace eoptest
 
 	TEST(coordinatestest, test_height_recursive_stree)
 	{
-		EXPECT_EQ(0, eop::stree_node_count) << "Before construct test EOP";
+		EXPECT_EQ(0, eop::stree_node_count) << "Before construct test";
 		{
 			STree x = create_stree();
 			EXPECT_EQ(3, eop::height_recursive(begin(x)));
 		}
-		EXPECT_EQ(0, eop::stree_node_count) << "Before construct test EOP";
+		EXPECT_EQ(0, eop::stree_node_count) << "After construct test";
+	}
+
+	TEST(coordinatestest, test_height_recursive_tree)
+	{
+		EXPECT_EQ(0, eop::tree_node_count) << "Before construct test";
+		{
+			Tree x = create_tree();
+			EXPECT_EQ(3, eop::height_recursive(begin(x)));
+		}
+		EXPECT_EQ(0, eop::tree_node_count) << "After construct test";
 	}
 
 	struct traverse_result 
@@ -1018,6 +1038,9 @@ namespace eoptest
 
 		Node n1{ 1, addressof(n0) };
 		Coordinate c1{ addressof(n1) };
+		eop::set_predecessor(c0, c1);
+		ASSERT_TRUE(eop::has_predecessor(c0));
+		EXPECT_EQ(c1, eop::predecessor(c0));
 		ASSERT_TRUE(eop::has_left_successor(c1));
 		EXPECT_EQ(c0, eop::left_successor(c1));
 		EXPECT_FALSE(eop::has_right_successor(c1));
@@ -1062,7 +1085,42 @@ namespace eoptest
 			Tree t = create_tree();
 			EXPECT_EQ(5, eop::tree_node_count);
 			EXPECT_FALSE(eop::empty(t));
+			auto root = begin(t);                   // root
+			EXPECT_FALSE(eop::has_predecessor(root));
+
+			ASSERT_TRUE(eop::has_left_successor(root));
+			auto l = eop::left_successor(root);     // left successor of root
+			ASSERT_TRUE(eop::has_predecessor(l));
+			EXPECT_EQ(root, eop::predecessor(l));
+			EXPECT_TRUE(eop::is_left_successor(l));
+			EXPECT_FALSE(eop::is_right_successor(l));
+
+			ASSERT_TRUE(eop::has_right_successor(l));
+			auto l_r = eop::right_successor(l);  // right successor of the left successor of root
+			ASSERT_TRUE(eop::has_predecessor(l_r));
+			EXPECT_EQ(l, eop::predecessor(l_r));
+			EXPECT_FALSE(eop::is_left_successor(l_r));
+			EXPECT_TRUE(eop::is_right_successor(l_r));
+
+			ASSERT_TRUE(eop::has_right_successor(root));
+			auto r = eop::right_successor(root);    // right successor of root
+			ASSERT_TRUE(eop::has_predecessor(r));
+			EXPECT_EQ(root, eop::predecessor(r));
+			EXPECT_FALSE(eop::is_left_successor(r));
+			EXPECT_TRUE(eop::is_right_successor(r));
+
+			ASSERT_TRUE(eop::has_left_successor(r));
+			auto r_l = eop::left_successor(r);   // left successor of the right successor of root
+			ASSERT_TRUE(eop::has_predecessor(r_l));
+			EXPECT_EQ(r, eop::predecessor(r_l));
+			EXPECT_TRUE(eop::is_left_successor(r_l));
+			EXPECT_FALSE(eop::is_right_successor(r_l));
 		}
 		EXPECT_EQ(0, eop::tree_node_count);
+	}
+
+	TEST(tree_tests, traverse_step)
+	{
+
 	}
 }
