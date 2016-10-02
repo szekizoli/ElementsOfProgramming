@@ -1541,10 +1541,10 @@ namespace eop {
 
 	template<typename C>
 		requires(BifurcateCoordinate(C))
-	DistanceType(C) height_recursive(C c) 
+	WeightType(C) height_recursive(C c) 
 	{
 		// Precondition: tree(c)
-		typedef DistanceType(C) N;
+		typedef WeightType(C) N;
 		if (empty(c)) return N{ 0 };
 		N l{ 0 };
 		N r{ 0 };
@@ -1580,7 +1580,6 @@ namespace eop {
 
 	template<typename C>
 		requires(BifurcateCoordinate(C))
-	DistanceType(C) traverse_step(C& c, visit& v) 
 	bool is_left_successor(C c)
 	{
 		// Precondition: has_predecessor(c)
@@ -1597,6 +1596,7 @@ namespace eop {
 
 	template<typename C>
 		requires(BifurcateCoordinate(C))
+	WeightType(C) traverse_step(C& c, visit& v) 
 	{
 		// Precondition: !root(c) || v != visit.post
 		switch (v)
