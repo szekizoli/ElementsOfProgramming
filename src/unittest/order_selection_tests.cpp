@@ -1,6 +1,7 @@
 #include <iostream>
 #include <numeric>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "gtest/gtest.h"
@@ -9,10 +10,13 @@
 #include "intrinsics.h"
 #include "pointers.h"
 #include "tree.h"
+#include "type_functions.h"
 
 namespace eoptest
 {
 	using std::vector;
+	using std::pair;
+	using std::swap;
 
 	int less(int a, int b) {
 		return a < b;
@@ -1119,8 +1123,64 @@ namespace eoptest
 		EXPECT_EQ(0, eop::tree_node_count);
 	}
 
-	TEST(tree_tests, traverse_step)
+	TEST(tree_tests, test_traverse_step)
 	{
+		Tree t = create_tree();
+		CoordinateType(Tree) c = begin(t);
+		eop::visit v = eop::visit::pre;
+		vector<std::pair<CoordinateType(Tree), eop::visit>> result;
+		result.push_back(std::make_pair(c, v));
+		do {
+			eop::traverse_step(c, v);
+			result.push_back(std::make_pair(c, v));
+		} while (c != begin(t) || v != eop::visit::post);
+		EXPECT_EQ(15, result.size());
+	}
 
+	TEST(tree_tests, test_reachable)
+	{
+		typedef eop::tree_coordinate<int> C;
+		C x{};
+		C y{};
+		EXPECT_FALSE(eop::reachable(x, y));
+		Tree t = create_tree();
+		x = begin(t);
+		EXPECT_FALSE(eop::reachable(x, y));
+		y = x;
+		EXPECT_TRUE(eop::reachable(x, y));
+		y = left_successor(x);
+		EXPECT_TRUE(eop::reachable(x, y));
+		y = right_successor(left_successor(x));
+		EXPECT_TRUE(eop::reachable(x, y));
+		y = right_successor(x);
+		EXPECT_TRUE(eop::reachable(x, y));
+		y = left_successor(right_successor(x));
+		EXPECT_TRUE(eop::reachable(x, y));
+	}
+
+	TEST(tree_tests, test_weight)
+	{
+		typedef eop::tree_coordinate<int> C;
+		C x{};
+		EXPECT_EQ(0, eop::weight(x));
+		Tree t{ 42 };
+		x = begin(t);
+		EXPECT_EQ(1, eop::weight(x));
+		t = create_tree();
+		x = begin(t);
+		EXPECT_EQ(5, eop::weight(x));
+	}
+
+	TEST(tree_tests, test_height)
+	{
+		typedef eop::tree_coordinate<int> C;
+		C x{};
+		EXPECT_EQ(0, eop::height(x));
+		Tree t{ 42 };
+		x = begin(t);
+		EXPECT_EQ(1, eop::height(x));
+		t = create_tree();
+		x = begin(t);
+		EXPECT_EQ(3, eop::height(x));
 	}
 }

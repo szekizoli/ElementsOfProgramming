@@ -1614,4 +1614,54 @@ namespace eop {
 		}
 	}
 
+	template<typename C>
+		requires(BidirectionalBifurcateCoordinate(C))
+	bool reachable(C x, C y)
+	{
+		// Precondition: tree(x)
+		if (empty(x)) return false;
+		C root = x;
+		visit v = visit::pre;
+		do {
+			if (x == y) return true;
+			traverse_step(x, v);
+		} while (x != root || v != visit::post);
+		return false;
+	}
+
+	template<typename C>
+		requires(BidirectionalBifurcateCoordinate(C))
+	WeightType(C) weight(C c)
+	{
+		// Precondition: tree(c)
+		typedef WeightType(C) N;
+		if (empty(c)) return N{ 0 };
+		C root = c;
+		visit v = visit::pre;
+		N n{ 1 }; // Invarian: n counts the number of pre visits so far
+		do {
+			traverse_step(c, v);
+			if (v == visit::pre) n = successor(n);
+		} while (c != root || v != visit::post);
+		return n;
+	}
+
+	template<typename C>
+		requires(BidirectionalBifurcateCoordinate(C))
+	WeightType(C) height(C c)
+	{
+		//Precondition: tree(c)
+		typedef WeightType(C) N;
+		if (empty(c)) return N{ 0 };
+		C root = c;
+		visit v = visit::pre;
+		N n{ 1 }; // Invariant: n is the height of the current pre visit
+		N m{ 1 }; // Invariant: m is the max of height of pre visits so far
+		do {
+			n = (n - N{1 }) + N{ traverse_step(c, v) + 1 };
+			if (m < n) m = n;
+		} while (c != root || v != visit::post);
+		return m;
+	}
+
 } // namespace eop
