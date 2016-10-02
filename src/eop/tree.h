@@ -16,8 +16,6 @@
 
 #pragma once
 
-#include <stack>
-
 #include "intrinsics.h"
 #include "pointers.h"
 #include "type_functions.h"
@@ -395,6 +393,13 @@ namespace eop {
 
 	template<typename T>
 		requires(Regular(T))
+	bool operator!=(const tree_coordinate<T>& x, const tree_coordinate<T>& y)
+	{
+		return !(x.ptr == y.ptr);
+	}
+
+	template<typename T>
+		requires(Regular(T))
 	tree_node<T>& sink(pointer(tree_node<T>) ptr)
 	{
 		return *ptr;
@@ -569,7 +574,7 @@ namespace eop {
 		}
 		void operator=(tree&& t)
 		{
-			swap(root, t.root);
+			std::swap(root, t.root);
 		}
 	};
 
