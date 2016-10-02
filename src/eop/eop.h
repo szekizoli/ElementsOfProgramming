@@ -13,9 +13,6 @@
 
 #pragma once
 
-#include <tuple>
-#include <utility>
-
 #include "intrinsics.h"
 #include "pointers.h"
 #include "type_functions.h"
