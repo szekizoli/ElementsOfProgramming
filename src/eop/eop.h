@@ -1664,4 +1664,23 @@ namespace eop {
 		return m;
 	}
 
+	template<typename C, typename Proc>
+	requires(BidirectionalBifurcateCoordinate(C) &&
+		Procedure(Proc) && Arity(Proc) == 2 &&
+		InputType(Proc, 0) == eop::visit && InputType(Proc, 1) == C)
+	Proc traverse(C c, Proc proc)
+	{
+		// Precondition: tree(c)
+		if (empty(c)) return proc;
+		C root = c;
+		visit v = visit::pre;
+		proc(v, c);
+		do {
+			traverse_step(c, v);
+			proc(v, c);
+		} while (c != root || v != visit::post);
+		return proc;
+	}
+
+
 } // namespace eop

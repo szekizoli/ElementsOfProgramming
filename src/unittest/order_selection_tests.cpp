@@ -849,9 +849,9 @@ namespace eoptest
 	}
 
 	Tree create_tree() {
-		return Tree{ 0,
-			Tree{ 11 , Tree{}, Tree{ 13 } },
-			Tree{ 12 , Tree{ 14 }, Tree{} } };
+		return Tree{ 3,
+			Tree{ 1 , Tree{}, Tree{ 4 } },
+			Tree{ 2 , Tree{ 5 }, Tree{} } };
 	}
 
 	TEST(coordinatestest, test_weight_recursive_stree_coordinate)
@@ -946,13 +946,14 @@ namespace eoptest
 		EXPECT_EQ(0, eop::tree_node_count) << "After construct test";
 	}
 
-	struct traverse_result 
+	template<typename C>
+	requires(BifurcateCoordinate(C))
+	struct traverse_result
 	{
-		typedef eop::stree_coordinate<int> Coordinate;
 		vector<int> preorder;
 		vector<int> inorder;
 		vector<int> postorder;
-		void operator()(eop::visit v, Coordinate c)
+		void operator()(eop::visit v, C c)
 		{
 			if (v == eop::visit::pre)
 				preorder.push_back(sink(c.ptr).value);
@@ -979,7 +980,7 @@ namespace eoptest
 		Node n_1{ 2, addressof(n_4), 0 };
 		Node n_2{ 3 , &n_0 , &n_1 };
 		Coordinate c{ &n_2 };
-		traverse_result r = eop::traverse_nonempty(c, traverse_result());
+		traverse_result<Coordinate> r = eop::traverse_nonempty(c, traverse_result<Coordinate>());
 		vector<int> pre_expected{ 3, 1, 4, 2, 5 };
 		EXPECT_EQ(pre_expected, r.preorder) << "pre order not as expected";
 		vector<int> in_expected{ 1, 4, 3, 5, 2 };
@@ -1182,5 +1183,18 @@ namespace eoptest
 		t = create_tree();
 		x = begin(t);
 		EXPECT_EQ(3, eop::height(x));
+	}
+
+	TEST(tree_tests, test_traverse)
+	{
+		Tree t = create_tree();
+		CoordinateType(Tree) c = begin(t);
+		traverse_result<CoordinateType(Tree)> r = eop::traverse(c, traverse_result<CoordinateType(Tree)>());
+		vector<int> pre_expected{ 3, 1, 4, 2, 5 };
+		EXPECT_EQ(pre_expected, r.preorder) << "pre order not as expected";
+		vector<int> in_expected{ 1, 4, 3, 5, 2 };
+		EXPECT_EQ(in_expected, r.inorder) << "in order not as expected";
+		vector<int> post_expected{ 4, 1, 5, 2, 3 };
+		EXPECT_EQ(post_expected, r.postorder) << "post order not as expected";
 	}
 }
