@@ -1598,18 +1598,18 @@ namespace eop {
 		// Precondition: !root(c) || v != visit.post
 		switch (v)
 		{
-		case pre:
+		case visit::pre:
 			if (has_left_successor(c)) {
-				c = left_successor(c);           return 1;
-			}   v = in;                          return 0;
-		case in:
+				c = left_successor(c);                  return 1;
+			}   v = visit::in;                          return 0;
+		case visit::in:
 			if (has_right_successor(c)) {
-				v = pre; c = right_successor(c); return 1;
-			}   v = post;                        return 0;
-		case post:
+				v = visit::pre; c = right_successor(c); return 1;
+			}   v = visit::post;                        return 0;
+		case visit::post:
 			if (is_left_successor(c))
-				v = in;
-			c = predecessor(c);                  return -1;
+				v = visit::in;
+			c = predecessor(c);                         return -1;
 			break;
 		}
 	}
