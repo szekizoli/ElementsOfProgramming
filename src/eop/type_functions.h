@@ -27,40 +27,54 @@ namespace eop {
 
 	// Binary Operation
 	template <typename T>
-	requires(Regular(T))
-		struct input_type<T(*) (T x, T y), 0> {
+		requires(Regular(T))
+	struct input_type<T(*) (T x, T y), 0> 
+	{
 		typedef T type;
 	};
 
 	template <typename T>
-	requires(Regular(T))
-		struct input_type<T(*) (const T& x, const T& y), 0> {
+		requires(Regular(T))
+	struct input_type<T(*) (const T& x, const T& y), 0> 
+	{
 		typedef T type;
 	};
 
 	// Binary accumulation
 	template <typename T>
-	requires(Regular(T))
-		struct input_type<void(*) (T& x, T y), 0> {
+		requires(Regular(T))
+	struct input_type<void(*) (T& x, T y), 0>
+	{
+		typedef T type;
+	};
+
+	// Unary Action
+	template <typename T>
+		requires(Regular(T))
+	struct input_type<void(*) (T& x), 0>
+	{
 		typedef T type;
 	};
 
 	// Unary Function
 	template <typename T>
-	requires(Regular(T))
-		struct input_type<T(*) (T x), 0> {
+		requires(Regular(T))
+	struct input_type<T(*) (T x), 0>
+	{
 		typedef T type;
 	};
 
 	template <typename T>
-	requires(Regular(T))
-		struct input_type<T(*) (const T& x), 0> {
+		requires(Regular(T))
+	struct input_type<T(*) (const T& x), 0>
+	{
 		typedef T type;
 	};
 
 	template <typename T>
-	requires(Regular(T))
-		struct input_type<T, 0> {
+		requires(Regular(T))
+	struct input_type<T, 0>
+	{
 		typedef typename T::first_argument_type type;
 	};
 
@@ -72,7 +86,8 @@ namespace eop {
 		struct distance_type;
 
 	template<>
-	struct distance_type<int> {
+	struct distance_type<int> 
+	{
 		typedef int type;
 	};
 
