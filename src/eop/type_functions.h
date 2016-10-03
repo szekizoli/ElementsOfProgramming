@@ -17,6 +17,32 @@
 
 namespace eop {
 
+	struct action_trait {};
+	struct transformation_trait {};
+
+	template<typename T>
+	struct function_trait;
+
+#define FunctionTrait(T) function_trait<T>::trait
+
+	template<typename T>
+	struct function_trait<void(*)(T&x)>
+	{
+		typedef action_trait trait;
+	};
+
+	template<typename T>
+	struct function_trait<T(*)(T x)>
+	{
+		typedef transformation_trait trait;
+	};
+
+	template<typename T>
+	struct function_trait<T(*)(const T&x)>
+	{
+		typedef transformation_trait trait;
+	};
+
 	template< typename T, int i >
 		requires(FunctionalProcedure(T))
 	struct input_type;
