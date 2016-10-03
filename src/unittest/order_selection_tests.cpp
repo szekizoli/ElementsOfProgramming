@@ -22,6 +22,11 @@ namespace eoptest
 		return a < b;
 	}
 
+	TEST(orbit_tests, test_collision_point)
+	{
+		// todo implement a linked structure;
+	}
+
 	template<typename T>
 		requires(Numeric(T))
 	std::string to_string(const vector<T> & v) {
@@ -1196,5 +1201,36 @@ namespace eoptest
 		EXPECT_EQ(in_expected, r.inorder) << "in order not as expected";
 		vector<int> post_expected{ 4, 1, 5, 2, 3 };
 		EXPECT_EQ(post_expected, r.postorder) << "post order not as expected";
+	}
+
+	TEST(tree_tests, test_is_dag_false)
+	{
+		Tree t = create_tree();
+		EXPECT_EQ(false, eop::is_dag(begin(t)));
+		EXPECT_EQ(false, eop::is_dag_action(begin(t)));
+	}
+
+	TEST(tree_tests, test_is_dag_true)
+	{
+		//    n_2 _____
+		//   /   \     \
+		// n_0   n_1   |
+		//  \     \____/
+		//  n_3 
+		typedef eop::tree_node<int> Node;
+		typedef eop::tree_coordinate<int> Coordinate;
+		Node n_3{ 4 };  Coordinate c_3{ addressof(n_3) };
+		Node n_0{ 1 };  Coordinate c_0{ addressof(n_0) };
+		eop::set_right_successor(c_0, c_3);
+		Node n_1{ 2 }; Coordinate c_1{ addressof(n_1) };
+		Node n_2{ 3 , &n_0 , &n_1 }; Coordinate c_2{ &n_2 };
+		eop::set_right_successor(c_1, c_2);
+		eop::set_predecessor(c_3, c_0);
+		eop::set_predecessor(c_2, c_1);
+		eop::set_predecessor(c_1, c_2);
+		eop::set_predecessor(c_0, c_2);
+		
+		EXPECT_EQ(true, eop::is_dag(c_2));
+		EXPECT_EQ(true, eop::is_dag_action(c_2));
 	}
 }

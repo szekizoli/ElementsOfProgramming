@@ -1722,5 +1722,53 @@ namespace eop {
 		return proc;
 	}
 
+	// Exercise 7.2 : use traverse_step and the procedures of Chapter 2
+	//                to determine whether the descendants of a bidirectional
+	//                bifurcate coordinate form a DAG
+
+	template<typename C>
+		requires(BidirectionalBifurcateCoordinate(C))
+	std::pair<C, visit> traverse_step_pair_transformation(const std::pair<C, visit>& p)
+	{
+		C c = p.first;
+		visit v = p.second;
+		traverse_step(c, v);
+		return std::make_pair(c, v);
+	}
+
+	template<typename C>
+		requires(BidirectionalBifurcateCoordinate(C))
+	void traverse_step_pair_action(std::pair<C, visit>& p)
+	{
+		traverse_step(p.first, p.second);
+	}
+
+	template<typename C>
+		requires(BidirectionalBifurcateCoordinate(C))
+	struct termminating_state 	
+	{
+		const C root;
+		termminating_state(C root = C{ 0 }) : root(root) {}
+		bool operator()(const std::pair<C, visit>& p)
+		{
+			return p.first != root || p.second != visit::post;
+		}
+	};
+
+	template<typename C>
+		requires(BidirectionalBifurcateCoordinate(C))
+	bool is_dag(C c)	
+	{
+		// Precondition: tree(c)
+		return !terminating(std::make_pair(c, visit::pre), traverse_step_pair_transformation<C>, termminating_state<C>(c));
+	}
+
+	template<typename C>
+		requires(BidirectionalBifurcateCoordinate(C))
+	bool is_dag_action(C c)
+	{
+		// Precondition: tree(c)
+		return !terminating_action(std::make_pair(c, visit::pre), traverse_step_pair_action<C>, termminating_state<C>(c));
+	}
 
 } // namespace eop
