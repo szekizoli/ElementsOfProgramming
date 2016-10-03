@@ -81,6 +81,46 @@ namespace eop {
 		// Postcondition : return value is terminal point or collision point
 	}
 
+	template<typename A, typename P>
+	requires(Action(A) && UnaryPredicate(P) &&
+		Domain(A) == Domain(P))
+	Domain(A) collision_point_action(const Domain(A)& x, A a, P p) {
+		// Precondition : p(x) <=> f(x) is defined
+		if (!p(x)) return x;
+		Domain(A) slow = x;             // slow = f^0(x)
+		Domain(A) fast = x; a(fast);    // fast = f^1(
+										// n <- 0 (completed operations)
+		while (fast != slow) {          // slow = f^n(x) ? fast = f^(2n+1)(x)
+			a(slow);                    // slow = f^(n+1)(x) ? fast = f^(2n+1)(x)
+			if (!p(fast)) return fast;
+			a(fast);                    // slow = f^(n+1)(x) ? fast = f^(2n+2)(x)
+			if (!p(fast)) return fast;
+			a(fast);                    // slow = f^(n+1)(x) ? fast = f^(2n+3)(x)
+		}                               // n <- n + 1
+		return fast;
+		// Postcondition : return value is terminal point or collision point
+	}
+
+	template<typename F, typename P>
+	requires(Transformation(F) && UnaryPredicate(P) &&
+		Domain(F) == Domain(P))
+	bool terminating(const Domain(F)& x, F f, P p) 
+	{
+		// Precondition: p(x) <=> f(x) is defined
+		return !p(collision_point(x, f, p));
+		// Postcondition: return true if the orbit is terminating
+	}
+
+	template<typename A, typename P>
+	requires(Action(A) && UnaryPredicate(P) &&
+		Domain(A) == Domain(P))
+	bool terminating_action(const Domain(A)& x, A a, P p)
+	{
+		// Precondition: p(x) <=> f(x) is defined
+		return !p(collision_point_action(x, a, p));
+		// Postcondition: return true if the orbit is terminating
+	}
+
 	bool less_than_ten(int x) {
 		return x < 10;
 	}
