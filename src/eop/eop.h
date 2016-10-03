@@ -146,6 +146,7 @@ namespace eop {
 	requires(Transformation(F) && UnaryPredicate(P) &&
 		Domain(F) == Domain(P))
 	bool circular(const Domain(F)& x, F f, P p) {
+		Domain(F) y = collision_point(x, f, p, FunctionTrait(F){});
 		return p(y) && x == f(y);
 	}
 
@@ -175,6 +176,7 @@ namespace eop {
 		Domain(F) == Domain(P))
 	Domain(F) connection_point(const Domain(F)& x, F f, P p) {
 		// Precondition : p(x) <=> f(x) is defined
+		Domain(F) y = collision_point(x, f, p, FunctionTrait(F){});
 		if (!p(y)) return y;
 		return convergent_point(x, f(y), f);
 	}
