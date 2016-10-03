@@ -36,8 +36,8 @@ namespace eop {
 	// Chapter 2 - Transformations and Their Orbits
 
 	template<typename F, typename N>
-	requires(Transformation(F) && Integer(N))
-	Domain(F) power_unary(Domain(F) x, N n, F f) {
+		requires(Transformation(F) && Integer(N))
+	Domain(F) power_unary(Domain(F) x, N n, F f, transformation_trait) {
 		// Precondition: n ≥ 0 ∧ (∀i ∈ N) 0 < i ≤ n => f^i(x) is defined
 		while (n != N(0)) {
 			n = n - N(1);
@@ -46,13 +46,33 @@ namespace eop {
 		return x;
 	}
 
+	template<typename F, typename N>
+		requires(Transformation(F) && Integer(N))
+	Domain(F) power_unary(Domain(F) x, N n, F f, action_trait)
+	{
+		// Precondition: n ≥ 0 ∧ (∀i ∈ N) 0 < i ≤ n => f^i(x) is defined
+		while (n != N(0)) {
+			n = n - N(1);
+			f(x);
+		}
+		return x;
+	}
+
+	template<typename F, typename N>
+	requires(Transformation(F) && Integer(N))
+	Domain(F) power_unary(Domain(F) x, N n, F f) 
+	{
+		// Precondition: n ≥ 0 ∧ (∀i ∈ N) 0 < i ≤ n => f^i(x) is defined
+		return power_unary(x, n, f, FunctionTrait(F){});
+	}
+
 	int increment(const int& x) {
 		return x + 1;
 	}
 
 	template<typename F>
-	requires(Transformation(F))
-	DistanceType(F) distance(Domain(F) x, Domain(F) y, F f) {
+		requires(Transformation(F))
+	DistanceType(F) distance(Domain(F) x, Domain(F) y, F f, transformation_trait) {
 		// Precondition: y is reachable from x using f
 		typedef DistanceType(F) N;
 		N n(0);
@@ -61,6 +81,26 @@ namespace eop {
 			n = n + N(1);
 		}
 		return n;
+	}
+
+	template<typename F>
+		requires(Transformation(F))
+	DistanceType(F) distance(Domain(F) x, Domain(F) y, F f, action_trait) {
+		// Precondition: y is reachable from x using f
+		typedef DistanceType(F) N;
+		N n(0);
+		while (x != y) {
+			f(x);
+			n = n + N(1);
+		}
+		return n;
+	}
+
+	template<typename F>
+		requires(Transformation(F))
+	DistanceType(F) distance(Domain(F) x, Domain(F) y, F f) {
+		// Precondition: y is reachable from x using f
+		return distance(x, y, f, FunctionTrait(F){});
 	}
 
 	template <typename F, typename P>
