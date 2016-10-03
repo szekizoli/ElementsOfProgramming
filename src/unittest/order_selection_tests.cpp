@@ -1207,7 +1207,7 @@ namespace eoptest
 	{
 		Tree t = create_tree();
 		EXPECT_EQ(false, eop::is_dag(begin(t)));
-		EXPECT_EQ(false, eop::is_dag_action(begin(t)));
+		EXPECT_EQ(false, eop::is_dag(begin(t), eop::transformation_trait{}));
 	}
 
 	TEST(tree_tests, test_is_dag_true)
@@ -1231,6 +1231,6 @@ namespace eoptest
 		eop::set_predecessor(c_0, c_2);
 		
 		EXPECT_EQ(true, eop::is_dag(c_2));
-		EXPECT_EQ(true, eop::is_dag_action(c_2));
+		EXPECT_EQ(true, eop::is_dag(c_2, eop::transformation_trait{}));
 	}
 }

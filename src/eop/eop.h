@@ -13,6 +13,8 @@
 
 #pragma once
 
+#include <tuple>
+
 #include "intrinsics.h"
 #include "pointers.h"
 #include "type_functions.h"
@@ -61,10 +63,10 @@ namespace eop {
 		return n;
 	}
 
-	template<typename F, typename P>
+	template <typename F, typename P>
 	requires(Transformation(F) && UnaryPredicate(P) &&
 		Domain(F) == Domain(P))
-	Domain(F) collision_point(const Domain(F)& x, F f, P p) {
+	Domain(F) collision_point(const Domain(F)& x, F f, P p, transformation_trait) {
 		// Precondition : p(x) <=> f(x) is defined
 		if (!p(x)) return x;
 		Domain(F) slow = x;             // slow = f^0(x)
@@ -81,14 +83,14 @@ namespace eop {
 		// Postcondition : return value is terminal point or collision point
 	}
 
-	template<typename A, typename P>
-	requires(Action(A) && UnaryPredicate(P) &&
-		Domain(A) == Domain(P))
-	Domain(A) collision_point_action(const Domain(A)& x, A a, P p) {
+	template<typename F, typename P>
+	requires(Action(F) && UnaryPredicate(P) &&
+		Domain(F) == Domain(P))
+	Domain(F) collision_point(const Domain(F)& x, F a, P p, action_trait) {
 		// Precondition : p(x) <=> f(x) is defined
 		if (!p(x)) return x;
-		Domain(A) slow = x;             // slow = f^0(x)
-		Domain(A) fast = x; a(fast);    // fast = f^1(
+		Domain(F) slow = x;             // slow = f^0(x)
+		Domain(F) fast = x; a(fast);    // fast = f^1(
 										// n <- 0 (completed operations)
 		while (fast != slow) {          // slow = f^n(x) ? fast = f^(2n+1)(x)
 			a(slow);                    // slow = f^(n+1)(x) ? fast = f^(2n+1)(x)
@@ -107,17 +109,7 @@ namespace eop {
 	bool terminating(const Domain(F)& x, F f, P p) 
 	{
 		// Precondition: p(x) <=> f(x) is defined
-		return !p(collision_point(x, f, p));
-		// Postcondition: return true if the orbit is terminating
-	}
-
-	template<typename A, typename P>
-	requires(Action(A) && UnaryPredicate(P) &&
-		Domain(A) == Domain(P))
-	bool terminating_action(const Domain(A)& x, A a, P p)
-	{
-		// Precondition: p(x) <=> f(x) is defined
-		return !p(collision_point_action(x, a, p));
+		return !p(collision_point(x, f, p, FunctionTrait(F){}));
 		// Postcondition: return true if the orbit is terminating
 	}
 
@@ -154,7 +146,6 @@ namespace eop {
 	requires(Transformation(F) && UnaryPredicate(P) &&
 		Domain(F) == Domain(P))
 	bool circular(const Domain(F)& x, F f, P p) {
-		Domain(F) y = collision_point(x, f, p);
 		return p(y) && x == f(y);
 	}
 
@@ -184,13 +175,12 @@ namespace eop {
 		Domain(F) == Domain(P))
 	Domain(F) connection_point(const Domain(F)& x, F f, P p) {
 		// Precondition : p(x) <=> f(x) is defined
-		Domain(F) y = collision_point(x, f, p);
 		if (!p(y)) return y;
 		return convergent_point(x, f(y), f);
 	}
 
 	template<typename F>
-	requires(Transformation(F))
+		requires(Transformation(F))
 	std::tuple<DistanceType(F), DistanceType(F), Domain(F)>
 	orbit_structure_nonterminating_orbit(const Domain(F)& x, F f) {
 		typedef DistanceType(F) N;
@@ -1726,49 +1716,67 @@ namespace eop {
 	//                to determine whether the descendants of a bidirectional
 	//                bifurcate coordinate form a DAG
 
-	template<typename C>
-		requires(BidirectionalBifurcateCoordinate(C))
-	std::pair<C, visit> traverse_step_pair_transformation(const std::pair<C, visit>& p)
-	{
-		C c = p.first;
-		visit v = p.second;
-		traverse_step(c, v);
-		return std::make_pair(c, v);
-	}
+	template<typename C, typename T>
+		requires(BidirectionalBifurcateCoordinate(C) && FunctionTrait(T))
+	struct traverse_step_pair;
 
 	template<typename C>
 		requires(BidirectionalBifurcateCoordinate(C))
-	void traverse_step_pair_action(std::pair<C, visit>& p)
+	struct traverse_step_pair<C, transformation_trait>
 	{
-		traverse_step(p.first, p.second);
-	}
+		std::pair<C, visit> operator()(const std::pair<C, visit>& p)
+		{
+			C c = p.first;
+			visit v = p.second;
+			traverse_step(c, v);
+			return std::make_pair(c, v);
+		}
+	};
 
 	template<typename C>
 		requires(BidirectionalBifurcateCoordinate(C))
-	struct termminating_state 	
+	struct traverse_step_pair<C, action_trait>
+	{
+		void operator()(std::pair<C, visit>& p)
+		{
+			traverse_step(p.first, p.second);
+		}
+	};
+
+	template<typename C, typename Trait>
+		requires(BidirectionalBifurcateCoordinate(C))
+	struct input_type<eop::traverse_step_pair<C, Trait>, 0>
+	{
+		typedef std::pair<C, visit> type;
+	};
+
+	template<typename C, typename Trait>
+		requires(BidirectionalBifurcateCoordinate(C))
+	struct function_trait<eop::traverse_step_pair<C, Trait>>
+	{
+		typedef Trait trait;
+	};
+
+	template<typename C>
+		requires(BidirectionalBifurcateCoordinate(C))
+	struct bidirectional_bifurcate_coordinate_termination_condition 	
 	{
 		const C root;
-		termminating_state(C root = C{ 0 }) : root(root) {}
+		bidirectional_bifurcate_coordinate_termination_condition(C root = C{ 0 }) : root(root) {}
 		bool operator()(const std::pair<C, visit>& p)
 		{
 			return p.first != root || p.second != visit::post;
 		}
 	};
 
-	template<typename C>
-		requires(BidirectionalBifurcateCoordinate(C))
-	bool is_dag(C c)	
+	template<typename C, typename Trait = action_trait>
+		requires(BidirectionalBifurcateCoordinate(C) && FunctionTrait(Trait))
+	bool is_dag(C c, Trait trait = Trait{})
 	{
 		// Precondition: tree(c)
-		return !terminating(std::make_pair(c, visit::pre), traverse_step_pair_transformation<C>, termminating_state<C>(c));
-	}
-
-	template<typename C>
-		requires(BidirectionalBifurcateCoordinate(C))
-	bool is_dag_action(C c)
-	{
-		// Precondition: tree(c)
-		return !terminating_action(std::make_pair(c, visit::pre), traverse_step_pair_action<C>, termminating_state<C>(c));
+		return !terminating(std::make_pair(c, visit::pre),
+			                traverse_step_pair<C, Trait> {},
+							bidirectional_bifurcate_coordinate_termination_condition<C>{c});
 	}
 
 } // namespace eop
