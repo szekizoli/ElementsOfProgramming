@@ -521,10 +521,11 @@ namespace eop {
 
 	// special case procedures
 	// signed integer
+
 	template<typename I>
-		requires(Integer(I))
+		requires(Iterator(I))
 	I successor(I n) {
-		return ++n;
+		return n + 1;
 	}
 
 	template<typename I>
@@ -855,7 +856,8 @@ namespace eop {
 	// Chapter 6 - Iterators
 
 	template<typename T>
-	struct is_Even {
+	struct is_Even 
+	{
 		typedef T first_argument_type;
 		typedef bool result_type;
 		typedef T input_type;
@@ -865,7 +867,8 @@ namespace eop {
 	};
 
 	template<typename T>
-	struct is_Odd {
+	struct is_Odd 
+	{
 		typedef T first_argument_type;
 		typedef bool result_type;
 		typedef T input_type;
@@ -875,15 +878,17 @@ namespace eop {
 	};
 
 	template<typename I>
-	requires(Iterator(I))
-		I increment(I& x) {
+		requires(Iterator(I))
+	I increment(I& x) 
+	{
 		// Precondition: successor(x) is defined
 		return successor(x);
 	}
 
 	template<typename I>
-	requires(Iterator(I))
-		I operator+(I f, DistanceType(I) n) {
+		requires(Iterator(I))
+	I operator+(I f, DistanceType(I) n) 
+	{
 		// Precondition: n >= 0 & weak_range(f, n)
 		while (!zero(n)) {
 			n = predecessor(n);
@@ -894,7 +899,8 @@ namespace eop {
 
 	template<typename I>
 		requires(Iterator(I))
-	DistanceType(I) operator-(I l, I f) {
+	DistanceType(I) operator-(I l, I f) 
+	{
 		// Precondition: bounded_range(f, l)
 		DistanceType(I) n(0);
 		while (f != l) {
@@ -907,7 +913,8 @@ namespace eop {
 	template<typename I, typename Proc>
 		requires(Readable(I) && Iterator(I) && Procedure(Proc) && Arity(Proc) == 1 && 
 			ValueType(I) == InputType(Proc, 0))
-	Proc for_each(I f, I l, Proc proc) {
+	Proc for_each(I f, I l, Proc proc) 
+	{
 		// Precondition: readable_bounded_range(f, l)
 		while (f != l) {
 			proc(source(f));
@@ -918,7 +925,8 @@ namespace eop {
 
 	template<typename I>
 		requires(Readable(I) && Iterator(I))
-	I find(I f, I l, const ValueType(I)& x) {
+	I find(I f, I l, const ValueType(I)& x) 
+	{
 		// Precondition: readable_bounded_range(f, l)
 		while (f != l && source(f) != x) f = successor(f);
 		return f;
