@@ -28,14 +28,14 @@ namespace eop {
 	{
 		typedef typename T value_type;
 		typedef pointer(stree_node<T>) Link;
-		T value;
+		const T value;
 		Link left_successor_link;
 		Link right_successor_link;
-		stree_node() : left_successor_link(0), right_successor_link(0) {}
-		stree_node(T value, Link l = 0, Link r = 0) :
+		constexpr stree_node() : left_successor_link(0), right_successor_link(0) {}
+		constexpr stree_node(T value, Link l = 0, Link r = 0) :
 			value(value),
 			left_successor_link(l), right_successor_link(r) {}
-		stree_node(const stree_node& x) = default;
+		constexpr stree_node(const stree_node& x) = default;
 	};
 
 	template<typename T>
@@ -45,7 +45,7 @@ namespace eop {
 		typedef typename T value_type;
 		typedef typename int weight_type;
 		pointer(stree_node<T>) ptr;
-		explicit stree_coordinate(pointer(stree_node<T>) ptr = 0) : ptr(ptr) {}
+		constexpr explicit stree_coordinate(pointer(stree_node<T>) ptr = 0) : ptr(ptr) {}
 	};
 
 	template<typename T>
@@ -64,7 +64,7 @@ namespace eop {
 
 	template<typename T>
 		requires(Regular(T))
-	bool empty(stree_coordinate<T> t)
+	constexpr bool empty(stree_coordinate<T> t)
 	{
 		typedef pointer(stree_node<T>) I;
 		return t.ptr == I{ 0 };
@@ -72,28 +72,28 @@ namespace eop {
 
 	template<typename T>
 		requires(Regular(T))
-	stree_coordinate<T> left_successor(stree_coordinate<T> t)
+	constexpr stree_coordinate<T> left_successor(stree_coordinate<T> t)
 	{
-		return stree_coordinate<T>(sink(t.ptr).left_successor_link);
+		return stree_coordinate<T>(source(t.ptr).left_successor_link);
 	}
 
 	template<typename T>
 		requires(Regular(T))
-	bool has_left_successor(stree_coordinate<T> t)
+	constexpr bool has_left_successor(stree_coordinate<T> t)
 	{
 		return !empty(left_successor(t));
 	}
 
 	template<typename T>
 		requires(Regular(T))
-	stree_coordinate<T> right_successor(stree_coordinate<T> t)
+	constexpr stree_coordinate<T> right_successor(stree_coordinate<T> t)
 	{
-		return stree_coordinate<T>(sink(t.ptr).right_successor_link);
+		return stree_coordinate<T>(source(t.ptr).right_successor_link);
 	}
 
 	template<typename T>
 		requires(Regular(T))
-	bool has_right_successor(stree_coordinate<T> t)
+	constexpr bool has_right_successor(stree_coordinate<T> t)
 	{
 		return !empty(right_successor(t));
 	}
@@ -114,16 +114,16 @@ namespace eop {
 
 	template<typename T>
 		requires(Regular(T))
-	bool operator==(stree_coordinate<T> a, stree_coordinate<T> b)
+	constexpr bool operator==(stree_coordinate<T> a, stree_coordinate<T> b)
 	{
 		return a.ptr == b.ptr;
 	}
 
 	template<typename T>
 		requires(Regular(T))
-	T& source(stree_coordinate<T> t)
+	constexpr const T& source(stree_coordinate<T> t)
 	{
-		return sink(t.ptr).value;
+		return source(t.ptr).value;
 	}
 
 	template<typename T>
@@ -147,23 +147,20 @@ namespace eop {
 	struct stree_node_construct {
 		typedef typename stree_coordinate<T> C;
 		stree_node_construct() {}
-		C operator()(T x, C l = C(0), C r = C(0))
+		C operator()(T x, C l = C(0), C r = C(0)) const
 		{
 			++stree_node_count;
 			return C(new stree_node<T>(x, l.ptr, r.ptr));
 		}
-		C operator()(C c) {
-			return (*this) (source(c), left_successor(c),
-				right_successor(c));
-		}
-		C operator()(C c, C l, C r) { return (*this) (source(c), l, r); }
+		C operator()(C c)           const { return (*this) (source(c), left_successor(c),right_successor(c)); }
+		C operator()(C c, C l, C r) const { return (*this) (source(c), l, r); }
 	};
 
 	template<typename T>
 		requires(Regular(T))
 	struct stree_node_destroy {
 		stree_node_destroy() {}
-		void operator()(stree_coordinate<T> c)
+		void operator()(stree_coordinate<T> c) const
 		{
 			--stree_node_count;
 			delete c.ptr;
@@ -300,11 +297,11 @@ namespace eop {
 
 	template<typename T>
 		requires(Regular(T))
-	bool empty(const stree<T>& x) { return empty(x.root); }
+	constexpr bool empty(const stree<T>& x) { return empty(x.root); }
 
 	template<typename T>
 		requires(Regular(T))
-	bool operator==(const stree<T>& x, const stree<T>& y) 
+	bool operator==(const stree<T>& x, const stree<T>& y)
 	{
 		if (empty(x)) return empty(y);
 		if (empty(y)) return false;
@@ -340,17 +337,17 @@ namespace eop {
 	{
 		typedef typename T value_type;
 		typedef pointer(tree_node<T>) Link;
-		T value;
+		const T value;
 		Link predecessor_link;
 		Link left_successor_link;
 		Link right_successor_link;
-		tree_node() : predecessor_link(0),
+		constexpr tree_node() : predecessor_link(0),
 			left_successor_link(0), right_successor_link(0) {}
-		tree_node(T value, Link l = 0, Link r = 0, Link p = 0) : 
+		constexpr tree_node(T value, Link l = 0, Link r = 0, Link p = 0) :
 			value(value),
 			left_successor_link(l), right_successor_link(r), 
 			predecessor_link(p) {}
-		tree_node(const tree_node&) = default;
+		constexpr tree_node(const tree_node&) = default;
 	};
 
 	template<typename T>
@@ -360,7 +357,7 @@ namespace eop {
 		typedef typename int weight_type;
 		typedef typename T value_type;
 		pointer(tree_node<T>) ptr;
-		tree_coordinate(pointer(tree_node<T>) ptr = 0) : ptr(ptr) {}
+		constexpr tree_coordinate(pointer(tree_node<T>) ptr = 0) : ptr(ptr) {}
 	};
 
 	template<typename T>
@@ -379,56 +376,49 @@ namespace eop {
 
 	template<typename T>
 		requires(Regular(T))
-	bool empty(tree_coordinate<T> c)
+	constexpr bool empty(tree_coordinate<T> c)
 	{
 		return c.ptr == 0;
 	}
 
 	template<typename T>
 		requires(Regular(T))
-	bool operator==(const tree_coordinate<T>& x, const tree_coordinate<T>& y)
+	constexpr bool operator==(const tree_coordinate<T>& x, const tree_coordinate<T>& y)
 	{
 		return x.ptr == y.ptr;
 	}
 
 	template<typename T>
 		requires(Regular(T))
-	bool operator!=(const tree_coordinate<T>& x, const tree_coordinate<T>& y)
+	constexpr bool operator!=(const tree_coordinate<T>& x, const tree_coordinate<T>& y)
 	{
 		return !(x.ptr == y.ptr);
 	}
 
 	template<typename T>
 		requires(Regular(T))
-	tree_node<T>& sink(pointer(tree_node<T>) ptr)
+	constexpr tree_coordinate<T> left_successor(tree_coordinate<T> c)
 	{
-		return *ptr;
+		return source(c.ptr).left_successor_link;
 	}
 
 	template<typename T>
 		requires(Regular(T))
-	tree_coordinate<T> left_successor(tree_coordinate<T> c)
-	{
-		return sink(c.ptr).left_successor_link;
-	}
-
-	template<typename T>
-		requires(Regular(T))
-	bool has_left_successor(tree_coordinate<T> c)
+	constexpr bool has_left_successor(tree_coordinate<T> c)
 	{
 		return !empty(left_successor(c));
 	}
 
 	template<typename T>
 		requires(Regular(T))
-	tree_coordinate<T> right_successor(tree_coordinate<T> c)
+	constexpr tree_coordinate<T> right_successor(tree_coordinate<T> c)
 	{
-		return sink(c.ptr).right_successor_link;
+		return source(c.ptr).right_successor_link;
 	}
 
 	template<typename T>
 		requires(Regular(T))
-	bool has_right_successor(tree_coordinate<T> c)
+	constexpr bool has_right_successor(tree_coordinate<T> c)
 	{
 		return !empty(right_successor(c));
 	}
@@ -449,14 +439,14 @@ namespace eop {
 
 	template<typename T>
 		requires(Regular(T))
-	tree_coordinate<T> predecessor(tree_coordinate<T> c)
+	constexpr tree_coordinate<T> predecessor(tree_coordinate<T> c)
 	{
 		return sink(c.ptr).predecessor_link;
 	}
 
 	template<typename T>
 		requires(Regular(T))
-	bool has_predecessor(tree_coordinate<T> c)
+    constexpr bool has_predecessor(tree_coordinate<T> c)
 	{
 		return !empty(predecessor(c));
 	}
@@ -469,13 +459,13 @@ namespace eop {
 	}
 
 	template<typename T>
-	T& source(tree_coordinate<T> c)
+	constexpr const T& source(tree_coordinate<T> c)
 	{
-		return sink(c.ptr).value;
+		return source(c.ptr).value;
 	}
 
 	template<typename T>
-	T& sink(tree_coordinate<T> c)
+	constexpr T& sink(tree_coordinate<T> c)
 	{
 		return sink(c.ptr).value;
 	}
@@ -493,8 +483,7 @@ namespace eop {
 			++tree_node_count;
 			return C(new tree_node<T>(x, l.ptr, r.ptr, p.ptr));
 		}
-		C operator()(C c)           { return (*this)(source(c), left_successor(c), 
-			                                                         right_successor(c)); }
+		C operator()(C c)           { return (*this)(source(c), left_successor(c), right_successor(c)); }
 		C operator()(C c, C l, C r) { return (*this)(source(c), l, r); }
 	};
 

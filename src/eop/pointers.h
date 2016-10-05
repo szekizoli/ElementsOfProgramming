@@ -27,8 +27,14 @@
 
 namespace eop {
 	template<typename T>
-	T& sink(pointer(T) x)
+	constexpr T& sink(pointer(T) x)
 	{
+		return *x;
+	}
+
+	template<typename T>
+		requires(Readable(T))
+	constexpr const T& source(pointer(T) x) {
 		return *x;
 	}
 

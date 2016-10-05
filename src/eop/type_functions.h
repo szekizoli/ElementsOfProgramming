@@ -157,6 +157,12 @@ struct value_type
 		return *x;
 	}
 
+	template<typename T>
+		requires(Readable(T))
+	ValueType(T)& sink(T x) {
+		return *x;
+	}
+
 	// CoordinateType
 	template<typename T>
 		requires(Regular(T))
