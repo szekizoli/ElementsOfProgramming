@@ -12,6 +12,8 @@
 #include "tree.h"
 #include "type_functions.h"
 
+#include "project_7_1.h"
+
 namespace eoptest
 {
 	using std::vector;
@@ -853,6 +855,11 @@ namespace eoptest
 			STree{ 12 , STree{ 14 }, STree{} } };
 	}
 
+	//     3
+	//   /   \
+	//  1     2
+	//  \     /
+	//   4   5
 	Tree create_tree() {
 		return Tree{ 3,
 			Tree{ 1 , Tree{}, Tree{ 4 } },
@@ -1232,5 +1239,77 @@ namespace eoptest
 		
 		EXPECT_EQ(true, eop::is_dag(c_2));
 		EXPECT_EQ(true, eop::is_dag(c_2, eop::transformation_trait{}));
+	}
+
+	TEST(project_7_1_tests, test_find)
+	{
+		Tree t = create_tree();
+		for (int i = 1; i <= 5; ++i) {
+			auto c = eop::find(begin(t), i);
+			EXPECT_EQ(i, source(c));
+		}
+		EXPECT_TRUE(eop::empty(eop::find(begin(t), 0)));
+	}
+
+	TEST(project_7_1_tests, test_find_if)
+	{
+		Tree t = create_tree();
+		for (int i = 1; i <= 5; ++i) {
+			auto c = eop::find_if(begin(t), equals_To{ i });
+			EXPECT_EQ(i, source(c));
+		}
+		EXPECT_TRUE(eop::empty(eop::find_if(begin(t), equals_To{ 0 })));
+	}
+
+	TEST(project_7_1_tests, test_find_if_not)
+	{
+		// 3, 1, 4, 2, 5
+		Tree t = create_tree();
+		auto c = eop::find_if_not(begin(t), less_Than{ 4 });
+		EXPECT_EQ(4, eop::source(c));
+		EXPECT_TRUE(eop::empty(eop::find_if_not(begin(t), less_Than{ 10 })));
+	}
+
+	TEST(project_7_1_tests, test_all)
+	{
+		// 3, 1, 4, 2, 5
+		Tree t = create_tree();
+		EXPECT_FALSE(eop::all(begin(t), less_Than{ 4 }));
+		EXPECT_TRUE(eop::all(begin(t), less_Than{ 10 }));
+	}
+
+	TEST(project_7_1_tests, test_none)
+	{
+		// 3, 1, 4, 2, 5
+		Tree t = create_tree();
+		EXPECT_TRUE(eop::none(begin(t), less_Than{ 0 }));
+		EXPECT_FALSE(eop::none(begin(t), less_Than{ 4 }));
+		EXPECT_FALSE(eop::none(begin(t), less_Than{ 10 }));
+	}
+
+	TEST(project_7_1_tests, test_not_all)
+	{
+		// 3, 1, 4, 2, 5
+		Tree t = create_tree();
+		EXPECT_TRUE(eop::not_all(begin(t), less_Than{ 4 }));
+		EXPECT_FALSE(eop::not_all(begin(t), less_Than{ 10 }));
+	}
+
+	TEST(project_7_1_tests, test_some)
+	{
+		// 3, 1, 4, 2, 5
+		Tree t = create_tree();
+		EXPECT_TRUE(eop::some(begin(t), less_Than{ 4 }));
+		EXPECT_TRUE(eop::some(begin(t), less_Than{ 10 }));
+		EXPECT_FALSE(eop::some(begin(t), less_Than{ 0 }));
+	}
+
+	TEST(project_7_1_tests, test_count_if)
+	{
+		// 3, 1, 4, 2, 5
+		Tree t = create_tree();
+		EXPECT_EQ(3, eop::count_if(begin(t), less_Than{ 4 }));
+		EXPECT_EQ(5, eop::count_if(begin(t), less_Than{ 10 }));
+		EXPECT_FALSE(eop::some(begin(t), less_Than{ 0 }));
 	}
 }
