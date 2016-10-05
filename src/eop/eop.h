@@ -985,7 +985,7 @@ namespace eop {
 	template<typename P, typename J>
 		requires(UnaryPredicate(P))
 	struct counter_if {
-		typedef P first_argument_type;
+		typedef Domain(P) first_argument_type;
 		J j;
 		P p;
 		counter_if(P p, J j) : p(p), j(j) {}
