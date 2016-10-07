@@ -1,3 +1,19 @@
+// project_7_1.h
+
+// Copyright (c) 2009 Alexander Stepanov and Paul McJones
+//
+// Permission to use, copy, modify, distribute and sell this software
+// and its documentation for any purpose is hereby granted without
+// fee, provided that the above copyright notice appear in all copies
+// and that both that copyright notice and this permission notice
+// appear in supporting documentation. The authors make no
+// representations about the suitability of this software for any
+// purpose. It is provided "as is" without express or implied
+// warranty.
+
+// Project 7.1 : Implement versions of algorithms in Chapter 6 for 
+//               bidirectional bifurcate coordinates.
+
 #pragma once
 
 #include "intrinsics.h"
@@ -6,21 +22,19 @@
 #include "tree.h"
 #include "type_functions.h"
 
-// Project 7.1 : Implement versions of algorithms in Chapter 6 for 
-//               bidirectional bifurcate coordinates.
-
 namespace eop {
 
 	template<typename C>
 		requires(BidirectionalBifurcateCoordinate(C))
-	C successor_c(C c)
+	C successor_c(C c, visit order = visit::pre)
 	{
 		// Precondition: !empty(c)
-		visit v = visit::pre;
+		if (!has_predecessor(c) && order == visit::post) return C{ 0 }; // not quite good - first call?
+		visit v = order;
 		do {
 			traverse_step(c, v);
-		} while ((v != visit::pre) && (has_predecessor(c) || v != visit::post));
-		return v == visit::pre ? c : C{ 0 };
+		} while ((v != order) && (has_predecessor(c) || v != visit::post));
+		return v == order ? c : C{ 0 };
 	}
 
 	template<typename C, typename Proc>

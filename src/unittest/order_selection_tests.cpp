@@ -866,6 +866,17 @@ namespace eoptest
 			Tree{ 2 , Tree{ 5 }, Tree{} } };
 	}
 
+	//        3
+	//     /     \
+	//    1       2
+	//   /  \    /  \
+	//  4    5  6    7
+	Tree create_medium_tree() {
+		return Tree{ 3,
+			Tree{ 1 , Tree{ 4}, Tree{ 5, create_tree(), Tree{} } },
+			Tree{ 2 , Tree{ 6 }, Tree{ 7} } };
+	}
+
 	TEST(coordinatestest, test_weight_recursive_stree_coordinate)
 	{
 		//    n_2
@@ -1182,6 +1193,9 @@ namespace eoptest
 		t = create_tree();
 		x = begin(t);
 		EXPECT_EQ(5, eop::weight(x));
+		t = create_medium_tree();
+		x = begin(t);
+		EXPECT_EQ(12, eop::weight(x));
 	}
 
 	TEST(tree_tests, test_height)
@@ -1195,6 +1209,9 @@ namespace eoptest
 		t = create_tree();
 		x = begin(t);
 		EXPECT_EQ(3, eop::height(x));
+		t = create_medium_tree();
+		x = begin(t);
+		EXPECT_EQ(6, eop::height(x));
 	}
 
 	TEST(tree_tests, test_traverse)

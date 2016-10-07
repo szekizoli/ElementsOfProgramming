@@ -545,8 +545,8 @@ namespace eop {
 		typedef tree_coordinate<T> C;
 		typedef tree_node_construct<T> Cons;
 		C root;
-		tree() : root(0) {}
-		tree(T value) : root(Cons{}(value)) {}
+		constexpr tree() : root(0) {}
+		constexpr tree(T value) : root(Cons{}(value)) {}
 		tree(T value, const tree& left, const tree& right) : root(Cons{}(value))
 		{
 			set_left_successor(root, bidirectional_bifurcate_copy<C, Cons>(left.root));
