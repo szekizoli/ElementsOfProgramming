@@ -1301,6 +1301,8 @@ namespace eop {
 			f = successor(f);
 		}
 		return f;
+		// Postcondition: returns an iterator to the first element that is not in
+		//                R relation with its previous element
 	}
 
 	template<typename I, typename R>

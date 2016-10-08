@@ -6,6 +6,7 @@
 
 #include "gtest/gtest.h"
 
+#include "coordinate_iterator_adpater.h"
 #include "eop.h"
 #include "intrinsics.h"
 #include "pointers.h"
@@ -847,6 +848,8 @@ namespace eoptest
 	typedef eop::stree_node<int> SNode;
 	typedef eop::stree_coordinate<int> SCoordinate;
 	typedef eop::stree<int> STree;
+	typedef eop::stree_node<int> Node;
+	typedef eop::tree_coordinate<int> Coordinate;
 	typedef eop::tree<int> Tree;
 
 	STree create_stree() {
@@ -884,12 +887,12 @@ namespace eoptest
 		// n_0   n_1
 		//  \     /
 		//  n_3 n_4
-		typedef eop::stree_node<int> Node;
-		typedef eop::stree_coordinate<int> Coordinate;
+		typedef eop::tree_node<int> Node;
+		typedef eop::tree_coordinate<int> Coordinate;
 		Node n_0{ 1 };
 		Node n_1{ 2 };
 		Node n_2{ 3 , &n_0 , &n_1};
-		Coordinate c{ &n_2 };
+		Coordinate c( &n_2 );
 		auto weight_0 = eop::weight_recursive(c);
 		EXPECT_EQ(3, weight_0) << "weight calculation wrong";
 		Node n_3{ 4 };
@@ -930,8 +933,8 @@ namespace eoptest
 		// n_0   n_1
 		//  \     /
 		//  n_3 n_4
-		typedef eop::stree_node<int> Node;
-		typedef eop::stree_coordinate<int> Coordinate;
+		typedef eop::tree_node<int> Node;
+		typedef eop::tree_coordinate<int> Coordinate;
 		Node n_0{ 1 };
 		Node n_1{ 2 };
 		Node n_2{ 3 , &n_0 , &n_1 };
@@ -995,8 +998,8 @@ namespace eoptest
 		// n_0   n_1
 		//  \     /
 		//  n_3 n_4
-		typedef eop::stree_node<int> Node;
-		typedef eop::stree_coordinate<int> Coordinate;
+		typedef eop::tree_node<int> Node;
+		typedef eop::tree_coordinate<int> Coordinate;
 		Node n_3{ 4 };
 		Node n_4{ 5 };
 		Node n_0{ 1, 0, addressof(n_3) };
@@ -1328,5 +1331,73 @@ namespace eoptest
 		EXPECT_EQ(3, eop::count_if(begin(t), less_Than{ 4 }));
 		EXPECT_EQ(5, eop::count_if(begin(t), less_Than{ 10 }));
 		EXPECT_FALSE(eop::some(begin(t), less_Than{ 0 }));
+	}
+
+	TEST(project_7_2_tests, test_construct)
+	{
+		Tree t{ 1 };
+		Coordinate c = begin(t);
+		EXPECT_EQ(1, source(c));
+		auto i = begin(c);
+		EXPECT_EQ(1, source(i));
+		auto e = end(c);
+		EXPECT_NE(i, e);
+		++i;
+		EXPECT_EQ(i, e);
+	}
+
+	TEST(project_7_2_tests, test_iterator_pre)
+	{
+		Tree t = create_tree();
+		vector<int> pre_order;
+		Coordinate c = begin(t);
+		for (int i : c) {
+			pre_order.push_back(i);
+		}
+		
+		vector<int> pre_expected{ 3, 1, 4, 2, 5 };
+		EXPECT_EQ(pre_expected, pre_order) << "pre order not as expected";
+	}
+
+	TEST(project_7_2_tests, test_iterator_in)
+	{
+		Tree t = create_tree();
+		vector<int> in_order;
+		auto root = begin(t);
+		auto l = end(root, eop::visit::in);
+		for (auto i = begin(root, eop::visit::in); i != l; ++i) {
+			in_order.push_back(source(i));
+		}
+
+		vector<int> in_expected{ 1, 4, 3, 5, 2 };
+		EXPECT_EQ(in_expected, in_order) << "in order not as expected";
+	}
+
+	TEST(project_7_2_tests, test_iterator_post)
+	{
+		Tree t = create_tree();
+		vector<int> post_order;
+		auto root = begin(t);
+		eop::visit order = eop::visit::post;
+		auto l = end(root, order);
+		for (auto i = begin(root, order); i != l; ++i) {
+			post_order.push_back(source(i));
+		}
+
+		vector<int> post_expected{ 4, 1, 5, 2, 3 };
+		EXPECT_EQ(post_expected, post_order) << "post order not as expected";
+	}
+
+	TEST(project_7_2_tests, test_iterator_with_find_adjacent_mismatch)
+	{
+		Tree t = create_tree();
+		vector<int> post_order;
+		auto root = begin(t);
+		eop::visit order = eop::visit::in;
+		auto f = begin(root, order);
+		auto l = end(root, order);
+		auto r = eop::find_adjacent_mismatch(f, l, std::less<int>());
+		EXPECT_FALSE(empty(r));
+		EXPECT_EQ(3, source(r));
 	}
 }

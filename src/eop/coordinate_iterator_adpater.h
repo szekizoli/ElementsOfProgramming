@@ -30,51 +30,134 @@ namespace eop {
 		requires(BidirectionalBifurcateCoordinate(C))
 	struct coordinate_iterator : public std::iterator<std::forward_iterator_tag, ValueType(C), WeightType(C)>
 	{
-		coordinate_iterator(C root, visit order = visit::pre, C current = root) : root(root), order(order), current(current) {}
-
-		coordinate_iterator<C> operator++() 
+		C root;
+		visit order;
+		C current;
+		coordinate_iterator(C root, visit order = visit::pre) : root(root), order(order) 
 		{
-			visit v = order;
-			successor_c(current, v);
+			current = advance_to_first(root, order, root);
+		}
+		coordinate_iterator<C>(C root, C current, visit order = visit::pre) : root(root), order(order), current(current)
+		{}
+		coordinate_iterator<C>(const coordinate_iterator<C>& x) = default;
+		coordinate_iterator<C>(coordinate_iterator<C>&& x) = default;
+		coordinate_iterator<C>& operator=(const coordinate_iterator<C>& x)
+		{
+			root.ptr = x.root.ptr;
+			order = x.order;
+			current.ptr = x.current.ptr;
 			return *this;
 		}
-
-		coordinate_iterator<C> operator++(int)
+		coordinate_iterator& operator++() 
 		{
-			coordinate_iterator<C> r{ root, order, current };
-			visit v = order;
-			successor_c(current, v);
+			current = successor_c(current, order);
+			return *this;
+		}
+		coordinate_iterator operator++(int)
+		{
+			coordinate_iterator<C> tmp{ *this };
+			operator++();
 			return r;
 		}
-
-		bool operator==(const coordinate_iterator<C>& x, const coordinate_iterator<C>& y)
-		{
-			return x.root == y.root && x.order == y.order == x.current == y.current;
-		}
-
-		bool operator!=(const coordinate_iterator<C>& x, const coordinate_iterator<C>& y)
-		{
-			return !(x == y);
-		}
-
-	private:
-		const C root;
-		const visit order;
-		C current;
 	};
 
 	template<typename C>
 		requires(BidirectionalBifurcateCoordinate(C))
-	coordinate_iterator<C> begin(C c, visit order == visit::pre)
+	C advance_to_first(C root, visit order, C current)
 	{
-		return coordinate_iterator(c, order);
+		// advance to the first node based on the visit type
+		if (empty(root)) return root;
+		if (order == visit::pre) return root;
+		visit v = visit::pre;
+		do {
+			traverse_step(current, v);
+			if (v == order) return current;
+		} while (!has_predecessor(current) || v != visit::post);
+		return C{ 0 }; // we've reached end(...)
 	}
 
 	template<typename C>
 		requires(BidirectionalBifurcateCoordinate(C))
-	coordinate_iterator<C> end(C c, visit order == visit::pre)
+	coordinate_iterator<C> begin(C c, visit order)
 	{
-		return coordinate_iterator(c, order, C{0});
+		return coordinate_iterator<C>(c, order);
+	}
+
+	template<typename T>
+		requires(Regular(T))
+	coordinate_iterator<tree_coordinate<T>> begin(tree_coordinate<T> c, visit order = visit::pre)
+	{
+		return coordinate_iterator<tree_coordinate<T>>(c, order);
+	}
+
+	template<typename C>
+		requires(BidirectionalBifurcateCoordinate(C))
+	coordinate_iterator<C> end(C c, visit order)
+	{
+		return coordinate_iterator<C>(c, C{ 0 }, order);
+	}
+
+	template<typename T>
+		requires(Regular(T))
+	coordinate_iterator<tree_coordinate<T>> end(tree_coordinate<T> c, visit order = visit::pre)
+	{
+		return coordinate_iterator<tree_coordinate<T>>(c, tree_coordinate<T>{ 0 }, order);
+	}
+
+	template<typename C>
+		requires(BidirectionalBifurcateCoordinate(C))
+	ValueType(C) source(const coordinate_iterator<C>& c)
+	{
+		return source(c.current);
+	}
+
+	template<typename C>
+		requires(BidirectionalBifurcateCoordinate(C))
+	ValueType(C) operator*(const coordinate_iterator<C>& c)
+	{
+		return source(c);
+	}
+
+	template<typename C>
+		requires(BidirectionalBifurcateCoordinate(C))
+	bool empty(const coordinate_iterator<C>& c)
+	{
+		return empty(c.current);
+	}
+
+	template<typename C>
+		requires(BidirectionalBifurcateCoordinate(C))
+	coordinate_iterator<C> successor(coordinate_iterator<C> x)
+	{
+		return ++x;
+	}
+
+	template<typename C>
+		requires(BidirectionalBifurcateCoordinate(C))
+	struct value_type<coordinate_iterator<C>>
+	{
+		typedef typename ValueType(C) type;
+	};
+
+	template<typename C>
+		requires(BidirectionalBifurcateCoordinate(C))
+	struct distance_type<coordinate_iterator<C>>
+	{
+		typedef typename WeightType(C) type;
+	};
+
+	template<typename C>
+		requires(BidirectionalBifurcateCoordinate(C))
+	bool operator==(const coordinate_iterator<C>& x, const coordinate_iterator<C>& y)
+	{
+		return x.root == y.root && x.order == y.order && x.current == y.current;
+	}
+
+	template<typename C>
+		requires(BidirectionalBifurcateCoordinate(C))
+	bool operator!=(const coordinate_iterator<C>& x, const coordinate_iterator<C>& y)
+	{
+		return !(x == y);
 	}
 
 	template<typename C>

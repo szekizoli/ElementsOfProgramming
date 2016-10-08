@@ -29,12 +29,14 @@ namespace eop {
 	C successor_c(C c, visit order = visit::pre)
 	{
 		// Precondition: !empty(c)
-		if (!has_predecessor(c) && order == visit::post) return C{ 0 }; // not quite good - first call?
+
+		if (!has_predecessor(c) && order == visit::post) return C{ 0 };
 		visit v = order;
 		do {
 			traverse_step(c, v);
-		} while ((v != order) && (has_predecessor(c) || v != visit::post));
-		return v == order ? c : C{ 0 };
+			if (v == order) return c;
+		} while (has_predecessor(c) || v != visit::post);
+		return C{ 0 };
 	}
 
 	template<typename C, typename Proc>
