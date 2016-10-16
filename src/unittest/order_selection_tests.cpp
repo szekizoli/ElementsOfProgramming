@@ -1400,4 +1400,44 @@ namespace eoptest
 		EXPECT_FALSE(empty(r));
 		EXPECT_EQ(3, source(r));
 	}
+
+	TEST(bifurcate_isomorphic_tests, test_bifurcate_isomorphic_nonempty)
+	{
+		Tree t0{ 0 };
+		Tree t1{ 1, Tree{}, Tree{} };
+		EXPECT_TRUE(eop::bifurcate_isomorphic_nonempty(eop::begin(t0), eop::begin(t1)));
+
+		Tree t2{ 1, t0, Tree{} };
+		EXPECT_FALSE(eop::bifurcate_isomorphic_nonempty(eop::begin(t0), eop::begin(t2)));
+		EXPECT_FALSE(eop::bifurcate_isomorphic_nonempty(eop::begin(t1), eop::begin(t2)));
+
+		Tree t3{ 3, t1, Tree{} };
+		EXPECT_TRUE(eop::bifurcate_isomorphic_nonempty(eop::begin(t2), eop::begin(t3)));
+
+		Tree t4{ 4, t0, t1 };
+		EXPECT_FALSE(eop::bifurcate_isomorphic_nonempty(eop::begin(t2), eop::begin(t4)));
+		EXPECT_FALSE(eop::bifurcate_isomorphic_nonempty(eop::begin(t3), eop::begin(t4)));
+	}
+
+	TEST(bifurcate_isomorphic_tests, test_bifurcate_isomorphic)
+	{
+		Tree t0{ 0 };
+		Tree t1{ 1, Tree{}, Tree{} };
+		EXPECT_TRUE(eop::bifurcate_isomorphic(eop::begin(t0), eop::begin(t1)));
+
+		EXPECT_TRUE(eop::bifurcate_isomorphic(eop::begin(Tree{}), eop::begin(Tree{})));
+		EXPECT_FALSE(eop::bifurcate_isomorphic(eop::begin(Tree{}), eop::begin(t0)));
+		EXPECT_FALSE(eop::bifurcate_isomorphic(eop::begin(t0), eop::begin(Tree{})));
+
+		Tree t2{ 1, t0, Tree{} };
+		EXPECT_FALSE(eop::bifurcate_isomorphic(eop::begin(t0), eop::begin(t2)));
+		EXPECT_FALSE(eop::bifurcate_isomorphic(eop::begin(t1), eop::begin(t2)));
+
+		Tree t3{ 3, t1, Tree{} };
+		EXPECT_TRUE(eop::bifurcate_isomorphic(eop::begin(t2), eop::begin(t3)));
+
+		Tree t4{ 4, t0, t1 };
+		EXPECT_FALSE(eop::bifurcate_isomorphic(eop::begin(t2), eop::begin(t4)));
+		EXPECT_FALSE(eop::bifurcate_isomorphic(eop::begin(t3), eop::begin(t4)));
+	}
 }

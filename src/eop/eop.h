@@ -1831,4 +1831,46 @@ namespace eop {
 							bidirectional_bifurcate_coordinate_termination_condition<C>{c});
 	}
 
+	template<typename C0, typename C1>
+		requires(BifurcateCoordinate(C0) && BifurcateCoordinate(C1))
+	bool bifurcate_isomorphic_nonempty(C0 c0, C1 c1)
+	{
+		// Preconditions: !empty(c0) && !empty(c1)
+		if (has_left_successor(c0)) {
+			if (has_left_successor(c1)) {
+				if (!bifurcate_isomorphic_nonempty(left_successor(c0), left_successor(c1)))
+					return false;
+			} else  return false;
+		}
+		else if (has_left_successor(c1)) return false;
+		
+		if (has_right_successor(c0)) {
+			if (has_right_successor(c1)) {
+				if (!bifurcate_isomorphic_nonempty(right_successor(c0), right_successor(c1)))
+					return false;
+			} else  return false;
+		}
+		else if (has_right_successor(c1)) return false;
+
+		return true;
+	}
+
+	template<typename C0, typename C1>
+		requires(BidirectionalBifurcateCoordinate(C0) && BidirectionalBifurcateCoordinate(C1))
+	bool bifurcate_isomorphic(C0 c0, C1 c1)
+	{
+		if (empty(c0)) return empty(c1);
+		if (empty(c1)) return false;
+		C0 root0 = c0;
+		visit v0 = visit::pre;
+		visit v1 = visit::pre;
+		do {
+			traverse_step(c0, v0);
+			traverse_step(c1, v1);
+			if (v0 != v1) return false;
+		} while (c0 != root0 || v0 != visit::post);
+
+		return true;
+	}
+
 } // namespace eop
