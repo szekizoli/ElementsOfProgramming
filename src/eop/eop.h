@@ -1873,4 +1873,69 @@ namespace eop {
 		return true;
 	}
 
+	template<typename I0, typename I1, typename R>
+	requires(Readable(I0) && Iterator(I0) &&
+		Readable(I1) && Iterator(I1) && Relation(R) &&
+		ValueType(I0) == ValueType(I1) &&
+		ValueType(I0) == Domain(R))
+	bool lexicograpical_equivalent(I0 f0, I0 l0, I1 f1, I1 f1, R r)
+	{
+		// Precondition: readable_Bounded_range(f0, l0)
+		// Precondition: readable_Bounded_range(f1, l1)
+		// Precondition: equivalence(r)
+		std::pair<I0, I1> r = find_mismatch(f0, l0, f1, l1, r);
+		return r.first == l0 && r.second == l1;
+	}
+
+	template<typename T>
+		requires(Regular(T))
+	struct equal
+	{
+		bool operator()(const T& a, const T& b)
+		{
+			return a == b;
+		}
+	};
+
+	template<typename I0, typename I1>
+	requires(Readable(I0) && Iterator(I0) &&
+		Readable(I1) && Iterator(I1) &&
+		ValueType(I0) == ValueType(I1))
+	bool lexicographical_equal(I0 f0, I0 l0, I1 f1, I1 l1)
+	{
+		return lexicograpical_equivalent(f0, l0, f1, l1, equal<ValueType(I0)>());
+	}
+
+	template<typename C0, typename C1,
+		typename R>
+	requires(Readable(C0) && BifurcateCoordinate(C0) &&
+		Readable(C1) && BifurcateCoordinate(C1) &&
+		Relation(R) &&
+		ValueType(C0) == ValueType(C1) &&
+		ValueType(C0) == Domain(R))
+	bool bifurcate_equivalent_nonempty(C0 c0, C1 c1, R r)
+	{
+		// Precondition: readable_tree(c0) && readable_tree(c1)
+		// Precondition: !empty(c0) && !empty(c1)
+		if (!r(source(c0), source(c1)))
+			return false;
+		if (has_left_successor(c0)) {
+			if (has_left_successor(c1)) {
+				if (!bifurcate_equivalent_nonempty(left_succesor(c0), left_successor(c1), r))
+					return false;
+			} else  return false;
+		}
+		else if (has_left_successor(c1))
+			return         false;
+
+		if (has_right_successor(c0)) {
+			if (has_right_successor(c1)) {
+				if (!bifurcate_equivalent_nonempty(right_succesor(c0), right_successor(c1), r))
+					return false;
+			}
+			else    return false;
+		}
+		else if (has_right_successor(c1))
+			return         false;
+	}
 } // namespace eop
