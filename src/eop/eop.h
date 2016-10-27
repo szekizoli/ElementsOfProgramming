@@ -1878,13 +1878,13 @@ namespace eop {
 		Readable(I1) && Iterator(I1) && Relation(R) &&
 		ValueType(I0) == ValueType(I1) &&
 		ValueType(I0) == Domain(R))
-	bool lexicograpical_equivalent(I0 f0, I0 l0, I1 f1, I1 f1, R r)
+	bool lexicograpical_equivalent(I0 f0, I0 l0, I1 f1, I1 l1, R r)
 	{
 		// Precondition: readable_Bounded_range(f0, l0)
 		// Precondition: readable_Bounded_range(f1, l1)
 		// Precondition: equivalence(r)
-		std::pair<I0, I1> r = find_mismatch(f0, l0, f1, l1, r);
-		return r.first == l0 && r.second == l1;
+		std::pair<I0, I1> p = find_mismatch(f0, l0, f1, l1, r);
+		return p.first == l0 && p.second == l1;
 	}
 
 	template<typename T>
@@ -1921,7 +1921,7 @@ namespace eop {
 			return false;
 		if (has_left_successor(c0)) {
 			if (has_left_successor(c1)) {
-				if (!bifurcate_equivalent_nonempty(left_succesor(c0), left_successor(c1), r))
+				if (!bifurcate_equivalent_nonempty(left_successor(c0), left_successor(c1), r))
 					return false;
 			} else  return false;
 		}
@@ -1930,12 +1930,60 @@ namespace eop {
 
 		if (has_right_successor(c0)) {
 			if (has_right_successor(c1)) {
-				if (!bifurcate_equivalent_nonempty(right_succesor(c0), right_successor(c1), r))
+				if (!bifurcate_equivalent_nonempty(right_successor(c0), right_successor(c1), r))
 					return false;
 			}
 			else    return false;
 		}
 		else if (has_right_successor(c1))
 			return         false;
+		return true;
 	}
+
+	template<typename C0, typename C1>
+		requires(Readable(C0) && BifurcateCoordinate(C0) &&
+			Readable(C1) && BifurcateCoordinate(C1) &&
+			ValueType(C0) == ValueType(C1))
+	bool bifurcate_equal_nonempty(C0 c0, C1 c1)
+	{
+		// Precondition: readable_tree(c0) && readable_tree(c1)
+		// Precondition: !empty(c0) && !empty(c1)
+		return bifurcate_equivalent_nonempty(c0, c1, equal<ValueType(C0)>());
+	}
+
+	template<typename C0, typename C1, typename R>
+	requires(Readable(C0) && BidirectionalBifurcateCoordinate(C0) &&
+		Readable(C1) && BidirectionalBifurcateCoordinate(C1) &&
+		Relation(R) &&
+		ValueType(C0) == ValueType(C1)
+		ValueType(C0) == Domain(R))
+	bool bifurcate_equivalent(C0 c0, C1 c1, R r)
+	{
+		// Precondition: readable_tree(c0) && readable_tree(c1)
+		if (empty(c0)) return empty(c1);
+		if (empty(c1)) return false;
+		C0 root0 = c0;
+		visit v0 = visit::pre;
+		visit v1 = visit::pre;
+
+		while (true) {
+			if (v0 == visit::pre && !r(source(c0), source(c1)))
+				return false;
+			traverse_step(c0, v0);
+			traverse_step(c1, v1);
+			if (v0 != v1) return false;
+			if (c0 == root0 && v0 == visit::post) return true;
+		}
+	}
+
+	template<typename C0, typename C1>
+	requires(Readable(C0) && BidirectionalBifurcateCoordinate(C0) &&
+		Readable(C1) && BidirectionalBifurcateCoordinate(C1) &&
+		ValueType(C0) == ValueType(C1))
+	bool bifurcate_equal(C0 c0, C1 c1)
+	{
+		// Precondition: readable_tree(c0) && readable_tree(c1)
+		return bifurcate_equivalent(c0, c1, equal<ValueType(C0)>());
+	}
+
 } // namespace eop

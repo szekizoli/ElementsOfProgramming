@@ -1440,4 +1440,66 @@ namespace eoptest
 		EXPECT_FALSE(eop::bifurcate_isomorphic(eop::begin(t2), eop::begin(t4)));
 		EXPECT_FALSE(eop::bifurcate_isomorphic(eop::begin(t3), eop::begin(t4)));
 	}
+
+	TEST(lexicographical_compare_test, test_lexicographical_equal)
+	{
+		vector<int> v0{ 1, 2, 3 };
+		vector<int> v1{ 1, 2, 3 };
+		EXPECT_TRUE(eop::lexicographical_equal(begin(v0), end(v0), begin(v1), end(v1)));
+		
+		vector<int> v2{ 1, 2, 4 };
+		EXPECT_FALSE(eop::lexicographical_equal(begin(v0), end(v0), begin(v2), end(v2)));
+
+		vector<int> v3{ 1, 2, 3, 4 };
+		EXPECT_FALSE(eop::lexicographical_equal(begin(v0), end(v0), begin(v3), end(v3)));
+	}
+
+	TEST(bifurcate_equivalent_tests, test_bifurcate_equal_nonempty)
+	{
+		STree t0 = STree{ 3, 
+			STree{1, STree{0}, STree{2}},
+			STree{5, STree{4}, STree{}} };
+		STree t1 = STree{ 3,
+			STree{ 1, STree{ 0 }, STree{ 2 } },
+			STree{ 5, STree{ 4 }, STree{} } };
+		EXPECT_TRUE(eop::bifurcate_equal_nonempty(begin(t0), begin(t1)));
+
+		STree t2 = STree{ 3,
+			STree{ 1, STree{ 0 }, STree{ 2 } },
+			STree{ 6, STree{ 4 }, STree{} } };
+		EXPECT_FALSE(eop::bifurcate_equal_nonempty(begin(t0), begin(t2)));
+
+		STree t3 = STree{ 3,
+			STree{ 1, STree{ 0 }, STree{ 2 } },
+			STree{ 5, STree{ 4 }, STree{ 6 } } };
+		EXPECT_FALSE(eop::bifurcate_equal_nonempty(begin(t0), begin(t3)));
+	}
+
+	TEST(bifurcate_equivalent_tests, test_bifurcate_equal)
+	{
+		Tree t0 = Tree{ 3,
+			Tree{ 1, Tree{ 0 }, Tree{ 2 } },
+			Tree{ 5, Tree{ 4 }, Tree{} } };
+		Tree t1 = Tree{ 3,
+			Tree{ 1, Tree{ 0 }, Tree{ 2 } },
+			Tree{ 5, Tree{ 4 }, Tree{} } };
+		EXPECT_TRUE(eop::bifurcate_equal(begin(t0), begin(t1)));
+
+		Tree t2 = Tree{ 3,
+			Tree{ 1, Tree{ 0 }, Tree{ 2 } },
+			Tree{ 6, Tree{ 4 }, Tree{} } };
+		EXPECT_FALSE(eop::bifurcate_equal(begin(t0), begin(t2)));
+
+		Tree t3 = Tree{ 3,
+			Tree{ 1, Tree{ 0 }, Tree{ 2 } },
+			Tree{ 5, Tree{ 4 }, Tree{ 6 } } };
+		EXPECT_FALSE(eop::bifurcate_equal(begin(t0), begin(t3)));
+
+		Tree e0{};
+		Tree e1{};
+		Tree s{ 1 };
+		EXPECT_TRUE(eop::bifurcate_equal(begin(e0), begin(e1)));
+		EXPECT_FALSE(eop::bifurcate_equal(begin(e0), begin(s)));
+		EXPECT_FALSE(eop::bifurcate_equal(begin(s), begin(e1)));
+	}
 }
