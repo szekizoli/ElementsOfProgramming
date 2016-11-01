@@ -1502,4 +1502,28 @@ namespace eoptest
 		EXPECT_FALSE(eop::bifurcate_equal(begin(e0), begin(s)));
 		EXPECT_FALSE(eop::bifurcate_equal(begin(s), begin(e1)));
 	}
+
+	TEST(bifurcate_equivalent_tests, test_bifurcate_less_nonempty)
+	{
+		STree t0 = STree{ 3,
+			STree{ 1, STree{ 0 }, STree{ 2 } },
+			STree{ 5, STree{ 4 }, STree{} } };
+		STree t1 = STree{ 3,
+			STree{ 1, STree{ 0 }, STree{ 2 } },
+			STree{ 5, STree{ 4 }, STree{} } };
+		EXPECT_FALSE(eop::bifurcate_less_nonempty(begin(t0), begin(t1)));
+		EXPECT_FALSE(eop::bifurcate_less_nonempty(begin(t1), begin(t0)));
+
+		STree t2 = STree{ 3,
+			STree{ 1, STree{ 0 }, STree{ 2 } },
+			STree{ 6, STree{ 4 }, STree{} } };
+		EXPECT_TRUE(eop::bifurcate_less_nonempty(begin(t0), begin(t2)));
+		EXPECT_FALSE(eop::bifurcate_less_nonempty(begin(t2), begin(t0)));
+
+		STree t3 = STree{ 3,
+			STree{ 1, STree{ 0 }, STree{ 2 } },
+			STree{ 5, STree{ 4 }, STree{ 6 } } };
+		EXPECT_TRUE(eop::bifurcate_less_nonempty(begin(t0), begin(t3)));
+		EXPECT_FALSE(eop::bifurcate_less_nonempty(begin(t3), begin(t0)));
+	}
 }

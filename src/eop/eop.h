@@ -1986,4 +1986,99 @@ namespace eop {
 		return bifurcate_equivalent(c0, c1, equal<ValueType(C0)>());
 	}
 
+	template<typename I0, typename I1, typename R>
+	requires(Readable(I0) && Iterator(I0) &&
+		Readable(I1) && Iterator(I1) &&
+		Relation(R) &&
+		ValueType(I0) == ValueType(I1) &&
+		ValueType(I0) == Domain(R))
+	bool lexicograpichal_compare(I0 f0, I0 l0, I1 f1, I1 l1, R r)
+	{
+		// Precondition: readable_bounded_range(f0, l0)
+		// Precondition: readable_bounded_range(f1, l1)
+		// weak_ordering(r)
+		while (true) {
+			if (f1 == l1) return false;
+			if (f0 == l0) return true;
+			if (r(source(f0), source(f1))) return true;
+			if (r(source(f1), source(f0))) return false;
+			f0 = successor(f0);
+			f1 = successor(f1);
+		}
+	}
+
+	template<typename T>
+	requires(TotallyOrdered(T))
+	struct less 
+	{
+		bool operator()(const T& x, const T& y)
+		{
+			return x < y;
+		}
+	};
+
+	template<typename I0, typename I1>
+	requires(Readable(I0) && Iterator(I0) &&
+		Readable(I1) && Iterator(I1))
+	bool lexicograpichal_less(I0 f0, I0 l0, I1 f1, I1 l1)
+	{
+		return lexicographical_compare(f0, l0, f1, l1, less <ValueType(I0)>());
+	}
+
+	enum class comparison { less, equal, greater };
+
+	template<typename C0, typename C1, typename R>
+	requires(BifurcateCoordinate(C0) && Readable(C0) &&
+		BifurcateCoordinate(C1) && Readable(C1) &&
+		Relation(R) &&
+		ValueType(C0) == ValueType(C1) &&
+		ValueType(C0) == Domain(R))
+	comparison bifurcate_compare_nonempty_recursive(C0 c0, C1 c1, R r) {
+		// Precondition: readable_tree(c0) && readable_tree(c1)
+		// Precondition: !empty(c0) && !empty(c1)
+		if (r(source(c0), source(c1))) return comparison::less;
+		if (r(source(c1), source(c0))) return comparison::greater;
+		if (has_left_successor(c0)) {
+			if (has_left_successor(c1)) {
+				comparison c = bifurcate_compare_nonempty_recursive(left_successor(c0), left_successor(c1), r);
+				if (c != comparison::equal) return c;
+			}
+			else return comparison::greater;
+		}
+		else if (has_left_successor(c1)) {
+			return comparison::less;
+		}
+
+		if (has_right_successor(c0)) {
+			if (has_right_successor(c1)) {
+				comparison c = bifurcate_compare_nonempty_recursive(right_successor(c0), right_successor(c1), r);
+				if (c != comparison::equal) return c;
+			}
+			else return comparison::greater;
+		}
+		else if (has_right_successor(c1)) {
+			return comparison::less;
+		}
+		return comparison::equal;
+	}
+
+	template<typename C0, typename C1, typename R>
+	requires(BifurcateCoordinate(C0) && Readable(C0) &&
+		BifurcateCoordinate(C1) && Readable(C1) &&
+		Relation(R) &&
+		ValueType(C0) == ValueType(C1) &&
+		ValueType(C0) == Domain(R))
+	bool bifurcate_compare_nonempty(C0 c0, C1 c1, R r)
+	{
+		return bifurcate_compare_nonempty_recursive(c0, c1, r) == comparison::less;
+	}
+
+	template<typename C0, typename C1>
+	requires(BifurcateCoordinate(C0) && Readable(C0) &&
+		BifurcateCoordinate(C1) && Readable(C1) &&
+		ValueType(C0) == ValueType(C1))
+	bool bifurcate_less_nonempty(C0 c0, C1 c1)
+	{
+		return bifurcate_compare_nonempty(c0, c1, less<ValueType(C0)>());
+	}
 } // namespace eop
