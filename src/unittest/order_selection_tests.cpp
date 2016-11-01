@@ -1517,13 +1517,55 @@ namespace eoptest
 		STree t2 = STree{ 3,
 			STree{ 1, STree{ 0 }, STree{ 2 } },
 			STree{ 6, STree{ 4 }, STree{} } };
+		// t0 has smaller value
 		EXPECT_TRUE(eop::bifurcate_less_nonempty(begin(t0), begin(t2)));
 		EXPECT_FALSE(eop::bifurcate_less_nonempty(begin(t2), begin(t0)));
 
 		STree t3 = STree{ 3,
 			STree{ 1, STree{ 0 }, STree{ 2 } },
 			STree{ 5, STree{ 4 }, STree{ 6 } } };
+		// t0 without a right successor
 		EXPECT_TRUE(eop::bifurcate_less_nonempty(begin(t0), begin(t3)));
 		EXPECT_FALSE(eop::bifurcate_less_nonempty(begin(t3), begin(t0)));
+
+		STree t4 = STree{ 3,
+			STree{ 1, STree{ 0 }, STree{ 2, STree{ 2 }, STree{} } },
+			STree{ 5, STree{ 4 }, STree{} } };
+		// t4 has an extra left successor
+		EXPECT_TRUE(eop::bifurcate_less_nonempty(begin(t0), begin(t4)));
+		EXPECT_FALSE(eop::bifurcate_less_nonempty(begin(t4), begin(t0)));
+	}
+
+	TEST(bifurcate_equivalent_tests, test_bifurcate_less)
+	{
+		Tree t0 = Tree{ 3,
+			Tree{ 1, Tree{ 0 }, Tree{ 2 } },
+			Tree{ 5, Tree{ 4 }, Tree{} } };
+		Tree t1 = Tree{ 3,
+			Tree{ 1, Tree{ 0 }, Tree{ 2 } },
+			Tree{ 5, Tree{ 4 }, Tree{} } };
+		EXPECT_FALSE(eop::bifurcate_less(begin(t0), begin(t1)));
+		EXPECT_FALSE(eop::bifurcate_less(begin(t1), begin(t0)));
+
+		Tree t2 = Tree{ 3,
+			Tree{ 1, Tree{ 0 }, Tree{ 2 } },
+			Tree{ 6, Tree{ 4 }, Tree{} } };
+		// t0 has smaller value
+		EXPECT_TRUE(eop::bifurcate_less(begin(t0), begin(t2)));
+		EXPECT_FALSE(eop::bifurcate_less(begin(t2), begin(t0)));
+
+		Tree t3 = Tree{ 3,
+			Tree{ 1, Tree{ 0 }, Tree{ 2 } },
+			Tree{ 5, Tree{ 4 }, Tree{ 6 } } };
+		// t0 without a right successor
+		EXPECT_TRUE(eop::bifurcate_less(begin(t0), begin(t3)));
+		EXPECT_FALSE(eop::bifurcate_less(begin(t3), begin(t0)));
+
+		Tree t4 = Tree{ 3,
+			Tree{ 1, Tree{ 0 }, Tree{ 2, Tree{ 2 }, Tree{} } },
+			Tree{ 5, Tree{ 4 }, Tree{} } };
+		// t4 has an extra left successor
+		EXPECT_TRUE(eop::bifurcate_less(begin(t0), begin(t4)));
+		EXPECT_FALSE(eop::bifurcate_less(begin(t4), begin(t0)));
 	}
 }

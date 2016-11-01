@@ -2081,4 +2081,39 @@ namespace eop {
 	{
 		return bifurcate_compare_nonempty(c0, c1, less<ValueType(C0)>());
 	}
+
+	template<typename C0, typename C1, typename R>
+	requires(BidirectionalBifurcateCoordinate(C0) && Readable(C0) &&
+		BidirectionalBifurcateCoordinate(C1) && Readable(C1) &&
+		Relation(R) &&
+		ValueType(C0) == ValueType(C1) &&
+		ValueType(C0) == Domain(R))
+	bool bifurcate_compare(C0 c0, C1 c1, R r)
+	{
+		// Precondition: readable_tree(c0) && readable_tree(c1)
+		if (empty(c1)) return false;
+		if (empty(c0)) return true;
+		C0 root0 = c0;
+		visit v0 = visit::pre;
+		visit v1 = visit::pre;
+		while (true) {
+			if (v0 == visit::pre) {
+				if (r(source(c0), source(c1))) return true;
+				if (r(source(c1), source(c0))) return false;
+			}
+			traverse_step(c0, v0);
+			traverse_step(c1, v1);
+			if (v0 != v1) return v0 > v1;
+			if (c0 == root0 && v0 == visit::post) return false;
+		}
+	}
+
+	template<typename C0, typename C1>
+	requires(BidirectionalBifurcateCoordinate(C0) && Readable(C0) &&
+		BidirectionalBifurcateCoordinate(C1) && Readable(C1) &&
+		ValueType(C0) == ValueType(C1))
+	bool bifurcate_less(C0 c0, C1 c1)
+	{
+		return bifurcate_compare(c0, c1, less<ValueType(C0)>());
+	}
 } // namespace eop
