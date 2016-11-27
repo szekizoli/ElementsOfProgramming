@@ -128,13 +128,6 @@ namespace eop {
 
 	template<typename T>
 		requires(Regular(T))
-	stree_node<T>& sink(pointer(stree_node<T>) t)
-	{
-		return *t;
-	}
-
-	template<typename T>
-		requires(Regular(T))
 	T& sink(stree_coordinate<T> t)
 	{
 		return sink(t.ptr).ptrvalue;
@@ -144,7 +137,8 @@ namespace eop {
 
 	template<typename T>
 		requires(Regular(T))
-	struct stree_node_construct {
+	struct stree_node_construct 
+	{
 		typedef typename stree_coordinate<T> C;
 		stree_node_construct() {}
 		C operator()(T x, C l = C(0), C r = C(0)) const
@@ -152,7 +146,7 @@ namespace eop {
 			++stree_node_count;
 			return C(new stree_node<T>(x, l.ptr, r.ptr));
 		}
-		C operator()(C c)           const { return (*this) (source(c), left_successor(c),right_successor(c)); }
+		C operator()(C c)           const { return (*this) (source(c), left_successor(c), right_successor(c)); }
 		C operator()(C c, C l, C r) const { return (*this) (source(c), l, r); }
 	};
 
