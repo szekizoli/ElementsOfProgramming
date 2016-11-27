@@ -33,15 +33,18 @@
 #define BifurcateCoordinate(...)
 #define BinaryOperation(...)
 #define ForwardIterator(...)
+#define ForwardLinker(...)
 #define Integer(...)
 #define IndexedIterator(...)
 #define Iterator(...)
+#define IteratorType(...)
 #define Procedure(...)
 #define Readable(...)
 #define Relation(...)
 #define Regular(...)
 #define Transformation(...)
 #define UnaryPredicate(...)
+#define UnaryPseudoPredicate(...)
 
 // Intrinsics
 

@@ -21,7 +21,9 @@
 
 namespace eop {
 
+	// *******************************************************
 	// Chapter 1 - Foundations
+	// *******************************************************
 
 	template<typename Op>
 	requires(BinaryOperation(Op))
@@ -33,7 +35,9 @@ namespace eop {
 		return x * y;
 	}
 
+	// *******************************************************
 	// Chapter 2 - Transformations and Their Orbits
+	// *******************************************************
 
 	template<typename F, typename N>
 		requires(Transformation(F) && Integer(N))
@@ -248,7 +252,9 @@ namespace eop {
 		return std::make_tuple<N, N, Domain(F)>(m, n, std::move(y));
 	}
 	
+	// *******************************************************
 	// Chapter 3 - Associative Operations
+	// *******************************************************
 
 	// Computing powers
 	template<typename I, typename Op>
@@ -591,7 +597,10 @@ namespace eop {
 		return (n & I{ 1 }) == I{ 1 };
 	}
 
+	// *******************************************************
 	// Chapter 4 - Linear Orderings
+	// *******************************************************
+
 	template<typename R>
 		requires(Relation(R))
 	const Domain(R)& select_0_2(const Domain(R)& a,
@@ -853,7 +862,9 @@ namespace eop {
 		return select_2_5<0, 1, 2, 3, 4>(a, b, c, d, e, r);
 	}
 
+	// *******************************************************
 	// Chapter 6 - Iterators
+	// *******************************************************
 
 	template<typename T>
 	struct is_Even 
@@ -1692,7 +1703,7 @@ namespace eop {
 			if (is_left_successor(c))
 				v = visit::in;
 			c = predecessor(c);                         return -1;
-			break;
+			//break;
 		}
 	}
 
@@ -2116,4 +2127,74 @@ namespace eop {
 	{
 		return bifurcate_compare(c0, c1, less<ValueType(C0)>());
 	}
+
+	//
+	// Chapter 8  - Link Rearrangements
+	//
+
+	template<typename I>
+		requires(ForwardIterator(I))
+	void advance_tail(I& t, I& f)
+	{
+		// Precondition: successor(f) is defined
+		t = f;
+		f = successor(f);
+	}
+
+	template<typename S>
+	requires(ForwardLinker(S))
+	struct linker_to_tail 
+	{
+		typedef IteratorType(S) I;
+		const S set_link;
+		linker_to_tail(const S& set_link) : set_link(set_link) {}
+		void operator()(I& t, I& f) const {
+			// Precondition: successor(f) is defined
+			set_link(t, f);
+			advance_tail(t, f);
+		}
+	};
+	
+	template<typename I>
+	requires(ForwardIterator(I))
+	I find_last(I f, I l)
+	{
+		// Precondition: bounded_range(f, l) & f != l
+		I t;
+		do
+			advance_tail(t, f);
+		while (f != l);
+		return t;
+	}
+
+	template<typename I, typename S, typename Pred>
+	requires(ForwardIterator(I) && ForwardLinker(S) &&
+	IteratorType(S) == I && UnaryPseudoPredicate(Pred) &&
+	I == Domain(Pred))
+	std::pair<std::pair<I, I>, std::pair<I, I>>
+	split_linker(I f, I l, Pred p, S set_link)
+	{
+		// Precondition: bounded_range(f, l)
+		typedef std::pair<I, I> P;
+		linker_to_tail<S> link_to_tail(set_link);
+		I h0 = l; I t0 = l;
+		I h1 = l; I t1 = l;
+		if (f == l)                              goto s4;
+		if (p(f)) { h1 = f; advance_tail(t1, f); goto s1; }
+		else      { h0 = f; advance_tail(t0, f); goto s0; }
+	s0: if (f == l) goto s4;
+		if (p(f)) { h1 = f; advance_tail(t1, f); goto s3; }
+		else      {         advance_tail(t0, f); goto s0; }
+	s1: if (f == l) goto s4;
+		if (p(f)) {         advance_tail(f1, t); goto s1; }
+		else      { h0 = f; advance_tail(t0, f); goto s2; }
+	s2: if (f == l) goto s4;
+		if (p(f)) {         link_to_tail(h1, t); goto s3; }
+		else      {         advance_tail(h0, t), goto s2; }
+	s3: if (f == l) goto s4;
+		if (p(f)) {         advance_tail(h1, t); goto s3; }
+		else      {         link_to_tail(h0, t); goto s2; }
+	s4: return std::pair<P, P>(P(h0, t0), P(h1, t1));
+	}
+
 } // namespace eop

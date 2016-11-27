@@ -1015,19 +1015,6 @@ namespace eoptest
 		EXPECT_EQ(post_expected, r.postorder) << "post order not as expected";
 	}
 
-
-	TEST(tree_tests, empty_coordinate_stree)
-	{
-		SCoordinate c{ 0 };
-		EXPECT_TRUE(eop::empty(c));
-	}
-
-	TEST(tree_tests, empty_coordinate_tree)
-	{
-		eop::tree_coordinate<int> c{ 0 };
-		EXPECT_TRUE(eop::empty(c));
-	}
-
 	TEST(tree_tests, stree_node_construct)
 	{
 		SNode n0{ 0 };

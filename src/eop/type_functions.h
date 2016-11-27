@@ -169,4 +169,16 @@ struct value_type
 	struct coordinate_type;
 
 #define CoordinateType(T) typename eop::coordinate_type<T>::type
-} // namespace eop
+
+	// Chapter 8 - Coordinates with mutable successors
+
+	// IteratorType : ForwardLinker -> ForwardIterator
+	// IteratorType : BackwardLinker -> BidirectionalIterator
+
+	template<typename T>
+		requires(Iterator(T))
+	struct iterator_type;
+
+#define IteratorType(T) typename eop::iterator_type<T>::type
+
+} // namespace eop 
