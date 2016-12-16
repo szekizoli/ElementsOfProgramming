@@ -1,3 +1,4 @@
+
 solution "ElementsOfProgramming-Exercises"
     configurations  { "Debug", "Release" }
     startproject    "eop-unittest"
@@ -5,7 +6,7 @@ solution "ElementsOfProgramming-Exercises"
     location "build"
 
 project "eop"
-    kind      "ConsoleApp"
+    kind      "StaticLib"
     language  "C++"
     targetdir "build/bin/%{cfg.buildcfg}"
 
@@ -20,9 +21,14 @@ project "eop"
     filter "configurations:Release"
         defines {"NDEBUG"}
         optimize "On"
+    
+    configuration "gmake"
+        buildoptions {
+            "-std=c++14"
+        }
 
 project "epwc"
-    kind      "ConsoleApp"
+    kind      "StaticLib"
     language  "C++"
     targetdir "build/bin/%{cfg.buildcfg}"
 
@@ -37,6 +43,11 @@ project "epwc"
     filter "configurations:Release"
         defines {"NDEBUG"}
         optimize "On"
+
+    configuration "gmake"
+        buildoptions {
+            "-std=c++14"
+        }
 
 project "GoogleTest"
     kind      "StaticLib"
@@ -57,6 +68,11 @@ project "GoogleTest"
         defines {"NDEBUG"}
         optimize "On"
 
+    configuration "gmake"
+        buildoptions {
+            "-std=c++14"
+        }
+
 project "eop-unittest"
     kind      "ConsoleApp"
     language  "C++"
@@ -75,3 +91,11 @@ project "eop-unittest"
     filter "configurations:Release"
         defines {"NDEBUG"}
         optimize "On"
+
+    configuration "gmake"
+        buildoptions {
+            "-std=c++14"
+        }
+        linkoptions {
+            "-pthread"
+        }
