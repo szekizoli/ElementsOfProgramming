@@ -15,6 +15,24 @@
 
 #include "project_7_1.h"
 
+namespace eop
+{
+	using std::vector;
+
+	// template<typename T>
+	// 	requires(Regular(T))
+	// struct value_type<typename vector<T>::iterator>
+	// {
+	// 	typedef T type;
+	// };
+
+	template<typename T>
+	struct value_type<typename std::vector<T>>
+	{
+		typedef T type;
+	};
+}
+
 namespace eoptest
 {
 	using std::vector;
@@ -23,6 +41,41 @@ namespace eoptest
 
 	int less(int a, int b) {
 		return a < b;
+	}
+
+	template<typename T>
+		requires(Regular(T))
+	auto size(vector<T> const& v) 
+	{
+		return v.size();
+	}
+
+	template<typename T>
+		requires(Regular(T))
+	auto begin(vector<T> const& v) 
+	{
+		return v.begin();
+	}
+
+	template<typename T>
+		requires(Regular(T))
+	auto begin(vector<T>& v) 
+	{
+		return v.begin();
+	}
+
+	template<typename T>
+		requires(Regular(T))
+	auto end(vector<T> const& v) 
+	{
+		return v.end();
+	}
+
+	template<typename T>
+		requires(Regular(T))
+	auto end(vector<T>& v) 
+	{
+		return v.end();
 	}
 
 	TEST(orbit_tests, test_collision_point)
@@ -196,8 +249,9 @@ namespace eoptest
 
 	TEST(iteratorstest, testincrement)
 	{
-		vector<int> v{ 1, 2 };
-		auto r = eop::increment(begin(v));
+		const vector<int> v{ 1, 2 };
+		auto it = begin(v);
+		auto r = eop::increment(it);
 		EXPECT_EQ(2, eop::source(r));
 	}
 
@@ -815,8 +869,8 @@ namespace eoptest
 		EXPECT_EQ(1, eop::source(ria_0));
 		eop::reverse_iterator<vector<int>::iterator> ria_1(end(v));
 		EXPECT_EQ(6, eop::source(ria_1));
-		eop::reverse_iterator<vector<int>::iterator> begin(begin(v));
-		eop::reverse_iterator<vector<int>::iterator> end(end(v));
+		eop::reverse_iterator<vector<int>::iterator> begin(v.begin());
+		eop::reverse_iterator<vector<int>::iterator> end(v.end());
 		vector<int> reverse;
 		while (begin != end) {
 			reverse.push_back(eop::source(end));
@@ -973,7 +1027,7 @@ namespace eoptest
 	}
 
 	template<typename C>
-	requires(BifurcateCoordinate(C))
+		requires(BifurcateCoordinate(C))
 	struct traverse_result
 	{
 		vector<int> preorder;
@@ -981,12 +1035,11 @@ namespace eoptest
 		vector<int> postorder;
 		void operator()(eop::visit v, C c)
 		{
-			if (v == eop::visit::pre)
-				preorder.push_back(sink(c.ptr).value);
-			else if (v == eop::visit::in)
-				inorder.push_back(sink(c.ptr).value);
-			else if (v == eop::visit::post)
-				postorder.push_back(sink(c.ptr).value);
+			switch(v) {
+				case eop::visit::pre:  preorder.push_back(sink(c.ptr).value);  break;
+				case eop::visit::in:   inorder.push_back(sink(c.ptr).value);   break;
+				case eop::visit::post: postorder.push_back(sink(c.ptr).value); break; 
+			}
 		}
 	};
 
@@ -1140,9 +1193,9 @@ namespace eoptest
 	TEST(tree_tests, test_traverse_step)
 	{
 		Tree t = create_tree();
-		CoordinateType(Tree) c = begin(t);
+		auto c = begin(t);
 		eop::visit v = eop::visit::pre;
-		vector<std::pair<CoordinateType(Tree), eop::visit>> result;
+		vector<std::pair<eop::CoordinateType<Tree>, eop::visit>> result;
 		result.push_back(std::make_pair(c, v));
 		do {
 			eop::traverse_step(c, v);
@@ -1207,8 +1260,8 @@ namespace eoptest
 	TEST(tree_tests, test_traverse)
 	{
 		Tree t = create_tree();
-		CoordinateType(Tree) c = begin(t);
-		traverse_result<CoordinateType(Tree)> r = eop::traverse(c, traverse_result<CoordinateType(Tree)>());
+		eop::CoordinateType<Tree> c = begin(t);
+		traverse_result<eop::CoordinateType<Tree>> r = eop::traverse(c, traverse_result<eop::CoordinateType<Tree>>());
 		vector<int> pre_expected{ 3, 1, 4, 2, 5 };
 		EXPECT_EQ(pre_expected, r.preorder) << "pre order not as expected";
 		vector<int> in_expected{ 1, 4, 3, 5, 2 };

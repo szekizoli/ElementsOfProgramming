@@ -130,7 +130,7 @@ namespace eop {
 		requires(Regular(T))
 	struct slist_node_construct 
 	{
-		typedef typename slist_coordinate<T> C;
+		typedef slist_coordinate<T> C;
 		slist_node_construct() {}
 		C operator()(T x, C s = C(0)) const
 		{

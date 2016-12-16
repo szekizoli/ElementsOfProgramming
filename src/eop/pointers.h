@@ -18,13 +18,6 @@
 
 #include <cstddef> // ptrdiff_t
 
-//template<typename T>
-//	requires(Regular(T))
-//struct value_type<pointer(T)>
-//{
-//	typedef T type;
-//};
-
 namespace eop {
 	template<typename T>
 	constexpr T& sink(pointer(T) x)
@@ -49,6 +42,6 @@ namespace eop {
 	template<typename T>
 	struct distance_type<pointer(T)>
 	{
-		typedef typename int type;
+		typedef int type;
 	};
 }

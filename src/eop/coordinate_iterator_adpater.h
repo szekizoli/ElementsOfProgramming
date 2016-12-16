@@ -57,7 +57,7 @@ namespace eop {
 		{
 			coordinate_iterator<C> tmp{ *this };
 			operator++();
-			return r;
+			return tmp;
 		}
 	};
 
@@ -136,14 +136,14 @@ namespace eop {
 		requires(BidirectionalBifurcateCoordinate(C))
 	struct value_type<coordinate_iterator<C>>
 	{
-		typedef typename ValueType(C) type;
+		typedef ValueType(C) type;
 	};
 
 	template<typename C>
 		requires(BidirectionalBifurcateCoordinate(C))
 	struct distance_type<coordinate_iterator<C>>
 	{
-		typedef typename WeightType(C) type;
+		typedef WeightType(C) type;
 	};
 
 	template<typename C>

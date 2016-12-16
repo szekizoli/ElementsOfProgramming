@@ -37,7 +37,6 @@
 #define Integer(...)
 #define IndexedIterator(...)
 #define Iterator(...)
-#define IteratorType(...)
 #define Procedure(...)
 #define Readable(...)
 #define Relation(...)

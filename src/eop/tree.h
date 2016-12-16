@@ -16,6 +16,7 @@
 
 #pragma once
 
+#include "eop.h"
 #include "intrinsics.h"
 #include "pointers.h"
 #include "type_functions.h"
@@ -26,7 +27,7 @@ namespace eop {
 		requires(Regular(T))
 	struct stree_node
 	{
-		typedef typename T value_type;
+		typedef T value_type;
 		typedef pointer(stree_node<T>) Link;
 		const T value;
 		Link left_successor_link;
@@ -42,8 +43,8 @@ namespace eop {
 		requires(Regular(T))
 	struct stree_coordinate
 	{
-		typedef typename T value_type;
-		typedef typename int weight_type;
+		typedef T value_type;
+		typedef int weight_type;
 		pointer(stree_node<T>) ptr;
 		constexpr explicit stree_coordinate(pointer(stree_node<T>) ptr = 0) : ptr(ptr) {}
 	};
@@ -139,7 +140,7 @@ namespace eop {
 		requires(Regular(T))
 	struct stree_node_construct 
 	{
-		typedef typename stree_coordinate<T> C;
+		typedef stree_coordinate<T> C;
 		stree_node_construct() {}
 		C operator()(T x, C l = C(0), C r = C(0)) const
 		{
@@ -249,19 +250,19 @@ namespace eop {
 		typedef stree_coordinate<T> coordinate_type;
 		typedef stree_node_construct<T> Cons;
 		C root;
-		constexpr stree() : root(0) {}
-		constexpr stree(T x) : root(Cons()(x)) {}
-		constexpr stree(T x, const stree& left, const stree& right) : root(Cons()(x))
+		stree() : root(0) {}
+		stree(T x) : root(Cons()(x)) {}
+		stree(T x, const stree& left, const stree& right) : root(Cons()(x))
 		{
 			set_left_successor(root, bifurcate_copy<C, Cons>(left.root));
 			set_right_successor(root, bifurcate_copy<C, Cons>(right.root));
 		}
 		stree(const stree& x) : root(bifurcate_copy<C, Cons>(x.root)) {}
 		stree(stree&& x) : root(0) {
-			swap(root, x.root);
+			std::swap(root, x.root);
 		}
 		~stree() { bifurcate_erase(root, stree_node_destroy<T>{}); }
-		void operator=(stree x) { swap(root, x.root); }
+		void operator=(stree x) { std::swap(root, x.root); }
 	};
 
 	template<typename T>
@@ -329,7 +330,7 @@ namespace eop {
 		requires(Regular(T))
 	struct tree_node
 	{
-		typedef typename T value_type;
+		typedef T value_type;
 		typedef pointer(tree_node<T>) Link;
 		const T value;
 		Link predecessor_link;
@@ -348,8 +349,8 @@ namespace eop {
 		requires(Regular(T))
 	struct tree_coordinate
 	{
-		typedef typename int weight_type;
-		typedef typename T value_type;
+		typedef int weight_type;
+		typedef T value_type;
 		pointer(tree_node<T>) ptr;
 		constexpr tree_coordinate(pointer(tree_node<T>) ptr = 0) : ptr(ptr) {}
 	};
@@ -358,14 +359,14 @@ namespace eop {
 		requires(Regular(T))
 	struct weight_type<tree_coordinate<T>>
 	{
-		typedef typename DistanceType(pointer(tree_node<T>)) type;
+		typedef DistanceType(pointer(tree_node<T>)) type;
 	};
 
 	template<typename T>
 		requires(Regular(T))
 	struct value_type<tree_coordinate<T>>
 	{
-		typedef typename T type;
+		typedef T type;
 	};
 
 	template<typename T>
@@ -572,7 +573,7 @@ namespace eop {
 		requires(Regular(T))
 	struct value_type<tree<T>> 
 	{
-		typedef ValueType(CoordinateType(tree<T>)) type;
+		typedef ValueType<CoordinateType<tree<T>>> type;
 	};
 
 	template<typename T>
@@ -605,7 +606,7 @@ namespace eop {
 
 	template<typename T, typename Proc>
 		requires(Regular(T))
-	Proc traverse(const tree<T>& x)
+	Proc traverse(const tree<T>& x, Proc proc)
 	{
 		return traverse(begin(x), proc);
 	}

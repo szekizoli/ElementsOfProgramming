@@ -31,10 +31,6 @@ namespace eop {
 		return op(x, x);
 	}
 
-	int multiply(int x, int y) {
-		return x * y;
-	}
-
 	// *******************************************************
 	// Chapter 2 - Transformations and Their Orbits
 	// *******************************************************
@@ -67,12 +63,12 @@ namespace eop {
 	Domain(F) power_unary(Domain(F) x, N n, F f) 
 	{
 		// Precondition: n ≥ 0 ∧ (∀i ∈ N) 0 < i ≤ n => f^i(x) is defined
-		return power_unary(x, n, f, FunctionTrait(F){});
+		return power_unary(x, n, f, FunctionTrait(F)());
 	}
 
-	int increment(const int& x) {
-		return x + 1;
-	}
+	// int increment(const int& x) {
+	// 	return x + 1;
+	// }
 
 	template<typename F>
 		requires(Transformation(F))
@@ -104,7 +100,7 @@ namespace eop {
 		requires(Transformation(F))
 	DistanceType(F) distance(Domain(F) x, Domain(F) y, F f) {
 		// Precondition: y is reachable from x using f
-		return distance(x, y, f, FunctionTrait(F){});
+		return distance(x, y, f, FunctionTrait(F)());
 	}
 
 	template <typename F, typename P>
@@ -153,16 +149,8 @@ namespace eop {
 	bool terminating(const Domain(F)& x, F f, P p) 
 	{
 		// Precondition: p(x) <=> f(x) is defined
-		return !p(collision_point(x, f, p, FunctionTrait(F){}));
+		return !p(collision_point(x, f, p, FunctionTrait(F)()));
 		// Postcondition: return true if the orbit is terminating
-	}
-
-	bool less_than_ten(int x) {
-		return x < 10;
-	}
-
-	bool always_true(int) {
-		return true;
 	}
 
 	template<typename F>
@@ -190,7 +178,7 @@ namespace eop {
 	requires(Transformation(F) && UnaryPredicate(P) &&
 		Domain(F) == Domain(P))
 	bool circular(const Domain(F)& x, F f, P p) {
-		Domain(F) y = collision_point(x, f, p, FunctionTrait(F){});
+		Domain(F) y = collision_point(x, f, p, FunctionTrait(F)());
 		return p(y) && x == f(y);
 	}
 
@@ -220,7 +208,7 @@ namespace eop {
 		Domain(F) == Domain(P))
 	Domain(F) connection_point(const Domain(F)& x, F f, P p) {
 		// Precondition : p(x) <=> f(x) is defined
-		Domain(F) y = collision_point(x, f, p, FunctionTrait(F){});
+		Domain(F) y = collision_point(x, f, p, FunctionTrait(F)());
 		if (!p(y)) return y;
 		return convergent_point(x, f(y), f);
 	}
@@ -1532,7 +1520,7 @@ namespace eop {
 	template<typename I>
 		requires(BidirectionalIterator(I))
 	struct reverse_iterator {
-		reverse_iterator() : {}
+		reverse_iterator() {}
 		reverse_iterator(I _i) : i(_i) {}
 		reverse_iterator(const reverse_iterator& x) : i(x.i) {}
 		reverse_iterator<I>& operator=(const reverse_iterator<I>& x)
@@ -2019,7 +2007,7 @@ namespace eop {
 	}
 
 	template<typename T>
-	requires(TotallyOrdered(T))
+		requires(TotallyOrdered(T))
 	struct less 
 	{
 		bool operator()(const T& x, const T& y)
@@ -2128,6 +2116,27 @@ namespace eop {
 		return bifurcate_compare(c0, c1, less<ValueType(C0)>());
 	}
 
+
+	// Exercise 7.6 (copied)
+	template<typename R>
+		requires(Relation(R))
+	struct comparator_3_way
+	{
+		typedef Domain(R) T;
+		R r;
+		comparator_3_way(R r) : r(r)
+		{
+			// Precondition: $\property{weak\_ordering}(r)$
+			// Postcondition: three_way_compare(comparator_3_way(r))
+		}
+		int operator()(const T& a, const T& b)
+		{
+			if (r(a, b)) return 1;
+			if (r(b, a)) return -1;
+			return 0;
+		}
+	};
+
 	//
 	// Chapter 8  - Link Rearrangements
 	//
@@ -2186,14 +2195,14 @@ namespace eop {
 		if (p(f)) { h1 = f; advance_tail(t1, f); goto s3; }
 		else      {         advance_tail(t0, f); goto s0; }
 	s1: if (f == l) goto s4;
-		if (p(f)) {         advance_tail(f1, t); goto s1; }
+		if (p(f)) {         advance_tail(t1, f); goto s1; }
 		else      { h0 = f; advance_tail(t0, f); goto s2; }
 	s2: if (f == l) goto s4;
-		if (p(f)) {         link_to_tail(h1, t); goto s3; }
-		else      {         advance_tail(h0, t), goto s2; }
+		if (p(f)) {         link_to_tail(h1, f); goto s3; }
+		else      {         advance_tail(h0, f); goto s2; }
 	s3: if (f == l) goto s4;
-		if (p(f)) {         advance_tail(h1, t); goto s3; }
-		else      {         link_to_tail(h0, t); goto s2; }
+		if (p(f)) {         advance_tail(h1, f); goto s3; }
+		else      {         link_to_tail(h0, f); goto s2; }
 	s4: return std::pair<P, P>(P(h0, t0), P(h1, t1));
 	}
 

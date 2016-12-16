@@ -14,6 +14,7 @@
 #pragma once
 
 #include "intrinsics.h"
+#include <vector>
 
 namespace eop {
 
@@ -23,7 +24,7 @@ namespace eop {
 	template<typename T>
 	struct function_trait;
 
-#define FunctionTrait(T) function_trait<T>::trait
+#define FunctionTrait(T) typename function_trait<T>::trait
 
 	template<typename T>
 	struct function_trait<void(*)(T&x)>
@@ -131,16 +132,20 @@ template<typename T>
 	requires(Readable(T))
 struct value_type;
 
-template<typename T>
-	requires(Readable(T))
-struct value_type 
-{
-	typedef T type;
-};
+
+// template<typename T>
+// 	requires(Readable(T))
+// struct value_type<typename std::vector<T>::iterator>
+// {
+// 	typedef T type;
+// };
 
 #define ValueType(T) typename T::value_type
-//#define ValueType(T) typename eop::value_type<T>::type;
 
+template<typename T>
+using ValueType = typename value_type<T>::type;
+
+//#define ValueType(T) typename value_type<T>::type
 
 	// Chapter 7
 
@@ -153,7 +158,7 @@ struct value_type
 
 	template<typename T>
 		requires(Readable(T))
-	ValueType(T) source(T x) {
+	auto source(T x) {
 		return *x;
 	}
 
@@ -168,7 +173,10 @@ struct value_type
 		requires(Regular(T))
 	struct coordinate_type;
 
-#define CoordinateType(T) typename eop::coordinate_type<T>::type
+#define CoordinateType(T) typename coordinate_type< T >::type
+
+template<typename T>
+using CoordinateType = typename coordinate_type< T >::type;
 
 	// Chapter 8 - Coordinates with mutable successors
 
