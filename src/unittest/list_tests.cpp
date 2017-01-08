@@ -1,7 +1,9 @@
 
+#include <utility>
 #include "gtest/gtest.h"
 #include "intrinsics.h"
 #include "list.h"
+
 
 namespace eoptest {
 	TEST(slist_tests, empty_slist_coordinate)
@@ -73,6 +75,59 @@ namespace eoptest {
 		EXPECT_TRUE(eop::empty(r));
 		EXPECT_EQ(0, eop::slist_node_count);
 		eop::list_erase(r, ND());
+		EXPECT_EQ(0, eop::slist_node_count);
+	}
+
+	TEST(slist_tests, test_slist_construct_empty)
+	{
+		{
+			eop::slist<int> l;
+			EXPECT_EQ(0, eop::slist_node_count);
+			EXPECT_TRUE(eop::empty(l.root));
+		}
+		EXPECT_EQ(0, eop::slist_node_count);
+	}
+
+	TEST(slist_tests, test_slist_construct_from_value)
+	{
+		typedef eop::slist_coordinate<int> C;
+		{
+			eop::slist<int> list (12);
+			EXPECT_EQ(1, eop::slist_node_count);
+			EXPECT_FALSE(eop::empty(list.root));
+			EXPECT_FALSE(eop::has_successor(list.root));
+		}
+		EXPECT_EQ(0, eop::slist_node_count);
+	}
+
+	TEST(slist_tests, test_slist_construct_non_empty)
+	{
+		{
+			eop::slist<int> l0 (12);
+			eop::slist<int> l1 (11, l0);
+			EXPECT_EQ(3, eop::slist_node_count);
+			ASSERT_FALSE(eop::empty(l0.root));
+			EXPECT_FALSE(eop::has_successor(l0.root));
+			ASSERT_FALSE(eop::empty(l1.root));
+			EXPECT_TRUE(eop::has_successor(l1.root));
+			EXPECT_EQ(12, source(l0.root));
+			EXPECT_EQ(11, source(l1.root));
+		}
+		EXPECT_EQ(0, eop::slist_node_count);
+	}
+
+	TEST(slist_tests, test_slist_move_constructor)
+	{
+		{
+			eop::slist<int> l0 (12);
+			eop::slist<int> l1 (11, l0);
+			eop::slist<int> l_moved(std::move(l1));
+			EXPECT_EQ(3, eop::slist_node_count);
+			ASSERT_TRUE(eop::empty(l1.root));
+			ASSERT_FALSE(eop::empty(l_moved.root));
+			EXPECT_TRUE(eop::has_successor(l_moved.root));
+			EXPECT_EQ(11, source(l_moved.root));
+		}
 		EXPECT_EQ(0, eop::slist_node_count);
 	}
 

@@ -580,7 +580,7 @@ namespace eop {
 		requires(Regular(T))
 	struct weight_type 
 	{
-		typedef WeightType(CoordinateType(tree<T>)) type;
+		typedef WeightType(CoordinateType<tree<T>>) type;
 	};
 
 	template<typename T>

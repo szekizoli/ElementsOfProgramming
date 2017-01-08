@@ -145,8 +145,6 @@ struct value_type;
 template<typename T>
 using ValueType = typename value_type<T>::type;
 
-//#define ValueType(T) typename value_type<T>::type
-
 	// Chapter 7
 
 	// Weight Type : BifurcateCoordinate -> int
@@ -155,6 +153,9 @@ using ValueType = typename value_type<T>::type;
 		struct weight_type;
 
 #define WeightType(T) typename weight_type<T>::type
+
+template<typename T>
+using WeightType = typename weight_type< T >::type;
 
 	template<typename T>
 		requires(Readable(T))
@@ -172,8 +173,6 @@ using ValueType = typename value_type<T>::type;
 	template<typename T>
 		requires(Regular(T))
 	struct coordinate_type;
-
-#define CoordinateType(T) typename coordinate_type< T >::type
 
 template<typename T>
 using CoordinateType = typename coordinate_type< T >::type;

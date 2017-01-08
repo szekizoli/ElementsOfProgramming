@@ -182,12 +182,75 @@ namespace eop {
 		return f;
 	}
 
+	// singly-linked list
 	template<typename T>
 		requires(Regular(T))
 	struct slist
 	{
-		slist_coordinate<T> root;
+		using C = slist_coordinate<T>;
+		using Cons = slist_node_construct<T>;
+		C root;
+		// default constructor
+		slist() : root(0) {}
 
+		// from value constructor
+		slist(T x) : root(Cons()(x)) {}
+
+		// copy constructor
+		slist(const slist& x) : root(list_copy<C, Cons>(x.root)) {}
+
+		// move constructor
+		slist(slist&& x) : root(x.root) 
+		{
+			x.root = 0;
+		}
+
+		// append to head
+		slist(T x, const slist& l) : root(Cons()(x)) 
+		{
+			set_successor(root, list_copy<C, Cons>(l.root));
+		}
+
+		// desctructor
+		~slist()
+		{
+			list_erase(root, slist_node_destroy<T>());
+		}
+	};
+
+	// double-linked list
+	template<typename T>
+		requires(Regular(T))
+	struct list_node
+	{
+		typedef T value_type;
+		typedef pointer(T) Link;
+		T value;
+		Link successor_link;
+		Link predecessor_link;
+		// default constructor
+		list_node() : successor_link(0), predecessor_link(0) {}
+		list_node(T x, Link s_link = 0, Link p_link = 0) : value(x),
+			successor_link(s_link), predecessor_link(p_link) {}
+		// copy constructor
+		list_node(list_node const& x) = default;
+	};
+
+	template<typename T>
+		requires(Regular(T))
+	struct value_type<list_node<T>>
+	{
+		typedef T type;
+	};
+
+	template<typename T>
+		requires(Regular(T))
+	struct list_coordinate
+	{
+		typedef T value_type;
+		typedef int weight_type;
+		pointer(list_node<T>) ptr;
+		list_coordinate(pointer(list_node<T>) ptr = 0) : ptr(ptr) {}
 	};
 
 } // namespace eop

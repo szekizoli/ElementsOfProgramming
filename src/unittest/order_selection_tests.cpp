@@ -19,13 +19,6 @@ namespace eop
 {
 	using std::vector;
 
-	// template<typename T>
-	// 	requires(Regular(T))
-	// struct value_type<typename vector<T>::iterator>
-	// {
-	// 	typedef T type;
-	// };
-
 	template<typename T>
 	struct value_type<typename std::vector<T>>
 	{
