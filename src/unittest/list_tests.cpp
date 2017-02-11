@@ -38,6 +38,25 @@ namespace eoptest {
 		EXPECT_EQ(c1, successor(c0));
 	}
 
+	TEST(slist_tests, test_forward_linker)
+	{
+		eop::slist_node<int> n0{ 1 };
+		eop::slist_coordinate<int> c0{ addressof(n0) };
+		EXPECT_FALSE(eop::empty(c0));
+		EXPECT_FALSE(eop::has_successor(c0));
+
+		eop::slist_node<int> n1{ 2 };
+		eop::slist_coordinate<int> c1{ addressof(n1) };
+		EXPECT_FALSE(eop::empty(c1));
+		EXPECT_FALSE(eop::has_successor(c1));
+
+		eop::slist_forward_linker<eop::slist_coordinate<int>> linker;
+		linker(c0, c1);
+		EXPECT_TRUE(eop::has_successor(c0));
+		EXPECT_FALSE(eop::has_successor(c1));
+		EXPECT_EQ(c1, successor(c0));
+	}
+
 	TEST(slist_tests, test_source)
 	{
 		eop::slist_node<int> n0{ 1 };

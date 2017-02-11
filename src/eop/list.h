@@ -218,6 +218,23 @@ namespace eop {
 		}
 	};
 
+	template<typename I>
+		requires(ForwardIterator(I))
+	struct slist_forward_linker
+	{
+		void operator()(I& t, I& f)
+		{
+			set_successor(t, f);
+		}
+	};
+
+	template<typename I>
+		requires(ForwardIterator(I))
+	struct iterator_type<slist_forward_linker<I>>
+	{
+		typedef I type;
+	};
+
 	// double-linked list
 	template<typename T>
 		requires(Regular(T))
