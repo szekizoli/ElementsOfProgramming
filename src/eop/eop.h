@@ -2198,11 +2198,11 @@ namespace eop {
 		if (p(f)) {         advance_tail(t1, f); goto s1; }
 		else      { h0 = f; advance_tail(t0, f); goto s2; }
 	s2: if (f == l) goto s4;
-		if (p(f)) {         link_to_tail(h1, f); goto s3; }
-		else      {         advance_tail(h0, f); goto s2; }
+		if (p(f)) {         link_to_tail(t1, f); goto s3; }
+		else      {         advance_tail(t0, f); goto s2; }
 	s3: if (f == l) goto s4;
-		if (p(f)) {         advance_tail(h1, f); goto s3; }
-		else      {         link_to_tail(h0, f); goto s2; }
+		if (p(f)) {         advance_tail(t1, f); goto s3; }
+		else      {         link_to_tail(t0, f); goto s2; }
 	s4: return std::pair<P, P>(P(h0, t0), P(h1, t1));
 	}
 

@@ -4,6 +4,7 @@
 #include "intrinsics.h"
 #include "list.h"
 
+#include "testutils.h"
 
 namespace eoptest {
 	TEST(slist_tests, empty_slist_coordinate)
@@ -144,12 +145,7 @@ namespace eoptest {
 			ASSERT_FALSE(eop::empty(l.root));
 			ASSERT_TRUE(eop::has_successor(l.root));
 			std::vector<int> expected {1, 2, 3, 4, 5};
-			std::vector<int> actual;
-			auto c = l.root;
-			while (!empty(c)) {
-				actual.push_back(source(c));
-				c = successor(c);
-			}
+			std::vector<int> actual = list_to_vector(begin(l));
 			EXPECT_EQ(expected, actual);
 		}
 		EXPECT_EQ(0, eop::slist_node_count);

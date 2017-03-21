@@ -16,6 +16,8 @@
 
 #include "project_7_1.h"
 
+#include "testutils.h"
+
 namespace eop
 {
 	using std::vector;
@@ -1614,15 +1616,29 @@ namespace eoptest
 		}
 	};
 
+	void print(eop::slist_coordinate<int> c)
+	{
+		std::cout << "value: " << eop::source(c) << std::endl;
+	}
+
 	TEST(link_rearragnments, test_split_linker)
 	{
 		SList list {1, 2, 3, 4, 5};
 		auto b = eop::begin(list);
 		auto e = eop::end(list);
 		auto result = eop::split_linker(eop::begin(list), eop::end(list), parity_predicate<eop::CoordinateType<SList>>(), eop::slist_forward_linker<eop::CoordinateType<SList>>());
-		auto size_first = result.first.second - result.first.first;
-		EXPECT_EQ(2, size_first);
-		auto size_second = result.second.second - result.second.first;
-		EXPECT_EQ(3, size_second);
+
+		auto size_odds = result.first.second - result.first.first + 1;
+		EXPECT_EQ(3, size_odds);
+		auto size_evens = result.second.second - result.second.first + 1;
+		EXPECT_EQ(2, size_evens);
+
+		std::vector<int> odds = list_to_vector(result.first.first, result.first.second);
+		std::vector<int> expected_odds {1, 3, 5};
+		EXPECT_EQ(expected_odds, odds);
+
+		std::vector<int> evens = list_to_vector(result.second.first, result.second.second);
+		std::vector<int> expected_evens {2, 4};
+		EXPECT_EQ(expected_evens, evens);
 	}
 }
