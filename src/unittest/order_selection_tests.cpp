@@ -9,6 +9,7 @@
 #include "coordinate_iterator_adpater.h"
 #include "eop.h"
 #include "intrinsics.h"
+#include "list.h"
 #include "pointers.h"
 #include "tree.h"
 #include "type_functions.h"
@@ -898,6 +899,7 @@ namespace eoptest
 	typedef eop::stree_node<int> Node;
 	typedef eop::tree_coordinate<int> Coordinate;
 	typedef eop::tree<int> Tree;
+	typedef eop::slist<int> SList;
 
 	STree create_stree() {
 		return STree{ 0,
@@ -1600,5 +1602,27 @@ namespace eoptest
 		// t4 has an extra left successor
 		EXPECT_TRUE(eop::bifurcate_less(begin(t0), begin(t4)));
 		EXPECT_FALSE(eop::bifurcate_less(begin(t4), begin(t0)));
+	}
+
+	template<typename I>
+		requires(Readable(I) && Iterator(I))
+	struct parity_predicate
+	{
+		bool operator()(I const& x)
+		{
+			return source(x) % 2 == 0;
+		}
+	};
+
+	TEST(link_rearragnments, test_split_linker)
+	{
+		SList list {1, 2, 3, 4, 5};
+		auto b = eop::begin(list);
+		auto e = eop::end(list);
+		auto result = eop::split_linker(eop::begin(list), eop::end(list), parity_predicate<eop::CoordinateType<SList>>(), eop::slist_forward_linker<eop::CoordinateType<SList>>());
+		auto size_first = result.first.second - result.first.first;
+		EXPECT_EQ(2, size_first);
+		auto size_second = result.second.second - result.second.first;
+		EXPECT_EQ(3, size_second);
 	}
 }
