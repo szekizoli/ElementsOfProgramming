@@ -16,9 +16,11 @@
 
 #pragma once
 
+#include <initializer_list>
+
 #include "intrinsics.h"
 #include "pointers.h"
-//#include "type_functions.h"
+
 
 namespace eop {
 
@@ -64,6 +66,13 @@ namespace eop {
 	struct value_type<slist_coordinate<T>>
 	{
 		typedef T type;
+	};
+
+	template<typename T>
+		requires(Regular(T))
+	struct distance_type<slist_coordinate<T>>
+	{
+		typedef int type;
 	};
 
 	template<typename T>
@@ -123,6 +132,45 @@ namespace eop {
 		return sink(c.ptr).value;
 	}
 
+	template<typename T>
+		requires(Regular(T))
+	struct initializer_list_coordinate
+	{
+		typedef typename std::initializer_list<T> List;
+		typedef typename std::initializer_list<T>::iterator Iterator; 
+		Iterator first;
+		Iterator last;
+		initializer_list_coordinate(Iterator f, Iterator l) : first(f), last(l) {}
+		initializer_list_coordinate(List const& l) : first(begin(l)), last(end(l)) {}
+	};
+
+	template<typename T>
+		requires(Regular(T))
+	bool empty(initializer_list_coordinate<T> const& c)
+	{
+		return c.first == c.last;
+	}
+
+	template<typename T>
+		requires(Regular(T))
+	T source(initializer_list_coordinate<T> const& c)
+	{
+		return *c.first;
+	}
+
+	template<typename T>
+		requires(Regular(T))
+	typename std::initializer_list<T>::iterator successor(typename std::initializer_list<T>::iterator const& i)
+	{
+		return i + 1;
+	} 
+
+	template<typename T>
+		requires(Regular(T))
+	initializer_list_coordinate<T> successor(initializer_list_coordinate<T> const& c)
+	{
+		return initializer_list_coordinate<T>(c.first + 1, c.last);
+	}
 
 	static int slist_node_count = 0; /* ***** TESTING ***** */
 
@@ -130,6 +178,7 @@ namespace eop {
 		requires(Regular(T))
 	struct slist_node_construct 
 	{
+		typedef initializer_list_coordinate<T> ILC;
 		typedef slist_coordinate<T> C;
 		slist_node_construct() {}
 		C operator()(T x, C s = C(0)) const
@@ -137,6 +186,7 @@ namespace eop {
 			++slist_node_count;
 			return C(new slist_node<T>(x, s.ptr));
 		}
+		C operator()(ILC c)    const { return (*this)(source(c), C(0)); }
 		C operator()(C c)      const { return (*this)(source(c), C(0)); }
 		C operator()(C c, C s) const { return (*this)(source(c), s); }
 	};
@@ -164,9 +214,9 @@ namespace eop {
 		}
 	}
 
-	template<typename C, typename Cons>
+	template<typename C, typename C1, typename Cons>
 		requires(Regular(T) && ListNodeConstructor(Cons))
-	C list_copy(C c)
+	C list_copy(C1 c)
 	{
 		if (empty(c)) return C(0);
 		Cons construct_node;
@@ -189,6 +239,7 @@ namespace eop {
 	{
 		using C = slist_coordinate<T>;
 		using Cons = slist_node_construct<T>;
+		using ILC =  initializer_list_coordinate<T>;
 		C root;
 		// default constructor
 		slist() : root(0) {}
@@ -197,7 +248,13 @@ namespace eop {
 		slist(T x) : root(Cons()(x)) {}
 
 		// copy constructor
-		slist(const slist& x) : root(list_copy<C, Cons>(x.root)) {}
+		slist(const slist& x) : root(list_copy<C, C, Cons>(x.root)) {}
+
+		// list-initialization
+		slist(std::initializer_list<T> l) : root(list_copy<C, ILC, Cons>(ILC(l))) //root(Cons()(*begin(l)))
+		{
+
+		}
 
 		// move constructor
 		slist(slist&& x) : root(x.root) 
@@ -208,7 +265,7 @@ namespace eop {
 		// append to head
 		slist(T x, const slist& l) : root(Cons()(x)) 
 		{
-			set_successor(root, list_copy<C, Cons>(l.root));
+			set_successor(root, list_copy<C, C, Cons>(l.root));
 		}
 
 		// desctructor
@@ -218,11 +275,31 @@ namespace eop {
 		}
 	};
 
+	template<typename T>
+		requires(Regular(T))
+	struct coordinate_type<slist<T>>
+	{
+		typedef slist_coordinate<T> type;
+	};
+
+	template<typename T>
+		requires(Regular(T))
+	slist_coordinate<T> begin(slist<T> const& x) { return x.root; }
+
+	template<typename T>
+		requires(Regular(T))
+	slist_coordinate<T> end(slist<T> const& x) 
+	{
+		slist_coordinate<T> f = begin(x);
+		while(!empty(f)) { f = successor(f); }
+		return f;
+	}
+
 	template<typename I>
 		requires(ForwardIterator(I))
 	struct slist_forward_linker
 	{
-		void operator()(I& t, I& f)
+		void operator()(I& t, I& f) const
 		{
 			set_successor(t, f);
 		}
