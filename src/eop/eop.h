@@ -2244,4 +2244,15 @@ namespace eop {
 	}
 
 
+	template<typename I, typename S, typename R>
+		requires(ForwardLinker(S) && I == IteratorType(S) &&
+		PseudoRelation(R) && I == Domain(R))
+	std::tuple<I, I, I>
+	combine_linked(I f0, I l0, I f1, I l1, R r, S set_link)
+	{
+		if (f0 == l0) return std::make_tuple(f1, f1, l1);
+		if (f1 == l1) return std::make_tuple(f0, f0, l0);
+		return combine_linked_nonempty(f0, l0, f1, l1, r, set_link);
+	}
+
 } // namespace eop

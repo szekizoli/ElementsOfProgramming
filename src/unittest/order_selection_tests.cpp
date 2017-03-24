@@ -1680,4 +1680,64 @@ namespace eoptest
 		}
 		EXPECT_EQ(0, eop::slist_node_count);
 	}
+
+	TEST(link_rearragnments, test_combine_linked_first_empty)
+	{
+		{
+			SList list0 {};
+			SList list1 {1, 3, 5};
+
+			coordinate_less<eop::CoordinateType<SList>> relation;
+
+			auto result = eop::combine_linked(eop::begin(list0), eop::end(list0),
+											  eop::begin(list1), eop::end(list1),
+											  relation,
+											  eop::forward_linker<eop::CoordinateType<SList>>());
+
+			auto actual = list_to_vector(std::get<0>(result));
+			std::vector<int> expected = {1, 3, 5};
+			EXPECT_EQ(actual, expected);
+		}
+		EXPECT_EQ(0, eop::slist_node_count);
+	}
+
+	TEST(link_rearragnments, test_combine_linked_second_empty)
+	{
+		{
+			SList list0 {0, 2, 4};
+			SList list1 {};
+
+			coordinate_less<eop::CoordinateType<SList>> relation;
+
+			auto result = eop::combine_linked(eop::begin(list0), eop::end(list0),
+											  eop::begin(list1), eop::end(list1),
+											  relation,
+											  eop::forward_linker<eop::CoordinateType<SList>>());
+
+			auto actual = list_to_vector(std::get<0>(result));
+			std::vector<int> expected = {0, 2, 4};
+			EXPECT_EQ(actual, expected);
+		}
+		EXPECT_EQ(0, eop::slist_node_count);
+	}
+
+	TEST(link_rearragnments, test_combine_linked_both_empty)
+	{
+		{
+			SList list0;
+			SList list1;
+
+			coordinate_less<eop::CoordinateType<SList>> relation;
+
+			auto result = eop::combine_linked(eop::begin(list0), eop::end(list0),
+											  eop::begin(list1), eop::end(list1),
+											  relation,
+											  eop::forward_linker<eop::CoordinateType<SList>>());
+
+			auto actual = list_to_vector(std::get<0>(result));
+			std::vector<int> expected;
+			EXPECT_EQ(actual, expected);
+		}
+		EXPECT_EQ(0, eop::slist_node_count);
+	}
 }
