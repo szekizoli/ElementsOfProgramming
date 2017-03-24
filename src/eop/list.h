@@ -209,9 +209,7 @@ namespace eop {
 	{
 		while (!empty(c))
 		{
-			std::cout << "Erasing (" << c.ptr << ")" << source(c) << ", with count " << slist_node_count << std::endl;
 			C s = successor(c);
-			if (!empty(s)) std::cout << "next: " << source(s) <<  std::endl;
 			node_deleter(c);
 			c = s;
 		}
@@ -274,7 +272,6 @@ namespace eop {
 		// desctructor
 		~slist()
 		{
-			std::cout << "Erasing list" << std::endl;
 			list_erase(root, slist_node_destroy<T>());
 		}
 	};

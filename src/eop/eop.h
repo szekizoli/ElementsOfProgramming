@@ -2145,7 +2145,7 @@ namespace eop {
 		requires(LinkedForwardIterator(I))
 	struct forward_linker
 	{
-		void operator()(I x, I y)
+		void operator()(I& x, I& y) const
 		{
 			sink(x.ptr).forward_link = y.ptr;
 		}

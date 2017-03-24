@@ -1618,23 +1618,26 @@ namespace eoptest
 
 	TEST(link_rearragnments, test_split_linker)
 	{
-		SList list {1, 2, 3, 4, 5};
-		auto b = eop::begin(list);
-		auto e = eop::end(list);
-		auto result = eop::split_linker(eop::begin(list), eop::end(list), parity_predicate<eop::CoordinateType<SList>>(), eop::slist_forward_linker<eop::CoordinateType<SList>>());
+		{
+			SList list {1, 2, 3, 4, 5};
+			auto b = eop::begin(list);
+			auto e = eop::end(list);
+			auto result = eop::split_linker(eop::begin(list), eop::end(list), parity_predicate<eop::CoordinateType<SList>>(), eop::slist_forward_linker<eop::CoordinateType<SList>>());
 
-		auto size_odds = result.first.second - result.first.first + 1;
-		EXPECT_EQ(3, size_odds);
-		auto size_evens = result.second.second - result.second.first + 1;
-		EXPECT_EQ(2, size_evens);
+			auto size_odds = result.first.second - result.first.first + 1;
+			EXPECT_EQ(3, size_odds);
+			auto size_evens = result.second.second - result.second.first + 1;
+			EXPECT_EQ(2, size_evens);
 
-		std::vector<int> odds = list_to_vector(result.first.first, result.first.second);
-		std::vector<int> expected_odds {1, 3, 5};
-		EXPECT_EQ(expected_odds, odds);
+			std::vector<int> odds = list_to_vector(result.first.first, result.first.second);
+			std::vector<int> expected_odds {1, 3, 5};
+			EXPECT_EQ(expected_odds, odds);
 
-		std::vector<int> evens = list_to_vector(result.second.first, result.second.second);
-		std::vector<int> expected_evens {2, 4};
-		EXPECT_EQ(expected_evens, evens);
+			std::vector<int> evens = list_to_vector(result.second.first, result.second.second);
+			std::vector<int> expected_evens {2, 4};
+			EXPECT_EQ(expected_evens, evens);
+		}
+		EXPECT_EQ(0, eop::slist_node_count);
 	}
 
 	template<typename I>
@@ -1650,48 +1653,31 @@ namespace eoptest
 	TEST(link_rearragnments, test_combine_linked_nonempty)
 	{
 		{
-		SList list0 {0};
-		SList list1 {1};
-		eop::slist_iterator<int> f0 = eop::begin(list0);
-		auto l0 = eop::end(list0);
-		eop::slist_iterator<int> f1 = eop::begin(list1);
-		auto l1 = eop::end(list1);
-		EXPECT_EQ(0, eop::source(f0));
-		EXPECT_EQ(1, eop::source(f1));
-		EXPECT_TRUE(eop::empty(l0));
-		EXPECT_TRUE(eop::empty(l1));
-		std::cout << "set_successor" << std::endl;
-		EXPECT_FALSE(eop::empty(f1)) << "List1 is not empty";
-		std::cout << f1.ptr << std::endl;
-		eop::sink(f0.ptr).forward_link = f1.ptr;
-		auto f = f0;
-		while (!empty(f)) {
-			std::cout << "f= " << source(f) << std::endl;
-			f = successor(f);
+			SList list0 {0, 2, 4};
+			SList list1 {1, 3, 5};
+			eop::slist_iterator<int> f0 = eop::begin(list0);
+			auto l0 = eop::end(list0);
+			eop::slist_iterator<int> f1 = eop::begin(list1);
+			auto l1 = eop::end(list1);
+			EXPECT_EQ(0, eop::source(f0));
+			EXPECT_EQ(1, eop::source(f1));
+			EXPECT_TRUE(eop::empty(l0));
+			EXPECT_TRUE(eop::empty(l1));
+			EXPECT_FALSE(eop::empty(f1)) << "List1 is not empty";
+
+			coordinate_less<eop::CoordinateType<SList>> relation;
+
+			auto result = eop::combine_linked_nonempty(eop::begin(list0), eop::end(list0),
+													eop::begin(list1), eop::end(list1),
+													relation,
+													eop::forward_linker<eop::CoordinateType<SList>>());
+			if (relation(f1, f0)) list0.root.ptr = 0;
+			else                  list1.root.ptr = 0;
+
+			auto actual = list_to_vector(std::get<0>(result));
+			std::vector<int> expected = {0, 1, 2, 3, 4, 5};
+			EXPECT_EQ(actual, expected);
 		}
-		f = eop::begin(list0);
-		while (!eop::empty(f)) {
-			std::cout << "f(" << f.ptr << ")= " << source(f) << std::endl;
-			f = successor(f);
-		}
-		//eop::set_successor(f0, f1);
-		EXPECT_FALSE(eop::empty(successor(f0)));
-		std::cout << "end" << std::endl;
-		}
-		std::cout << "end2" << std::endl;
-		// std::cout << "successor" << std::endl;
-		// f0 = eop::successor(f0);
-		// EXPECT_EQ(f0, f1);
-		// std::cout << "source1 ";
-		// int i1 = eop::source(f1);
-		// std::cout << i1 << std::endl;
-		// std::cout << "source0 ";
-		// int i0 = eop::source(f0);
-		// std::cout << i0 << std::endl;
-		// EXPECT_EQ(1, i0);
-		// auto result = eop::combine_linked_nonempty(eop::begin(list0), eop::end(list0),
-		// 										  eop::begin(list1), eop::end(list0),
-		// 										  coordinate_less<eop::CoordinateType<SList>>(), 
-		// 										  eop::slist_forward_linker<eop::CoordinateType<SList>>());
+		EXPECT_EQ(0, eop::slist_node_count);
 	}
 }
