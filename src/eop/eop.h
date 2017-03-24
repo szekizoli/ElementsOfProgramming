@@ -2142,6 +2142,23 @@ namespace eop {
 	//
 
 	template<typename I>
+		requires(LinkedForwardIterator(I))
+	struct forward_linker
+	{
+		void operator()(I x, I y)
+		{
+			sink(x.ptr).forward_link = y.ptr;
+		}
+	};
+
+	template<typename I>
+		requires(LinkedForwardIterator(I))
+	struct iterator_type<forward_linker<I>>
+	{
+		typedef I type;
+	};
+
+	template<typename I>
 		requires(ForwardIterator(I))
 	void advance_tail(I& t, I& f)
 	{
@@ -2177,9 +2194,9 @@ namespace eop {
 	}
 
 	template<typename I, typename S, typename Pred>
-	requires(ForwardIterator(I) && ForwardLinker(S) &&
-	IteratorType(S) == I && UnaryPseudoPredicate(Pred) &&
-	I == Domain(Pred))
+		requires(ForwardIterator(I) && ForwardLinker(S) &&
+		IteratorType(S) == I && UnaryPseudoPredicate(Pred) &&
+		I == Domain(Pred))
 	std::pair<std::pair<I, I>, std::pair<I, I>>
 	split_linker(I f, I l, Pred p, S set_link)
 	{
@@ -2205,5 +2222,26 @@ namespace eop {
 		else      {         link_to_tail(t0, f); goto s2; }
 	s4: return std::pair<P, P>(P(h0, t0), P(h1, t1));
 	}
+
+	template<typename I, typename S, typename R>
+		requires(ForwardLinker(S) && I == IteratorType(S) &&
+		PseudoRelation(R) && I == Domain(R))
+	std::tuple<I, I, I>
+	combine_linked_nonempty(I f0, I l0, I f1, I l1, R r, S set_link)
+	{
+		linker_to_tail<S> link_to_tail(set_link);
+		I h; I t;
+		if (r(f1, f0)) { h = f1; advance_tail(t, f1); goto s1; }
+		else           { h = f0; advance_tail(t, f0); goto s0; }
+	s0: if (f0 == l0)                                 goto s2;
+	    if (r(f1, f0)) {         link_to_tail(t, f1); goto s1; }
+		else           {         advance_tail(t, f0); goto s0; }
+	s1: if (f1 == l1)                                 goto s3;
+		if (r(f1, f0)) {         advance_tail(t, f1); goto s1; }
+		else           {         link_to_tail(t, f0); goto s0; }
+	s2: set_link(t, f1); return std::make_tuple(h, t, l1);
+	s3: set_link(t, f0); return std::make_tuple(h, t, l0);
+	}
+
 
 } // namespace eop

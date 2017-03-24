@@ -46,38 +46,39 @@ namespace eop {
 
 	template<typename T>
 		requires(Regular(T))
-	struct slist_coordinate
+	struct slist_iterator
 	{
 		typedef T value_type;
 		typedef int weight_type;
 		pointer(slist_node<T>) ptr;
-		slist_coordinate(pointer(slist_node<T>) ptr = 0) : ptr(ptr) {}
+		slist_iterator(pointer(slist_node<T>) ptr = 0) : ptr(ptr) {}
+		slist_iterator(slist_iterator<T> const& x) : ptr(x.ptr) {}
 	};
 
 	template<typename T>
 		requires(Regular(T))
-	struct weight_type<slist_coordinate<T>>
+	struct weight_type<slist_iterator<T>>
 	{
 		typedef int type;
 	};
 
 	template<typename T>
 		requires(Regular(T))
-	struct value_type<slist_coordinate<T>>
+	struct value_type<slist_iterator<T>>
 	{
 		typedef T type;
 	};
 
 	template<typename T>
 		requires(Regular(T))
-	struct distance_type<slist_coordinate<T>>
+	struct distance_type<slist_iterator<T>>
 	{
 		typedef int type;
 	};
 
 	template<typename T>
 		requires(Regular(T))
-	bool empty(slist_coordinate<T> t)
+	bool empty(slist_iterator<T> t)
 	{
 		typedef pointer(slist_node<T>) I;
 		return t.ptr == I{ 0 };
@@ -85,49 +86,49 @@ namespace eop {
 
 	template<typename T>
 		requires(Regular(T))
-	slist_coordinate<T> successor(slist_coordinate<T> t)
+	slist_iterator<T> successor(slist_iterator<T> t)
 	{
-		return source(t.ptr).successor_link;
+		return slist_iterator<T>(source(t.ptr).successor_link);
 	}
 
 	template<typename T>
 		requires(Regular(T))
-	bool has_successor(slist_coordinate<T> t)
+	bool has_successor(slist_iterator<T> t)
 	{
 		return !empty<T>(source(t.ptr).successor_link);
 	}
 	
 	template<typename T>
 		requires(Regular(T))
-	void set_successor(slist_coordinate<T> c, slist_coordinate<T> s)
+	void set_successor(slist_iterator<T> c, slist_iterator<T> s)
 	{
-		source(c.ptr).successor_link = s.ptr;
+		sink(c.ptr).successor_link = s.ptr;
 	}
 
 	template<typename T>
 		requires(Regular(T))
-	bool operator==(slist_coordinate<T> const& a, slist_coordinate<T> const& b)
+	bool operator==(slist_iterator<T> const& a, slist_iterator<T> const& b)
 	{
 		return a.ptr == b.ptr;
 	}
 
 	template<typename T>
 		requires(Regular(T))
-	bool operator!=(slist_coordinate<T> const& a, slist_coordinate<T> const& b)
+	bool operator!=(slist_iterator<T> const& a, slist_iterator<T> const& b)
 	{
 		return a.ptr != b.ptr;
 	}
 
 	template<typename T>
 		requires(Regular(T))
-	T const& source(slist_coordinate<T> c)
+	T const& source(slist_iterator<T> c)
 	{
 		return source(c.ptr).value;
 	}
 
 	template<typename T>
 		requires(Regular(T))
-	T& sink(slist_coordinate<T> c)
+	T& sink(slist_iterator<T> c)
 	{
 		return sink(c.ptr).value;
 	}
@@ -155,7 +156,7 @@ namespace eop {
 		requires(Regular(T))
 	T source(initializer_list_coordinate<T> const& c)
 	{
-		return *c.first;
+		return source(c.first);
 	}
 
 	template<typename T>
@@ -179,7 +180,7 @@ namespace eop {
 	struct slist_node_construct 
 	{
 		typedef initializer_list_coordinate<T> ILC;
-		typedef slist_coordinate<T> C;
+		typedef slist_iterator<T> C;
 		slist_node_construct() {}
 		C operator()(T x, C s = C(0)) const
 		{
@@ -195,7 +196,7 @@ namespace eop {
 		requires(Regular(T))
 	struct slist_node_destroy
 	{
-		void operator()(slist_coordinate<T> c)
+		void operator()(slist_iterator<T> c)
 		{
 			--slist_node_count;
 			delete c.ptr;
@@ -208,7 +209,9 @@ namespace eop {
 	{
 		while (!empty(c))
 		{
+			std::cout << "Erasing (" << c.ptr << ")" << source(c) << ", with count " << slist_node_count << std::endl;
 			C s = successor(c);
+			if (!empty(s)) std::cout << "next: " << source(s) <<  std::endl;
 			node_deleter(c);
 			c = s;
 		}
@@ -237,7 +240,7 @@ namespace eop {
 		requires(Regular(T))
 	struct slist
 	{
-		using C = slist_coordinate<T>;
+		using C = slist_iterator<T>;
 		using Cons = slist_node_construct<T>;
 		using ILC =  initializer_list_coordinate<T>;
 		C root;
@@ -271,6 +274,7 @@ namespace eop {
 		// desctructor
 		~slist()
 		{
+			std::cout << "Erasing list" << std::endl;
 			list_erase(root, slist_node_destroy<T>());
 		}
 	};
@@ -279,21 +283,16 @@ namespace eop {
 		requires(Regular(T))
 	struct coordinate_type<slist<T>>
 	{
-		typedef slist_coordinate<T> type;
+		typedef slist_iterator<T> type;
 	};
 
 	template<typename T>
 		requires(Regular(T))
-	slist_coordinate<T> begin(slist<T> const& x) { return x.root; }
+	slist_iterator<T> begin(slist<T> const& x) { return slist_iterator<T>(x.root); }
 
 	template<typename T>
 		requires(Regular(T))
-	slist_coordinate<T> end(slist<T> const& x) 
-	{
-		slist_coordinate<T> f = begin(x);
-		while(!empty(f)) { f = successor(f); }
-		return f;
-	}
+	slist_iterator<T> end(slist<T> const& x)  { return slist_iterator<T>(); }
 
 	template<typename I>
 		requires(ForwardIterator(I))

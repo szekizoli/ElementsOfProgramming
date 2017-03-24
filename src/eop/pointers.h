@@ -20,7 +20,7 @@
 
 namespace eop {
 	template<typename T>
-	constexpr T& sink(pointer(T) x)
+	T& sink(pointer(T) x)
 	{
 		return *x;
 	}

@@ -1616,11 +1616,6 @@ namespace eoptest
 		}
 	};
 
-	void print(eop::slist_coordinate<int> c)
-	{
-		std::cout << "value: " << eop::source(c) << std::endl;
-	}
-
 	TEST(link_rearragnments, test_split_linker)
 	{
 		SList list {1, 2, 3, 4, 5};
@@ -1640,5 +1635,63 @@ namespace eoptest
 		std::vector<int> evens = list_to_vector(result.second.first, result.second.second);
 		std::vector<int> expected_evens {2, 4};
 		EXPECT_EQ(expected_evens, evens);
+	}
+
+	template<typename I>
+		requires(Readable(I) && Iterator(I))
+	struct coordinate_less
+	{
+		bool operator()(I const& a, I const& b)
+		{
+			return source(a) < source(b);
+		}
+	};
+
+	TEST(link_rearragnments, test_combine_linked_nonempty)
+	{
+		{
+		SList list0 {0};
+		SList list1 {1};
+		eop::slist_iterator<int> f0 = eop::begin(list0);
+		auto l0 = eop::end(list0);
+		eop::slist_iterator<int> f1 = eop::begin(list1);
+		auto l1 = eop::end(list1);
+		EXPECT_EQ(0, eop::source(f0));
+		EXPECT_EQ(1, eop::source(f1));
+		EXPECT_TRUE(eop::empty(l0));
+		EXPECT_TRUE(eop::empty(l1));
+		std::cout << "set_successor" << std::endl;
+		EXPECT_FALSE(eop::empty(f1)) << "List1 is not empty";
+		std::cout << f1.ptr << std::endl;
+		eop::sink(f0.ptr).successor_link = f1.ptr;
+		auto f = f0;
+		while (!empty(f)) {
+			std::cout << "f= " << source(f) << std::endl;
+			f = successor(f);
+		}
+		f = eop::begin(list0);
+		while (!eop::empty(f)) {
+			std::cout << "f(" << f.ptr << ")= " << source(f) << std::endl;
+			f = successor(f);
+		}
+		//eop::set_successor(f0, f1);
+		EXPECT_FALSE(eop::empty(successor(f0)));
+		std::cout << "end" << std::endl;
+		}
+		std::cout << "end2" << std::endl;
+		// std::cout << "successor" << std::endl;
+		// f0 = eop::successor(f0);
+		// EXPECT_EQ(f0, f1);
+		// std::cout << "source1 ";
+		// int i1 = eop::source(f1);
+		// std::cout << i1 << std::endl;
+		// std::cout << "source0 ";
+		// int i0 = eop::source(f0);
+		// std::cout << i0 << std::endl;
+		// EXPECT_EQ(1, i0);
+		// auto result = eop::combine_linked_nonempty(eop::begin(list0), eop::end(list0),
+		// 										  eop::begin(list1), eop::end(list0),
+		// 										  coordinate_less<eop::CoordinateType<SList>>(), 
+		// 										  eop::slist_forward_linker<eop::CoordinateType<SList>>());
 	}
 }

@@ -8,7 +8,7 @@ namespace eoptest {
 
     template<typename T>
 		requires(Regular(T))
-	std::vector<T> list_to_vector(eop::slist_coordinate<T> c)
+	std::vector<T> list_to_vector(eop::slist_iterator<T> c)
 	{
 		std::vector<T> v;
 		while (!empty(c)) {
@@ -20,7 +20,7 @@ namespace eoptest {
 
     template<typename T>
 		requires(Regular(T))
-	std::vector<T> list_to_vector(eop::slist_coordinate<T> f, eop::slist_coordinate<T> l)
+	std::vector<T> list_to_vector(eop::slist_iterator<T> f, eop::slist_iterator<T> l)
 	{
 		std::vector<T> v;
         if (empty(f)) return v;

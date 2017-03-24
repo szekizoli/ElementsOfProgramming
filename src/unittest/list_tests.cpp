@@ -7,16 +7,16 @@
 #include "testutils.h"
 
 namespace eoptest {
-	TEST(slist_tests, empty_slist_coordinate)
+	TEST(slist_tests, empty_slist_iterator)
 	{
-		eop::slist_coordinate<int> c{ 0 };
+		eop::slist_iterator<int> c{ 0 };
 		EXPECT_TRUE(eop::empty(c));
 	}
 
-	TEST(slist_tests, test_non_empty_slist_coordinate)
+	TEST(slist_tests, test_non_empty_slist_iterator)
 	{
 		eop::slist_node<int> n {1};
-		eop::slist_coordinate<int> c{ addressof(n) };
+		eop::slist_iterator<int> c{ addressof(n) };
 		EXPECT_FALSE(eop::empty(c));
 		EXPECT_FALSE(eop::has_successor(c));
 	}
@@ -24,12 +24,12 @@ namespace eoptest {
 	TEST(slist_tests, test_set_successor)
 	{
 		eop::slist_node<int> n0{ 1 };
-		eop::slist_coordinate<int> c0{ addressof(n0) };
+		eop::slist_iterator<int> c0{ addressof(n0) };
 		EXPECT_FALSE(eop::empty(c0));
 		EXPECT_FALSE(eop::has_successor(c0));
 
 		eop::slist_node<int> n1{ 2 };
-		eop::slist_coordinate<int> c1{ addressof(n1) };
+		eop::slist_iterator<int> c1{ addressof(n1) };
 		EXPECT_FALSE(eop::empty(c1));
 		EXPECT_FALSE(eop::has_successor(c1));
 
@@ -42,16 +42,16 @@ namespace eoptest {
 	TEST(slist_tests, test_forward_linker)
 	{
 		eop::slist_node<int> n0{ 1 };
-		eop::slist_coordinate<int> c0{ addressof(n0) };
+		eop::slist_iterator<int> c0{ addressof(n0) };
 		EXPECT_FALSE(eop::empty(c0));
 		EXPECT_FALSE(eop::has_successor(c0));
 
 		eop::slist_node<int> n1{ 2 };
-		eop::slist_coordinate<int> c1{ addressof(n1) };
+		eop::slist_iterator<int> c1{ addressof(n1) };
 		EXPECT_FALSE(eop::empty(c1));
 		EXPECT_FALSE(eop::has_successor(c1));
 
-		eop::slist_forward_linker<eop::slist_coordinate<int>> linker;
+		eop::slist_forward_linker<eop::slist_iterator<int>> linker;
 		linker(c0, c1);
 		EXPECT_TRUE(eop::has_successor(c0));
 		EXPECT_FALSE(eop::has_successor(c1));
@@ -61,19 +61,19 @@ namespace eoptest {
 	TEST(slist_tests, test_source)
 	{
 		eop::slist_node<int> n0{ 1 };
-		eop::slist_coordinate<int> c0{ addressof(n0) };
+		eop::slist_iterator<int> c0{ addressof(n0) };
 		EXPECT_EQ(n0.value, source(c0));
 	}
 
 	TEST(slist_tests, test_list_copy)
 	{
-		typedef eop::slist_coordinate<int> C;
+		typedef eop::slist_iterator<int> C;
 		typedef eop::slist_node_construct<int> Cons;
 		typedef eop::slist_node_destroy<int> ND;
 		eop::slist_node<int> n0{ 1 };
-		eop::slist_coordinate<int> c0{ addressof(n0) };
+		eop::slist_iterator<int> c0{ addressof(n0) };
 		eop::slist_node<int> n1{ 2 };
-		eop::slist_coordinate<int> c1{ addressof(n1) };
+		eop::slist_iterator<int> c1{ addressof(n1) };
 		eop::set_successor(c0, c1);
 
 		C cc = eop::list_copy<C, C, Cons>(c0);
@@ -87,7 +87,7 @@ namespace eoptest {
 
 	TEST(slist_tests, test_list_copy_empty)
 	{
-		typedef eop::slist_coordinate<int> C;
+		typedef eop::slist_iterator<int> C;
 		typedef eop::slist_node_construct<int> Cons;
 		typedef eop::slist_node_destroy<int> ND;
 		C c(0);
@@ -110,7 +110,7 @@ namespace eoptest {
 
 	TEST(slist_tests, test_slist_construct_from_value)
 	{
-		typedef eop::slist_coordinate<int> C;
+		typedef eop::slist_iterator<int> C;
 		{
 			eop::slist<int> list (12);
 			EXPECT_EQ(1, eop::slist_node_count);
