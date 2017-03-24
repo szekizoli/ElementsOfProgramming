@@ -1663,7 +1663,7 @@ namespace eoptest
 		std::cout << "set_successor" << std::endl;
 		EXPECT_FALSE(eop::empty(f1)) << "List1 is not empty";
 		std::cout << f1.ptr << std::endl;
-		eop::sink(f0.ptr).successor_link = f1.ptr;
+		eop::sink(f0.ptr).forward_link = f1.ptr;
 		auto f = f0;
 		while (!empty(f)) {
 			std::cout << "f= " << source(f) << std::endl;

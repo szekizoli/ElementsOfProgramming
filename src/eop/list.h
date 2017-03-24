@@ -31,9 +31,9 @@ namespace eop {
 		typedef T value_type;
 		typedef pointer(slist_node<T>) Link;
 		T value;
-		Link successor_link;
-		slist_node() : successor_link(0) {}
-		slist_node(T value, Link s = 0) : value(value), successor_link(s) {}
+		Link forward_link;
+		slist_node() : forward_link(0) {}
+		slist_node(T value, Link s = 0) : value(value), forward_link(s) {}
 		slist_node(const slist_node& other) = default;
 	};
 
@@ -88,21 +88,21 @@ namespace eop {
 		requires(Regular(T))
 	slist_iterator<T> successor(slist_iterator<T> t)
 	{
-		return slist_iterator<T>(source(t.ptr).successor_link);
+		return slist_iterator<T>(source(t.ptr).forward_link);
 	}
 
 	template<typename T>
 		requires(Regular(T))
 	bool has_successor(slist_iterator<T> t)
 	{
-		return !empty<T>(source(t.ptr).successor_link);
+		return !empty<T>(source(t.ptr).forward_link);
 	}
 	
 	template<typename T>
 		requires(Regular(T))
 	void set_successor(slist_iterator<T> c, slist_iterator<T> s)
 	{
-		sink(c.ptr).successor_link = s.ptr;
+		sink(c.ptr).forward_link = s.ptr;
 	}
 
 	template<typename T>
@@ -319,12 +319,12 @@ namespace eop {
 		typedef T value_type;
 		typedef pointer(T) Link;
 		T value;
-		Link successor_link;
+		Link forward_link;
 		Link predecessor_link;
 		// default constructor
-		list_node() : successor_link(0), predecessor_link(0) {}
+		list_node() : forward_link(0), predecessor_link(0) {}
 		list_node(T x, Link s_link = 0, Link p_link = 0) : value(x),
-			successor_link(s_link), predecessor_link(p_link) {}
+			forward_link(s_link), predecessor_link(p_link) {}
 		// copy constructor
 		list_node(list_node const& x) = default;
 	};
