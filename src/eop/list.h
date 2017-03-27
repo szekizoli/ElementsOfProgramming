@@ -238,10 +238,10 @@ namespace eop {
 		requires(Regular(T))
 	struct slist
 	{
-		using C = slist_iterator<T>;
+		using I = slist_iterator<T>;
 		using Cons = slist_node_construct<T>;
 		using ILC =  initializer_list_coordinate<T>;
-		C root;
+		I root;
 		// default constructor
 		slist() : root(0) {}
 
@@ -249,10 +249,10 @@ namespace eop {
 		slist(T x) : root(Cons()(x)) {}
 
 		// copy constructor
-		slist(const slist& x) : root(list_copy<C, C, Cons>(x.root)) {}
+		slist(const slist& x) : root(list_copy<I, I, Cons>(x.root)) {}
 
 		// list-initialization
-		slist(std::initializer_list<T> l) : root(list_copy<C, ILC, Cons>(ILC(l))) //root(Cons()(*begin(l)))
+		slist(std::initializer_list<T> l) : root(list_copy<I, ILC, Cons>(ILC(l))) //root(Cons()(*begin(l)))
 		{
 
 		}
@@ -266,7 +266,7 @@ namespace eop {
 		// append to head
 		slist(T x, const slist& l) : root(Cons()(x)) 
 		{
-			set_successor(root, list_copy<C, C, Cons>(l.root));
+			set_successor(root, list_copy<I, I, Cons>(l.root));
 		}
 
 		// desctructor

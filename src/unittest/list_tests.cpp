@@ -9,87 +9,87 @@
 namespace eoptest {
 	TEST(slist_tests, empty_slist_iterator)
 	{
-		eop::slist_iterator<int> c{ 0 };
-		EXPECT_TRUE(eop::empty(c));
+		eop::slist_iterator<int> i{ 0 };
+		EXPECT_TRUE(eop::empty(i));
 	}
 
 	TEST(slist_tests, test_non_empty_slist_iterator)
 	{
 		eop::slist_node<int> n {1};
-		eop::slist_iterator<int> c{ addressof(n) };
-		EXPECT_FALSE(eop::empty(c));
-		EXPECT_FALSE(eop::has_successor(c));
+		eop::slist_iterator<int> i{ addressof(n) };
+		EXPECT_FALSE(eop::empty(i));
+		EXPECT_FALSE(eop::has_successor(i));
 	}
 
 	TEST(slist_tests, test_set_successor)
 	{
 		eop::slist_node<int> n0{ 1 };
-		eop::slist_iterator<int> c0{ addressof(n0) };
-		EXPECT_FALSE(eop::empty(c0));
-		EXPECT_FALSE(eop::has_successor(c0));
+		eop::slist_iterator<int> i0{ addressof(n0) };
+		EXPECT_FALSE(eop::empty(i0));
+		EXPECT_FALSE(eop::has_successor(i0));
 
 		eop::slist_node<int> n1{ 2 };
-		eop::slist_iterator<int> c1{ addressof(n1) };
-		EXPECT_FALSE(eop::empty(c1));
-		EXPECT_FALSE(eop::has_successor(c1));
+		eop::slist_iterator<int> i1{ addressof(n1) };
+		EXPECT_FALSE(eop::empty(i1));
+		EXPECT_FALSE(eop::has_successor(i1));
 
-		set_successor(c0, c1);
-		EXPECT_TRUE(eop::has_successor(c0));
-		EXPECT_FALSE(eop::has_successor(c1));
-		EXPECT_EQ(c1, successor(c0));
+		set_successor(i0, i1);
+		EXPECT_TRUE(eop::has_successor(i0));
+		EXPECT_FALSE(eop::has_successor(i1));
+		EXPECT_EQ(i1, successor(i0));
 	}
 
 	TEST(slist_tests, test_forward_linker)
 	{
 		eop::slist_node<int> n0{ 1 };
-		eop::slist_iterator<int> c0{ addressof(n0) };
-		EXPECT_FALSE(eop::empty(c0));
-		EXPECT_FALSE(eop::has_successor(c0));
+		eop::slist_iterator<int> i0{ addressof(n0) };
+		EXPECT_FALSE(eop::empty(i0));
+		EXPECT_FALSE(eop::has_successor(i0));
 
 		eop::slist_node<int> n1{ 2 };
-		eop::slist_iterator<int> c1{ addressof(n1) };
-		EXPECT_FALSE(eop::empty(c1));
-		EXPECT_FALSE(eop::has_successor(c1));
+		eop::slist_iterator<int> i1{ addressof(n1) };
+		EXPECT_FALSE(eop::empty(i1));
+		EXPECT_FALSE(eop::has_successor(i1));
 
 		eop::slist_forward_linker<eop::slist_iterator<int>> linker;
-		linker(c0, c1);
-		EXPECT_TRUE(eop::has_successor(c0));
-		EXPECT_FALSE(eop::has_successor(c1));
-		EXPECT_EQ(c1, successor(c0));
+		linker(i0, i1);
+		EXPECT_TRUE(eop::has_successor(i0));
+		EXPECT_FALSE(eop::has_successor(i1));
+		EXPECT_EQ(i1, successor(i0));
 	}
 
 	TEST(slist_tests, test_source)
 	{
 		eop::slist_node<int> n0{ 1 };
-		eop::slist_iterator<int> c0{ addressof(n0) };
-		EXPECT_EQ(n0.value, source(c0));
+		eop::slist_iterator<int> i{ addressof(n0) };
+		EXPECT_EQ(n0.value, source(i));
 	}
 
 	TEST(slist_tests, test_list_copy)
 	{
-		typedef eop::slist_iterator<int> C;
+		typedef eop::slist_iterator<int> I;
 		typedef eop::slist_node_construct<int> Cons;
 		eop::slist_node<int> n0{ 1 };
-		eop::slist_iterator<int> c0{ addressof(n0) };
+		eop::slist_iterator<int> i0{ addressof(n0) };
 		eop::slist_node<int> n1{ 2 };
-		eop::slist_iterator<int> c1{ addressof(n1) };
-		eop::set_successor(c0, c1);
+		eop::slist_iterator<int> i1{ addressof(n1) };
+		eop::set_successor(i0, i1);
 
-		C cc = eop::list_copy<C, C, Cons>(c0);
-		EXPECT_FALSE(eop::empty(cc));
-		EXPECT_TRUE(eop::has_successor(cc));
+		I i_copy = eop::list_copy<I, I, Cons>(i0);
+		EXPECT_FALSE(eop::empty(i_copy));
+		EXPECT_TRUE(eop::has_successor(i_copy));
 		EXPECT_EQ(2, eop::slist_node_count);
 
-		eop::erase_all(cc);
+		eop::erase_all(i_copy);
 		EXPECT_EQ(0, eop::slist_node_count);
 	}
 
 	TEST(slist_tests, test_list_copy_empty)
 	{
-		typedef eop::slist_iterator<int> C;
+		typedef eop::slist_iterator<int> I;
 		typedef eop::slist_node_construct<int> Cons;
-		C c(0);
-		C r = eop::list_copy<C, C, Cons>(c);
+		I i(0);
+		I r = eop::list_copy<I, I, Cons>(i);
 		EXPECT_TRUE(eop::empty(r));
 		EXPECT_EQ(0, eop::slist_node_count);
 		eop::erase_all(r);
