@@ -1606,6 +1606,10 @@ namespace eoptest
 		EXPECT_FALSE(eop::bifurcate_less(begin(t4), begin(t0)));
 	}
 
+	//
+	// Chapter 8
+	//
+
 	template<typename I>
 		requires(Readable(I) && Iterator(I))
 	struct parity_predicate
@@ -1616,13 +1620,35 @@ namespace eoptest
 		}
 	};
 
+	TEST(link_rearragnments, test_forward_linker)
+	{
+		eop::slist_node<int> n0{ 1 };
+		eop::slist_iterator<int> i0{ addressof(n0) };
+		EXPECT_FALSE(eop::empty(i0));
+		EXPECT_FALSE(eop::has_successor(i0));
+
+		eop::slist_node<int> n1{ 2 };
+		eop::slist_iterator<int> i1{ addressof(n1) };
+		EXPECT_FALSE(eop::empty(i1));
+		EXPECT_FALSE(eop::has_successor(i1));
+
+		eop::forward_linker<eop::slist_iterator<int>> linker;
+		linker(i0, i1);
+		EXPECT_TRUE(eop::has_successor(i0));
+		EXPECT_FALSE(eop::has_successor(i1));
+		EXPECT_EQ(i1, successor(i0));
+	}
+
 	TEST(link_rearragnments, test_split_linker)
 	{
 		{
 			SList list {1, 2, 3, 4, 5};
 			auto b = eop::begin(list);
 			auto e = eop::end(list);
-			auto result = eop::split_linker(eop::begin(list), eop::end(list), parity_predicate<eop::CoordinateType<SList>>(), eop::slist_forward_linker<eop::CoordinateType<SList>>());
+			auto result = eop::split_linker(eop::begin(list), 
+											eop::end(list), 
+											parity_predicate<eop::CoordinateType<SList>>(), 
+											eop::forward_linker<eop::CoordinateType<SList>>());
 
 			auto size_odds = result.first.second - result.first.first + 1;
 			EXPECT_EQ(3, size_odds);

@@ -39,25 +39,6 @@ namespace eoptest {
 		EXPECT_EQ(i1, successor(i0));
 	}
 
-	TEST(slist_tests, test_forward_linker)
-	{
-		eop::slist_node<int> n0{ 1 };
-		eop::slist_iterator<int> i0{ addressof(n0) };
-		EXPECT_FALSE(eop::empty(i0));
-		EXPECT_FALSE(eop::has_successor(i0));
-
-		eop::slist_node<int> n1{ 2 };
-		eop::slist_iterator<int> i1{ addressof(n1) };
-		EXPECT_FALSE(eop::empty(i1));
-		EXPECT_FALSE(eop::has_successor(i1));
-
-		eop::slist_forward_linker<eop::slist_iterator<int>> linker;
-		linker(i0, i1);
-		EXPECT_TRUE(eop::has_successor(i0));
-		EXPECT_FALSE(eop::has_successor(i1));
-		EXPECT_EQ(i1, successor(i0));
-	}
-
 	TEST(slist_tests, test_source)
 	{
 		eop::slist_node<int> n0{ 1 };

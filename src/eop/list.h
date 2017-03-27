@@ -95,7 +95,7 @@ namespace eop {
 		requires(Regular(T))
 	bool has_successor(slist_iterator<T> t)
 	{
-		return !empty<T>(source(t.ptr).forward_link);
+		return !empty(successor(t));
 	}
 	
 	template<typename T>
@@ -290,23 +290,6 @@ namespace eop {
 	template<typename T>
 		requires(Regular(T))
 	slist_iterator<T> end(slist<T> const& x)  { return slist_iterator<T>(); }
-
-	template<typename I>
-		requires(ForwardIterator(I))
-	struct slist_forward_linker
-	{
-		void operator()(I& t, I& f) const
-		{
-			set_successor(t, f);
-		}
-	};
-
-	template<typename I>
-		requires(ForwardIterator(I))
-	struct iterator_type<slist_forward_linker<I>>
-	{
-		typedef I type;
-	};
 
 	// double-linked list
 	template<typename T>
