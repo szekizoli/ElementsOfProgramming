@@ -69,7 +69,6 @@ namespace eoptest {
 	{
 		typedef eop::slist_iterator<int> C;
 		typedef eop::slist_node_construct<int> Cons;
-		typedef eop::slist_node_destroy<int> ND;
 		eop::slist_node<int> n0{ 1 };
 		eop::slist_iterator<int> c0{ addressof(n0) };
 		eop::slist_node<int> n1{ 2 };
@@ -81,7 +80,7 @@ namespace eoptest {
 		EXPECT_TRUE(eop::has_successor(cc));
 		EXPECT_EQ(2, eop::slist_node_count);
 
-		eop::list_erase(cc, ND());
+		eop::erase_all(cc);
 		EXPECT_EQ(0, eop::slist_node_count);
 	}
 
@@ -89,12 +88,11 @@ namespace eoptest {
 	{
 		typedef eop::slist_iterator<int> C;
 		typedef eop::slist_node_construct<int> Cons;
-		typedef eop::slist_node_destroy<int> ND;
 		C c(0);
 		C r = eop::list_copy<C, C, Cons>(c);
 		EXPECT_TRUE(eop::empty(r));
 		EXPECT_EQ(0, eop::slist_node_count);
-		eop::list_erase(r, ND());
+		eop::erase_all(r);
 		EXPECT_EQ(0, eop::slist_node_count);
 	}
 

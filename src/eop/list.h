@@ -194,25 +194,25 @@ namespace eop {
 
 	template<typename T>
 		requires(Regular(T))
-	struct slist_node_destroy
+	slist_iterator<T> erase_first(slist_iterator<T> i)
 	{
-		void operator()(slist_iterator<T> c)
-		{
-			--slist_node_count;
-			delete c.ptr;
-		}
-	};
+		slist_iterator<T> n = successor(i);
+		--slist_node_count;
+		delete i.ptr;
+		return n;
+	}
 
-	template<typename C, typename ND>
-		requires(Regular(T) && ListNodeDeleter(ND))
-	void list_erase(C c, ND node_deleter)
+	template<typename T>
+		requires(Regular(T))
+	void erase_after(slist_iterator<T> i)
 	{
-		while (!empty(c))
-		{
-			C s = successor(c);
-			node_deleter(c);
-			c = s;
-		}
+		set_successor(i, erase_first(successor(i)));
+	}
+
+	template<typename T>
+	void erase_all(slist_iterator<T> i)
+	{
+		while(!empty(i)) i = erase_first(i);
 	}
 
 	template<typename C, typename C1, typename Cons>
@@ -272,7 +272,7 @@ namespace eop {
 		// desctructor
 		~slist()
 		{
-			list_erase(root, slist_node_destroy<T>());
+			erase_all(root);
 		}
 	};
 
