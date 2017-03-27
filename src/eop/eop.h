@@ -2159,6 +2159,41 @@ namespace eop {
 	};
 
 	template<typename I>
+		requires(LinkedBidirectionalIterator(I))
+	struct backward_linker
+	{
+		void operator()(I& x, I& y)
+		{
+			sink(y.ptr).backward_link = x.ptr;
+		}
+	};
+
+	template<typename I>
+		requires(LinkedBidirectionalIterator)
+	struct iterator_type<backward_linker<I>>
+	{
+		typedef I type;	
+	};
+
+	template<typename I>
+		requires(LinkedBidirectionalIterator(I))
+	struct bidirectional_linker
+	{
+		void operator()(I& x, I& y)
+		{
+			forward_linker<I>()(x, y);
+			backward_linker<I>()(x, y);
+		}
+	};
+
+	template<typename I>
+		requires(LinkedBidirectionalIterator)
+	struct iterator_type<bidirectional_linker<I>>
+	{
+		typedef I type;
+	};
+
+	template<typename I>
 		requires(ForwardIterator(I))
 	void advance_tail(I& t, I& f)
 	{
