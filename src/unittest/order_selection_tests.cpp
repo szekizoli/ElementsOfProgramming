@@ -1647,8 +1647,8 @@ namespace eoptest
 			SList list {1, 2, 3, 4, 5};
 			auto result = eop::split_linked(eop::begin(list), 
 											eop::end(list), 
-											iterator_parity_predicate<eop::CoordinateType<SList>>(), 
-											eop::forward_linker<eop::CoordinateType<SList>>());
+											iterator_parity_predicate<eop::IteratorType<SList>>(), 
+											eop::forward_linker<eop::IteratorType<SList>>());
 
 			auto size_odds = result.first.second - result.first.first + 1;
 			EXPECT_EQ(3, size_odds);
@@ -1679,10 +1679,11 @@ namespace eoptest
 	TEST(link_rearrangements, test_combine_linked_nonempty)
 	{
 		{
+			typedef eop::IteratorType<SList> I;
 			SList list0 {0, 2, 4};
 			SList list1 {1, 3, 5};
-			eop::slist_iterator<int> f0 = eop::begin(list0);
-			auto l0 = eop::end(list0);
+			I f0 = eop::begin(list0);
+			I l0 = eop::end(list0);
 			eop::slist_iterator<int> f1 = eop::begin(list1);
 			auto l1 = eop::end(list1);
 			EXPECT_EQ(0, eop::source(f0));
@@ -1691,14 +1692,14 @@ namespace eoptest
 			EXPECT_TRUE(eop::empty(l1));
 			EXPECT_FALSE(eop::empty(f1)) << "List1 is not empty";
 
-			iterator_less<eop::CoordinateType<SList>> relation;
+			iterator_less<I> relation;
 
-			auto result = eop::combine_linked_nonempty(eop::begin(list0), eop::end(list0),
+			std::tuple<I, I, I> result = eop::combine_linked_nonempty(eop::begin(list0), eop::end(list0),
 													eop::begin(list1), eop::end(list1),
 													relation,
-													eop::forward_linker<eop::CoordinateType<SList>>());
-			if (relation(f1, f0)) list0.root.ptr = 0;
-			else                  list1.root.ptr = 0;
+													eop::forward_linker<I>());
+			list0.root = std::get<0>(result);
+			list1.root.ptr = 0;
 
 			auto actual = list_to_vector(std::get<0>(result));
 			std::vector<int> expected = {0, 1, 2, 3, 4, 5};
@@ -1713,12 +1714,12 @@ namespace eoptest
 			SList list0 {};
 			SList list1 {1, 3, 5};
 
-			iterator_less<eop::CoordinateType<SList>> relation;
+			typedef eop::IteratorType<SList> I;
 
 			auto result = eop::combine_linked(eop::begin(list0), eop::end(list0),
 											  eop::begin(list1), eop::end(list1),
-											  relation,
-											  eop::forward_linker<eop::CoordinateType<SList>>());
+											  iterator_less<I>(),
+											  eop::forward_linker<I>());
 
 			auto actual = list_to_vector(std::get<0>(result));
 			std::vector<int> expected = {1, 3, 5};
@@ -1733,12 +1734,12 @@ namespace eoptest
 			SList list0 {0, 2, 4};
 			SList list1 {};
 
-			iterator_less<eop::CoordinateType<SList>> relation;
+			typedef eop::IteratorType<SList> I;
 
 			auto result = eop::combine_linked(eop::begin(list0), eop::end(list0),
 											  eop::begin(list1), eop::end(list1),
-											  relation,
-											  eop::forward_linker<eop::CoordinateType<SList>>());
+											  iterator_less<I>(),
+											  eop::forward_linker<I>());
 
 			auto actual = list_to_vector(std::get<0>(result));
 			std::vector<int> expected = {0, 2, 4};
@@ -1750,15 +1751,14 @@ namespace eoptest
 	TEST(link_rearrangements, test_combine_linked_both_empty)
 	{
 		{
+			typedef eop::IteratorType<SList> I;
 			SList list0;
 			SList list1;
 
-			iterator_less<eop::CoordinateType<SList>> relation;
-
 			auto result = eop::combine_linked(eop::begin(list0), eop::end(list0),
 											  eop::begin(list1), eop::end(list1),
-											  relation,
-											  eop::forward_linker<eop::CoordinateType<SList>>());
+											  iterator_less<I>(),
+											  eop::forward_linker<I>());
 
 			auto actual = list_to_vector(std::get<0>(result));
 			std::vector<int> expected;
@@ -1772,7 +1772,7 @@ namespace eoptest
 		{
 			SList l {1, 2, 3, 4};
 			eop::slist_iterator<int> head = eop::reverse_append(begin(l), end(l), end(l), 
-														eop::forward_linker<eop::CoordinateType<SList>>());
+														eop::forward_linker<eop::IteratorType<SList>>());
 			l.root = head;
 			std::vector<int> actual = list_to_vector(begin(l));
 			std::vector<int> expected {4, 3, 2, 1};
@@ -1801,7 +1801,7 @@ namespace eoptest
 			auto result = eop::partition_linked(eop::begin(list), 
 											eop::end(list), 
 											parity_predicate<int>(), 
-											eop::forward_linker<eop::CoordinateType<SList>>());
+											eop::forward_linker<eop::IteratorType<SList>>());
 
 			auto size_odds = result.first.second - result.first.first + 1;
 			EXPECT_EQ(3, size_odds);
@@ -1839,10 +1839,25 @@ namespace eoptest
 			auto result = eop::merge_linked_nonempty(eop::begin(list0), eop::end(list0),
 													eop::begin(list1), eop::end(list1),
 													relation,
-													eop::forward_linker<eop::CoordinateType<SList>>());
-			if (relation(1, 0)) list0.root.ptr = 0;
-			else                list1.root.ptr = 0;
+													eop::forward_linker<eop::IteratorType<SList>>());
+			set_root(list0, result.first);
+			//list0.root = result.first;
+			list1.root = eop::slist_iterator<int>();
 
+			auto actual = list_to_vector(result.first);
+			std::vector<int> expected = {0, 1, 2, 3, 4, 5};
+			EXPECT_EQ(actual, expected);
+		}
+		EXPECT_EQ(0, eop::slist_node_count);
+	}
+
+	TEST(applications_of_link_rearrangements, test_sort_linked_nonempty_n)
+	{
+		{
+			SList l {4, 0, 2, 5, 1, 3};
+			auto result = eop::sort_linked_nonempty_n(eop::begin(l), 6,
+										 			  std::less<int>(),
+													  eop::forward_linker<eop::IteratorType<SList>>());											  
 			auto actual = list_to_vector(result.first);
 			std::vector<int> expected = {0, 1, 2, 3, 4, 5};
 			EXPECT_EQ(actual, expected);

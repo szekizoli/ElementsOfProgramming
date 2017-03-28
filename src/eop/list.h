@@ -290,7 +290,7 @@ namespace eop {
 
 	template<typename T>
 		requires(Regular(T))
-	struct coordinate_type<slist<T>>
+	struct iterator_type<slist<T>>
 	{
 		typedef slist_iterator<T> type;
 	};

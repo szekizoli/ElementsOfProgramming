@@ -132,14 +132,6 @@ template<typename T>
 	requires(Readable(T))
 struct value_type;
 
-
-// template<typename T>
-// 	requires(Readable(T))
-// struct value_type<typename std::vector<T>::iterator>
-// {
-// 	typedef T type;
-// };
-
 #define ValueType(T) typename T::value_type
 
 template<typename T>
@@ -186,6 +178,7 @@ using CoordinateType = typename coordinate_type< T >::type;
 		requires(Iterator(T))
 	struct iterator_type;
 
-#define IteratorType(T) typename eop::iterator_type<T>::type
+template<typename T>
+using IteratorType = typename iterator_type<T>::type;
 
 } // namespace eop 

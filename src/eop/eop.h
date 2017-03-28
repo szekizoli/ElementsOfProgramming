@@ -2206,7 +2206,7 @@ namespace eop {
 	requires(ForwardLinker(S))
 	struct linker_to_tail 
 	{
-		typedef IteratorType(S) I;
+		typedef IteratorType<S> I;
 		const S set_link;
 		linker_to_tail(const S& set_link) : set_link(set_link) {}
 		void operator()(I& t, I& f) const {
@@ -2300,7 +2300,7 @@ namespace eop {
 		{
 			
 			// Precondition: successor(f) is defined_test_names_
-			IteratorType(S) tmp = successor(f);
+			IteratorType<S> tmp = successor(f);
 			set_link(f, h);
 			h = f;
 			f = tmp;
@@ -2371,5 +2371,22 @@ namespace eop {
 		set_link(last, l1);
 		return std::pair<I, I>(std::get<0>(t), l1);
 	}
+
+	template<typename I, typename S, typename R>
+		requires(Readable(I) && ForwardLinker(S) && I == IteratorType(S)
+			&& Relation(R) && ValueType(I) == Domain(R))
+	std::pair<I, I> sort_linked_nonempty_n(I f, DistanceType(I) n, R r, S set_link)
+	{
+		// Precondition: counted_range(f, n) && 0 < n && weak_oredering(r)
+
+		typedef DistanceType(I) N;
+		typedef std::pair<I, I> P;
+		if (n == N(1)) return P(f, successor(f));
+		N h = half_nonnegative(n);
+		P p0 = sort_linked_nonempty_n(f, h, r, set_link);
+		P p1 = sort_linked_nonempty_n(p0.second, n - h, r, set_link);
+		return merge_linked_nonempty(p0.first, p0.second, p1.first, p1.second, r, set_link);
+	}
+
 
 } // namespace eop

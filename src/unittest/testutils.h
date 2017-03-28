@@ -2,6 +2,7 @@
 #include <vector>
 #include "intrinsics.h"
 #include "list.h"
+#include "type_functions.h"
 
 // utility methods for testing
 namespace eoptest {
@@ -31,5 +32,12 @@ namespace eoptest {
         v.push_back(source(f));
 		return v;
 	}
+
+	template<typename L>
+	void set_root(L& list, eop::IteratorType<L> & i) 
+	{
+		list.root = i;
+	}
+
 
 }
