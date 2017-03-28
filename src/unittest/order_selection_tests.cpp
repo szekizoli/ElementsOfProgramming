@@ -1607,8 +1607,10 @@ namespace eoptest
 	}
 
 	//
-	// Chapter 8
+	// Chapter 8 Coordinates with Mutable Successors
 	//
+
+	// 8.2 Link Rearrangements
 
 	template<typename I>
 		requires(Readable(I) && Iterator(I))
@@ -1620,7 +1622,7 @@ namespace eoptest
 		}
 	};
 
-	TEST(link_rearragnments, test_forward_linker)
+	TEST(link_rearrangements, test_forward_linker)
 	{
 		eop::slist_node<int> n0{ 1 };
 		eop::slist_iterator<int> i0{ addressof(n0) };
@@ -1639,7 +1641,7 @@ namespace eoptest
 		EXPECT_EQ(i1, successor(i0));
 	}
 
-	TEST(link_rearragnments, test_split_linker)
+	TEST(link_rearrangements, test_split_linker)
 	{
 		{
 			SList list {1, 2, 3, 4, 5};
@@ -1676,7 +1678,7 @@ namespace eoptest
 		}
 	};
 
-	TEST(link_rearragnments, test_combine_linked_nonempty)
+	TEST(link_rearrangements, test_combine_linked_nonempty)
 	{
 		{
 			SList list0 {0, 2, 4};
@@ -1707,7 +1709,7 @@ namespace eoptest
 		EXPECT_EQ(0, eop::slist_node_count);
 	}
 
-	TEST(link_rearragnments, test_combine_linked_first_empty)
+	TEST(link_rearrangements, test_combine_linked_first_empty)
 	{
 		{
 			SList list0 {};
@@ -1727,7 +1729,7 @@ namespace eoptest
 		EXPECT_EQ(0, eop::slist_node_count);
 	}
 
-	TEST(link_rearragnments, test_combine_linked_second_empty)
+	TEST(link_rearrangements, test_combine_linked_second_empty)
 	{
 		{
 			SList list0 {0, 2, 4};
@@ -1747,7 +1749,7 @@ namespace eoptest
 		EXPECT_EQ(0, eop::slist_node_count);
 	}
 
-	TEST(link_rearragnments, test_combine_linked_both_empty)
+	TEST(link_rearrangements, test_combine_linked_both_empty)
 	{
 		{
 			SList list0;
@@ -1763,6 +1765,21 @@ namespace eoptest
 			auto actual = list_to_vector(std::get<0>(result));
 			std::vector<int> expected;
 			EXPECT_EQ(actual, expected);
+		}
+		EXPECT_EQ(0, eop::slist_node_count);
+	}
+
+	TEST(link_rearrangements, test_reverse_append)
+	{
+		{
+			SList l {1, 2, 3, 4};
+			eop::slist_iterator<int> head = eop::reverse_append(begin(l), end(l), end(l), 
+														eop::forward_linker<eop::CoordinateType<SList>>());
+			l.root = head;
+			std::vector<int> actual = list_to_vector(begin(l));
+			std::vector<int> expected {4, 3, 2, 1};
+			EXPECT_EQ(actual, expected);
+
 		}
 		EXPECT_EQ(0, eop::slist_node_count);
 	}

@@ -2186,7 +2186,7 @@ namespace eop {
 		}
 	};
 
-	template<typename I>
+	template<typename 	I>
 		requires(LinkedBidirectionalIterator)
 	struct iterator_type<bidirectional_linker<I>>
 	{
@@ -2288,6 +2288,32 @@ namespace eop {
 		if (f0 == l0) return std::make_tuple(f1, f1, l1);
 		if (f1 == l1) return std::make_tuple(f0, f0, l0);
 		return combine_linked_nonempty(f0, l0, f1, l1, r, set_link);
+	}
+
+	template<typename I, typename S>
+		requires(ForwardLinker(S) && I == IteratorType(S))
+	struct linker_to_head
+	{
+		S set_link;
+		linker_to_head(const S& set_link) : set_link(set_link) {}
+		void operator()(I& h, I& f)
+		{
+			
+			// Precondition: successor(f) is defined_test_names_
+			IteratorType(S) tmp = successor(f);
+			set_link(f, h);
+			h = f;
+			f = tmp;
+		}
+	};
+
+	template<typename I, typename S>
+		requires(ForwardLinker(S) && I == IteratorType(S))
+	I reverse_append(I f, I l, I h, S set_link)
+	{
+		linker_to_head<I, S> link_to_head(set_link);
+		while(f != l) link_to_head(h, f);
+		return h;
 	}
 
 } // namespace eop

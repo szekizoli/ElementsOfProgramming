@@ -8,12 +8,12 @@ namespace eoptest {
 
     template<typename T>
 		requires(Regular(T))
-	std::vector<T> list_to_vector(eop::slist_iterator<T> c)
+	std::vector<T> list_to_vector(eop::slist_iterator<T> i)
 	{
 		std::vector<T> v;
-		while (!empty(c)) {
-			v.push_back(source(c));
-			c = successor(c);
+		while (!empty(i)) {
+			v.push_back(source(i));
+			i = successor(i);
 		}
 		return v;
 	}

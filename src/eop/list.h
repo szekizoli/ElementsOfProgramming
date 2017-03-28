@@ -252,10 +252,7 @@ namespace eop {
 		slist(const slist& x) : root(list_copy<I, I, Cons>(x.root)) {}
 
 		// list-initialization
-		slist(std::initializer_list<T> l) : root(list_copy<I, ILC, Cons>(ILC(l))) //root(Cons()(*begin(l)))
-		{
-
-		}
+		slist(std::initializer_list<T> l) : root(list_copy<I, ILC, Cons>(ILC(l))) {}
 
 		// move constructor
 		slist(slist&& x) : root(x.root) 
