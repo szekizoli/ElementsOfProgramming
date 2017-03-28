@@ -1614,7 +1614,7 @@ namespace eoptest
 
 	template<typename I>
 		requires(Readable(I) && Iterator(I))
-	struct parity_predicate
+	struct iterator_parity_predicate
 	{
 		bool operator()(I const& x)
 		{
@@ -1645,11 +1645,9 @@ namespace eoptest
 	{
 		{
 			SList list {1, 2, 3, 4, 5};
-			auto b = eop::begin(list);
-			auto e = eop::end(list);
-			auto result = eop::split_linker(eop::begin(list), 
+			auto result = eop::split_linked(eop::begin(list), 
 											eop::end(list), 
-											parity_predicate<eop::CoordinateType<SList>>(), 
+											iterator_parity_predicate<eop::CoordinateType<SList>>(), 
 											eop::forward_linker<eop::CoordinateType<SList>>());
 
 			auto size_odds = result.first.second - result.first.first + 1;
@@ -1670,7 +1668,7 @@ namespace eoptest
 
 	template<typename I>
 		requires(Readable(I) && Iterator(I))
-	struct coordinate_less
+	struct iterator_less
 	{
 		bool operator()(I const& a, I const& b)
 		{
@@ -1693,7 +1691,7 @@ namespace eoptest
 			EXPECT_TRUE(eop::empty(l1));
 			EXPECT_FALSE(eop::empty(f1)) << "List1 is not empty";
 
-			coordinate_less<eop::CoordinateType<SList>> relation;
+			iterator_less<eop::CoordinateType<SList>> relation;
 
 			auto result = eop::combine_linked_nonempty(eop::begin(list0), eop::end(list0),
 													eop::begin(list1), eop::end(list1),
@@ -1715,7 +1713,7 @@ namespace eoptest
 			SList list0 {};
 			SList list1 {1, 3, 5};
 
-			coordinate_less<eop::CoordinateType<SList>> relation;
+			iterator_less<eop::CoordinateType<SList>> relation;
 
 			auto result = eop::combine_linked(eop::begin(list0), eop::end(list0),
 											  eop::begin(list1), eop::end(list1),
@@ -1735,7 +1733,7 @@ namespace eoptest
 			SList list0 {0, 2, 4};
 			SList list1 {};
 
-			coordinate_less<eop::CoordinateType<SList>> relation;
+			iterator_less<eop::CoordinateType<SList>> relation;
 
 			auto result = eop::combine_linked(eop::begin(list0), eop::end(list0),
 											  eop::begin(list1), eop::end(list1),
@@ -1755,7 +1753,7 @@ namespace eoptest
 			SList list0;
 			SList list1;
 
-			coordinate_less<eop::CoordinateType<SList>> relation;
+			iterator_less<eop::CoordinateType<SList>> relation;
 
 			auto result = eop::combine_linked(eop::begin(list0), eop::end(list0),
 											  eop::begin(list1), eop::end(list1),
@@ -1780,6 +1778,43 @@ namespace eoptest
 			std::vector<int> expected {4, 3, 2, 1};
 			EXPECT_EQ(actual, expected);
 
+		}
+		EXPECT_EQ(0, eop::slist_node_count);
+	}
+
+	// 8.3 Applications of Link Rearrangements
+
+	template<typename T>
+		requires(Integer(T))
+	struct parity_predicate
+	{
+		bool operator()(T x)
+		{
+			return x % 2 == 0;
+		}
+	};
+
+	TEST(applications_of_link_rearrangements, test_partition_linked)
+	{
+		{
+			SList list {1, 2, 3, 4, 5};
+			auto result = eop::partition_linked(eop::begin(list), 
+											eop::end(list), 
+											parity_predicate<int>(), 
+											eop::forward_linker<eop::CoordinateType<SList>>());
+
+			auto size_odds = result.first.second - result.first.first + 1;
+			EXPECT_EQ(3, size_odds);
+			auto size_evens = result.second.second - result.second.first + 1;
+			EXPECT_EQ(2, size_evens);
+
+			std::vector<int> odds = list_to_vector(result.first.first, result.first.second);
+			std::vector<int> expected_odds {1, 3, 5};
+			EXPECT_EQ(expected_odds, odds);
+
+			std::vector<int> evens = list_to_vector(result.second.first, result.second.second);
+			std::vector<int> expected_evens {2, 4};
+			EXPECT_EQ(expected_evens, evens);
 		}
 		EXPECT_EQ(0, eop::slist_node_count);
 	}

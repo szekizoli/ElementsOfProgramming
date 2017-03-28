@@ -2233,7 +2233,7 @@ namespace eop {
 		IteratorType(S) == I && UnaryPseudoPredicate(Pred) &&
 		I == Domain(Pred))
 	std::pair<std::pair<I, I>, std::pair<I, I>>
-	split_linker(I f, I l, Pred p, S set_link)
+	split_linked(I f, I l, Pred p, S set_link)
 	{
 		// Precondition: bounded_range(f, l)
 		typedef std::pair<I, I> P;
@@ -2331,5 +2331,15 @@ namespace eop {
 			return p(source(i));
 		}
 	};
+
+	template<typename I, typename S, typename P>
+		requires(ForwardLinker(S) && I == IteratorType(S) &&
+		UnaryPredicate(P) && ValueType(I) == Domain(P))
+	std::pair<std::pair<I, I>, std::pair<I, I>>
+	partition_linked(I f, I l, P p, S set_link)
+	{
+		predicate_source<I, P> ps(p);
+		return split_linked(f, l, ps, set_link);
+	}
 
 } // namespace eop
