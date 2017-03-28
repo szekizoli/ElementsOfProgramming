@@ -2316,4 +2316,20 @@ namespace eop {
 		return h;
 	}
 
+	// 8.3 Applications of Link Rearrangements
+
+	// Adapter to convert from predicate on values to predicate on iterators
+	template<typename I, typename P>
+		requires(Readable(I) && Predicate(P)
+		&& ValueType(I) == Domain(P))
+	struct predicate_source
+	{
+		P p;
+		predicate_source(P p) : p(p) {}
+		bool operator()(I i)
+		{
+			return p(source(i));
+		}
+	};
+
 } // namespace eop
