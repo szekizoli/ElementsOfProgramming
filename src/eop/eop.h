@@ -2342,4 +2342,19 @@ namespace eop {
 		return split_linked(f, l, ps, set_link);
 	}
 
+	// Adapter to convert from relation on values to relation on iterators
+	template<typename I0, typename I1, typename R>
+	requires(Readable(I0) && Readable(I1) &&
+		ValueType(I0) == ValueType(I1) && Relation(R) &&
+		ValueType(I0) == Domain(R))
+	struct relation_source
+	{
+		R r;
+		relation_source(R r) : r(r) {}
+		bool operator()(I0 i0, I1 i1)
+		{
+			return r(source(i0), source(i1));
+		}
+	};
+
 } // namespace eop
