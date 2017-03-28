@@ -2357,4 +2357,19 @@ namespace eop {
 		}
 	};
 
+	template<typename I, typename S, typename R>
+		requires(Readable(I) && ForwardLinker(S) && I == IteratorType(S)
+		&& Relation(R) && ValueType(I) == Domain(R))
+	std::pair<I, I> merge_linked_nonempty(I f0, I l0, I f1, I l1, R r, S set_link)
+	{
+		// Precondition: f0 != l0 & f1 != l1
+		// Precondition: increasing_range(f0, l0, r)
+		// Precondition: increasing_range(f1, l1, r)
+		relation_source<I, I, R> rs(r);
+		std::tuple<I, I, I> t = combine_linked_nonempty(f0, l0, f1, l1, rs, set_link);
+		I last = find_last(std::get<1>(t), std::get<2>(t));
+		set_link(last, l1);
+		return std::pair<I, I>(std::get<0>(t), l1);
+	}
+
 } // namespace eop

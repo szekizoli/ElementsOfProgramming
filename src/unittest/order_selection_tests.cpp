@@ -1818,4 +1818,35 @@ namespace eoptest
 		}
 		EXPECT_EQ(0, eop::slist_node_count);
 	}
+
+	TEST(applications_of_link_rearrangements, test_merge_linked_nonempty)
+	{
+		{
+			SList list0 {0, 2, 4};
+			SList list1 {1, 3, 5};
+			eop::slist_iterator<int> f0 = eop::begin(list0);
+			auto l0 = eop::end(list0);
+			eop::slist_iterator<int> f1 = eop::begin(list1);
+			auto l1 = eop::end(list1);
+			EXPECT_EQ(0, eop::source(f0));
+			EXPECT_EQ(1, eop::source(f1));
+			EXPECT_TRUE(eop::empty(l0));
+			EXPECT_TRUE(eop::empty(l1));
+			EXPECT_FALSE(eop::empty(f1)) << "List1 is not empty";
+
+			std::less<int> relation;
+
+			auto result = eop::merge_linked_nonempty(eop::begin(list0), eop::end(list0),
+													eop::begin(list1), eop::end(list1),
+													relation,
+													eop::forward_linker<eop::CoordinateType<SList>>());
+			if (relation(1, 0)) list0.root.ptr = 0;
+			else                list1.root.ptr = 0;
+
+			auto actual = list_to_vector(result.first);
+			std::vector<int> expected = {0, 1, 2, 3, 4, 5};
+			EXPECT_EQ(actual, expected);
+		}
+		EXPECT_EQ(0, eop::slist_node_count);
+	}
 }

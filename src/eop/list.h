@@ -53,6 +53,21 @@ namespace eop {
 		pointer(slist_node<T>) ptr;
 		slist_iterator(pointer(slist_node<T>) ptr = 0) : ptr(ptr) {}
 		slist_iterator(slist_iterator<T> const& x) : ptr(x.ptr) {}
+		slist_iterator(slist_iterator<T> && x) : ptr(x.ptr) 
+		{
+			x.ptr = 0;
+		}
+		slist_iterator<T>& operator=(slist_iterator<T> const& x)
+		{
+			ptr = x.ptr;
+			return *this;
+		}
+		slist_iterator<T>& operator=(slist_iterator<T> && x)
+		{
+			ptr = x.ptr;
+			x.ptr = 0;
+			return *this;
+		}
 	};
 
 	template<typename T>
