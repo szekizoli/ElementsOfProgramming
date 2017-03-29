@@ -66,10 +66,6 @@ namespace eop {
 		return power_unary(x, n, f, FunctionTrait(F)());
 	}
 
-	// int increment(const int& x) {
-	// 	return x + 1;
-	// }
-
 	template<typename F>
 		requires(Transformation(F))
 	DistanceType(F) distance(Domain(F) x, Domain(F) y, F f, transformation_trait) {

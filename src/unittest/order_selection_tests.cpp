@@ -19,7 +19,7 @@
 #include "testutils.h"
 
 namespace eop
-{
+{	
 	using std::vector;
 
 	template<typename T>
@@ -34,6 +34,8 @@ namespace eoptest
 	using std::vector;
 	using std::pair;
 	using std::swap;
+
+	using namespace eop;
 
 	int less(int a, int b) {
 		return a < b;
@@ -1641,29 +1643,26 @@ namespace eoptest
 		EXPECT_EQ(i1, successor(i0));
 	}
 
-	TEST(link_rearrangements, test_split_linker)
+	TEST(link_rearrangements, test_split_linked)
 	{
-		{
-			SList list {1, 2, 3, 4, 5};
-			auto result = eop::split_linked(eop::begin(list), 
-											eop::end(list), 
-											iterator_parity_predicate<eop::IteratorType<SList>>(), 
-											eop::forward_linker<eop::IteratorType<SList>>());
+		test_slist<5> l;
+		auto result = eop::split_linked(begin(l), 
+										end(l), 
+										iterator_parity_predicate<eop::IteratorType<SList>>(), 
+										eop::forward_linker<eop::IteratorType<SList>>());
 
-			auto size_odds = result.first.second - result.first.first + 1;
-			EXPECT_EQ(3, size_odds);
-			auto size_evens = result.second.second - result.second.first + 1;
-			EXPECT_EQ(2, size_evens);
+		auto size_odds = result.first.second - result.first.first + 1;
+		EXPECT_EQ(2, size_odds);
+		auto size_evens = result.second.second - result.second.first + 1;
+		EXPECT_EQ(3, size_evens);
 
-			std::vector<int> odds = list_to_vector(result.first.first, result.first.second);
-			std::vector<int> expected_odds {1, 3, 5};
-			EXPECT_EQ(expected_odds, odds);
+		std::vector<int> odds = list_to_vector(result.first.first, result.first.second);
+		std::vector<int> expected_odds {1, 3};
+		EXPECT_EQ(expected_odds, odds);
 
-			std::vector<int> evens = list_to_vector(result.second.first, result.second.second);
-			std::vector<int> expected_evens {2, 4};
-			EXPECT_EQ(expected_evens, evens);
-		}
-		EXPECT_EQ(0, eop::slist_node_count);
+		std::vector<int> evens = list_to_vector(result.second.first, result.second.second);
+		std::vector<int> expected_evens {0, 2, 4};
+		EXPECT_EQ(expected_evens, evens);
 	}
 
 	template<typename I>
@@ -1678,34 +1677,25 @@ namespace eoptest
 
 	TEST(link_rearrangements, test_combine_linked_nonempty)
 	{
-		{
-			typedef eop::IteratorType<SList> I;
-			SList list0 {0, 2, 4};
-			SList list1 {1, 3, 5};
-			I f0 = eop::begin(list0);
-			I l0 = eop::end(list0);
-			eop::slist_iterator<int> f1 = eop::begin(list1);
-			auto l1 = eop::end(list1);
-			EXPECT_EQ(0, eop::source(f0));
-			EXPECT_EQ(1, eop::source(f1));
-			EXPECT_TRUE(eop::empty(l0));
-			EXPECT_TRUE(eop::empty(l1));
-			EXPECT_FALSE(eop::empty(f1)) << "List1 is not empty";
+		typedef eop::IteratorType<SList> I;
+		test_slist<3> l0(0, 2);
+		test_slist<3> l1(1, 2);
+		I f0 = begin(l0);
+		I f1 = begin(l1);
+		EXPECT_EQ(0, eop::source(f0));
+		EXPECT_EQ(1, eop::source(f1));
 
-			iterator_less<I> relation;
+		iterator_less<I> relation;
 
-			std::tuple<I, I, I> result = eop::combine_linked_nonempty(eop::begin(list0), eop::end(list0),
-													eop::begin(list1), eop::end(list1),
-													relation,
-													eop::forward_linker<I>());
-			list0.root = std::get<0>(result);
-			list1.root.ptr = 0;
+		std::tuple<I, I, I> result = eop::combine_linked_nonempty(
+												f0, end(l0),
+												f1, end(l1),
+												relation,
+												eop::forward_linker<I>());
 
-			auto actual = list_to_vector(std::get<0>(result));
-			std::vector<int> expected = {0, 1, 2, 3, 4, 5};
-			EXPECT_EQ(actual, expected);
-		}
-		EXPECT_EQ(0, eop::slist_node_count);
+		auto actual = list_to_vector(std::get<0>(result));
+		std::vector<int> expected = {0, 1, 2, 3, 4, 5};
+		EXPECT_EQ(expected, actual);
 	}
 
 	TEST(link_rearrangements, test_combine_linked_first_empty)
@@ -1713,6 +1703,7 @@ namespace eoptest
 		{
 			SList list0 {};
 			SList list1 {1, 3, 5};
+			EXPECT_EQ(3, eop::slist_node_count());
 
 			typedef eop::IteratorType<SList> I;
 
@@ -1723,9 +1714,9 @@ namespace eoptest
 
 			auto actual = list_to_vector(std::get<0>(result));
 			std::vector<int> expected = {1, 3, 5};
-			EXPECT_EQ(actual, expected);
+			EXPECT_EQ(expected, actual);
 		}
-		EXPECT_EQ(0, eop::slist_node_count);
+		EXPECT_EQ(0, eop::slist_node_count());
 	}
 
 	TEST(link_rearrangements, test_combine_linked_second_empty)
@@ -1733,6 +1724,7 @@ namespace eoptest
 		{
 			SList list0 {0, 2, 4};
 			SList list1 {};
+			EXPECT_EQ(3, eop::slist_node_count());
 
 			typedef eop::IteratorType<SList> I;
 
@@ -1743,9 +1735,9 @@ namespace eoptest
 
 			auto actual = list_to_vector(std::get<0>(result));
 			std::vector<int> expected = {0, 2, 4};
-			EXPECT_EQ(actual, expected);
+			EXPECT_EQ(expected, actual);
 		}
-		EXPECT_EQ(0, eop::slist_node_count);
+		EXPECT_EQ(0, eop::slist_node_count());
 	}
 
 	TEST(link_rearrangements, test_combine_linked_both_empty)
@@ -1762,24 +1754,19 @@ namespace eoptest
 
 			auto actual = list_to_vector(std::get<0>(result));
 			std::vector<int> expected;
-			EXPECT_EQ(actual, expected);
+			EXPECT_EQ(expected, actual);
 		}
-		EXPECT_EQ(0, eop::slist_node_count);
+		EXPECT_EQ(0, eop::slist_node_count());
 	}
 
 	TEST(link_rearrangements, test_reverse_append)
 	{
-		{
-			SList l {1, 2, 3, 4};
-			eop::slist_iterator<int> head = eop::reverse_append(begin(l), end(l), end(l), 
-														eop::forward_linker<eop::IteratorType<SList>>());
-			l.root = head;
-			std::vector<int> actual = list_to_vector(begin(l));
-			std::vector<int> expected {4, 3, 2, 1};
-			EXPECT_EQ(actual, expected);
-
-		}
-		EXPECT_EQ(0, eop::slist_node_count);
+		test_slist<4> l(1, 1);
+		eop::slist_iterator<int> head = eop::reverse_append(begin(l), end(l), end(l), 
+													eop::forward_linker<eop::IteratorType<SList>>());
+		std::vector<int> actual = list_to_vector(head);
+		std::vector<int> expected {4, 3, 2, 1};
+		EXPECT_EQ(expected, actual);
 	}
 
 	// 8.3 Applications of Link Rearrangements
@@ -1796,72 +1783,76 @@ namespace eoptest
 
 	TEST(applications_of_link_rearrangements, test_partition_linked)
 	{
-		{
-			SList list {1, 2, 3, 4, 5};
-			auto result = eop::partition_linked(eop::begin(list), 
-											eop::end(list), 
+		test_slist<5> list(1);
+		auto result = eop::partition_linked(begin(list), 
+											end(list), 
 											parity_predicate<int>(), 
 											eop::forward_linker<eop::IteratorType<SList>>());
 
-			auto size_odds = result.first.second - result.first.first + 1;
-			EXPECT_EQ(3, size_odds);
-			auto size_evens = result.second.second - result.second.first + 1;
-			EXPECT_EQ(2, size_evens);
+		auto size_odds = result.first.second - result.first.first + 1;
+		EXPECT_EQ(3, size_odds);
+		auto size_evens = result.second.second - result.second.first + 1;
+		EXPECT_EQ(2, size_evens);
 
-			std::vector<int> odds = list_to_vector(result.first.first, result.first.second);
-			std::vector<int> expected_odds {1, 3, 5};
-			EXPECT_EQ(expected_odds, odds);
+		std::vector<int> odds = list_to_vector(result.first.first, result.first.second);
+		std::vector<int> expected_odds {1, 3, 5};
+		EXPECT_EQ(expected_odds, odds);
 
-			std::vector<int> evens = list_to_vector(result.second.first, result.second.second);
-			std::vector<int> expected_evens {2, 4};
-			EXPECT_EQ(expected_evens, evens);
-		}
-		EXPECT_EQ(0, eop::slist_node_count);
+		std::vector<int> evens = list_to_vector(result.second.first, result.second.second);
+		std::vector<int> expected_evens {2, 4};
+		EXPECT_EQ(expected_evens, evens);
 	}
 
 	TEST(applications_of_link_rearrangements, test_merge_linked_nonempty)
 	{
-		{
-			SList list0 {0, 2, 4};
-			SList list1 {1, 3, 5};
-			eop::slist_iterator<int> f0 = eop::begin(list0);
-			auto l0 = eop::end(list0);
-			eop::slist_iterator<int> f1 = eop::begin(list1);
-			auto l1 = eop::end(list1);
-			EXPECT_EQ(0, eop::source(f0));
-			EXPECT_EQ(1, eop::source(f1));
-			EXPECT_TRUE(eop::empty(l0));
-			EXPECT_TRUE(eop::empty(l1));
-			EXPECT_FALSE(eop::empty(f1)) << "List1 is not empty";
+		typedef slist_iterator<int> I;
+		test_slist<3> list0(0, 2);
+		test_slist<3> list1(1, 2);
+		I f0 = begin(list0);
+		I l0 = end(list0);
+		I f1 = begin(list1);
+		I l1 = end(list1);
+		EXPECT_EQ(0, eop::source(f0));
+		EXPECT_EQ(1, eop::source(f1));
+		EXPECT_TRUE(eop::empty(l0));
+		EXPECT_TRUE(eop::empty(l1));
+		EXPECT_FALSE(eop::empty(f1)) << "List1 is not empty";
 
-			std::less<int> relation;
+		std::less<int> relation;
 
-			auto result = eop::merge_linked_nonempty(eop::begin(list0), eop::end(list0),
-													eop::begin(list1), eop::end(list1),
-													relation,
-													eop::forward_linker<eop::IteratorType<SList>>());
-			set_root(list0, result.first);
-			//list0.root = result.first;
-			list1.root = eop::slist_iterator<int>();
+		auto result = eop::merge_linked_nonempty(begin(list0), end(list0),
+												 begin(list1), end(list1),
+												 relation,
+												 forward_linker<I>());
+		auto actual = list_to_vector(result.first);
+		std::vector<int> expected = {0, 1, 2, 3, 4, 5};
+		EXPECT_EQ(expected, actual);
+	}
 
-			auto actual = list_to_vector(result.first);
-			std::vector<int> expected = {0, 1, 2, 3, 4, 5};
-			EXPECT_EQ(actual, expected);
-		}
-		EXPECT_EQ(0, eop::slist_node_count);
+	slist_iterator<int> common_test_sort_linked_nonempty_n(SList const& list, std::vector<int> const& expected, std::string const& message)
+	{
+		auto result = eop::sort_linked_nonempty_n(eop::begin(list), expected.size(),
+										 		  std::less<int>(),
+												  eop::forward_linker<eop::IteratorType<SList>>());											  
+		auto actual = list_to_vector(result.first);
+		EXPECT_EQ(expected, actual) << message;
+		return result.first;
+	}
+
+	void common_test_sort_linked_nonempty_n(std::initializer_list<int> input, std::initializer_list<int> expected, std::string const& message)
+	{
+		SList l0(input);
+		l0.root = common_test_sort_linked_nonempty_n(l0, std::vector<int>(expected), message);
 	}
 
 	TEST(applications_of_link_rearrangements, test_sort_linked_nonempty_n)
 	{
 		{
-			SList l {4, 0, 2, 5, 1, 3};
-			auto result = eop::sort_linked_nonempty_n(eop::begin(l), 6,
-										 			  std::less<int>(),
-													  eop::forward_linker<eop::IteratorType<SList>>());											  
-			auto actual = list_to_vector(result.first);
-			std::vector<int> expected = {0, 1, 2, 3, 4, 5};
-			EXPECT_EQ(actual, expected);
+			common_test_sort_linked_nonempty_n({4, 0, 2, 5, 1, 3}, {0, 1, 2, 3, 4, 5}, "sort faiiled");
+			common_test_sort_linked_nonempty_n({5, 4, 3, 2, 1, 0}, {0, 1, 2, 3, 4, 5}, "sort faiiled");
+			common_test_sort_linked_nonempty_n({0, 1, 2, 3, 4, 5}, {0, 1, 2, 3, 4, 5}, "sort faiiled");
+			common_test_sort_linked_nonempty_n({0, 1, 2, 5, 3, 4}, {0, 1, 2, 3, 4, 5}, "sort faiiled");
 		}
-		EXPECT_EQ(0, eop::slist_node_count);
+		EXPECT_EQ(0, eop::slist_node_count());
 	}
 }

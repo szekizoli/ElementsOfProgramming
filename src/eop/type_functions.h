@@ -14,7 +14,6 @@
 #pragma once
 
 #include "intrinsics.h"
-#include <vector>
 
 namespace eop {
 

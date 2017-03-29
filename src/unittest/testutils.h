@@ -39,5 +39,36 @@ namespace eoptest {
 		list.root = i;
 	}
 
+	template<int N>
+	std::array<eop::slist_node<int>, N> create_list(int first, int diff)
+	{
+		typedef eop::slist_node<int> SN;
+		std::array<SN, N> a;
+		a[N-1] = SN(first + (N-1)*diff);
+		for (int i = N-2; !(i < 0); --i) {
+			a[i] = SN(first + i*diff, addressof(a[i+1]));
+		}
+		return a;
+	}
 
+	template<int N>
+	struct test_slist
+	{
+		std::array<eop::slist_node<int>, N> array;
+		test_slist(int first = 0, int diff = 1) : array(create_list<N>(first, diff)) {}
+		test_slist(test_slist<N> const& o) : array(o.array) {}
+		test_slist(test_slist<N> && o) : array(std::move(o.array)) {}
+	};
+
+	template<int N>
+	eop::slist_iterator<int> begin(test_slist<N> l)
+	{
+		return eop::slist_iterator<int>(addressof(l.array[0]));
+	}
+
+	template<int N>
+	eop::slist_iterator<int> end(test_slist<N> l)
+	{
+		return eop::slist_iterator<int>();
+	}
 }

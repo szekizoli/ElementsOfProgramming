@@ -21,9 +21,7 @@
 #include "intrinsics.h"
 #include "pointers.h"
 
-
 namespace eop {
-
 	template<typename T>
 		requires(Regular(T))
 	struct slist_node 
@@ -188,7 +186,7 @@ namespace eop {
 		return initializer_list_coordinate<T>(c.first + 1, c.last);
 	}
 
-	static int slist_node_count = 0; /* ***** TESTING ***** */
+	int& slist_node_count();
 
 	template<typename T>
 		requires(Regular(T))
@@ -199,7 +197,7 @@ namespace eop {
 		slist_node_construct() {}
 		C operator()(T x, C s = C(0)) const
 		{
-			++slist_node_count;
+			++slist_node_count();
 			return C(new slist_node<T>(x, s.ptr));
 		}
 		C operator()(ILC c)    const { return (*this)(source(c), C(0)); }
@@ -212,7 +210,7 @@ namespace eop {
 	slist_iterator<T> erase_first(slist_iterator<T> i)
 	{
 		slist_iterator<T> n = successor(i);
-		--slist_node_count;
+		--slist_node_count();
 		delete i.ptr;
 		return n;
 	}
