@@ -2374,7 +2374,7 @@ namespace eop {
 	std::pair<I, I> sort_linked_nonempty_n(I f, DistanceType(I) n, R r, S set_link)
 	{
 		// Precondition: counted_range(f, n) && 0 < n && weak_oredering(r)
-
+		
 		typedef DistanceType(I) N;
 		typedef std::pair<I, I> P;
 		if (n == N(1)) return P(f, successor(f));
@@ -2384,5 +2384,12 @@ namespace eop {
 		return merge_linked_nonempty(p0.first, p0.second, p1.first, p1.second, r, set_link);
 	}
 
+	// Merge sort analysis
+	// Worst-case of calling relation R
+	// T(N) = C*N + 2*T(N/2) = C*N + 2*(C*N/2 + 2*T(N/4)) = C*N + C*N + 4*(C*N/4 + 2*T(N/8)) = lg(N)*C*N = O(N*lgN) 
+	// Worst-case of calling relinking - when always call set_link after calling relation_source
+	// o(N*lgN)
+	
+	 
 
 } // namespace eop
