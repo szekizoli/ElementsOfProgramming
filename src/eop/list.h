@@ -18,6 +18,7 @@
 
 #include <initializer_list>
 
+#include "eop.h"
 #include "intrinsics.h"
 #include "pointers.h"
 
@@ -113,9 +114,10 @@ namespace eop {
 	
 	template<typename T>
 		requires(Regular(T))
-	void set_successor(slist_iterator<T> c, slist_iterator<T> s)
+	void set_forward_link(slist_iterator<T> c, slist_iterator<T> s)
 	{
-		sink(c.ptr).forward_link = s.ptr;
+		forward_linker<slist_iterator<T>>()(c, s);
+		//sink(c.ptr).forward_link = s.ptr;
 	}
 
 	template<typename T>
@@ -148,26 +150,26 @@ namespace eop {
 
 	template<typename T>
 		requires(Regular(T))
-	struct initializer_list_coordinate
+	struct initializer_list_iterator
 	{
 		typedef typename std::initializer_list<T> List;
 		typedef typename std::initializer_list<T>::iterator Iterator; 
 		Iterator first;
 		Iterator last;
-		initializer_list_coordinate(Iterator f, Iterator l) : first(f), last(l) {}
-		initializer_list_coordinate(List const& l) : first(begin(l)), last(end(l)) {}
+		initializer_list_iterator(Iterator f, Iterator l) : first(f), last(l) {}
+		initializer_list_iterator(List const& l) : first(begin(l)), last(end(l)) {}
 	};
 
 	template<typename T>
 		requires(Regular(T))
-	bool empty(initializer_list_coordinate<T> const& c)
+	bool empty(initializer_list_iterator<T> const& c)
 	{
 		return c.first == c.last;
 	}
 
 	template<typename T>
 		requires(Regular(T))
-	T source(initializer_list_coordinate<T> const& c)
+	T source(initializer_list_iterator<T> const& c)
 	{
 		return source(c.first);
 	}
@@ -177,32 +179,32 @@ namespace eop {
 	typename std::initializer_list<T>::iterator successor(typename std::initializer_list<T>::iterator const& i)
 	{
 		return i + 1;
-	} 
+	}
 
 	template<typename T>
 		requires(Regular(T))
-	initializer_list_coordinate<T> successor(initializer_list_coordinate<T> const& c)
+	initializer_list_iterator<T> successor(initializer_list_iterator<T> const& c)
 	{
-		return initializer_list_coordinate<T>(c.first + 1, c.last);
+		return initializer_list_iterator<T>(c.first + 1, c.last);
 	}
 
 	int& slist_node_count();
 
 	template<typename T>
 		requires(Regular(T))
-	struct slist_node_construct 
+	struct slist_node_construct
 	{
-		typedef initializer_list_coordinate<T> ILC;
-		typedef slist_iterator<T> C;
+		typedef initializer_list_iterator<T> ILI;
+		typedef slist_iterator<T> I;
 		slist_node_construct() {}
-		C operator()(T x, C s = C(0)) const
+		I operator()(T x, I s = I(0)) const
 		{
 			++slist_node_count();
-			return C(new slist_node<T>(x, s.ptr));
+			return I(new slist_node<T>(x, s.ptr));
 		}
-		C operator()(ILC c)    const { return (*this)(source(c), C(0)); }
-		C operator()(C c)      const { return (*this)(source(c), C(0)); }
-		C operator()(C c, C s) const { return (*this)(source(c), s); }
+		I operator()(ILI i)    const { return (*this)(source(i)); }
+		I operator()(I i)      const { return (*this)(source(i)); }
+		I operator()(I i, I s) const { return (*this)(source(i), s); }
 	};
 
 	template<typename T>
@@ -219,7 +221,7 @@ namespace eop {
 		requires(Regular(T))
 	void erase_after(slist_iterator<T> i)
 	{
-		set_successor(i, erase_first(successor(i)));
+		set_forward_link(i, erase_first(successor(i)));
 	}
 
 	template<typename T>
@@ -239,7 +241,7 @@ namespace eop {
 		c = successor(c);
 		while (!empty(c))
 		{
-			set_successor(l, construct_node(c));
+			set_forward_link(l, construct_node(c));
 			l = successor(l);
 			c = successor(c);
 		}
@@ -253,7 +255,7 @@ namespace eop {
 	{
 		using I = slist_iterator<T>;
 		using Cons = slist_node_construct<T>;
-		using ILC =  initializer_list_coordinate<T>;
+		using ILI =  initializer_list_iterator<T>;
 		I root;
 		// default constructor
 		slist() : root(0) {}
@@ -265,7 +267,7 @@ namespace eop {
 		slist(const slist& x) : root(list_copy<I, I, Cons>(x.root)) {}
 
 		// list-initialization
-		slist(std::initializer_list<T> l) : root(list_copy<I, ILC, Cons>(ILC(l))) {}
+		slist(std::initializer_list<T> const& l) : root(list_copy<I, ILI, Cons>(ILI(l))) {}
 
 		// move constructor
 		slist(slist&& x) : root(x.root) 
@@ -276,7 +278,7 @@ namespace eop {
 		// append to head
 		slist(T x, const slist& l) : root(Cons()(x)) 
 		{
-			set_successor(root, list_copy<I, I, Cons>(l.root));
+			set_forward_link(root, list_copy<I, I, Cons>(l.root));
 		}
 
 		// desctructor
@@ -310,11 +312,11 @@ namespace eop {
 		typedef pointer(T) Link;
 		T value;
 		Link forward_link;
-		Link predecessor_link;
+		Link backward_link;
 		// default constructor
-		list_node() : forward_link(0), predecessor_link(0) {}
+		list_node() : forward_link(0), backward_link(0) {}
 		list_node(T x, Link s_link = 0, Link p_link = 0) : value(x),
-			forward_link(s_link), predecessor_link(p_link) {}
+			forward_link(s_link), backward_link(p_link) {}
 		// copy constructor
 		list_node(list_node const& x) = default;
 	};
@@ -326,14 +328,172 @@ namespace eop {
 		typedef T type;
 	};
 
+	int& list_node_count();
+
 	template<typename T>
 		requires(Regular(T))
-	struct list_coordinate
+	struct list_iterator
 	{
 		typedef T value_type;
-		typedef int weight_type;
+		typedef int distance_type;
 		pointer(list_node<T>) ptr;
-		list_coordinate(pointer(list_node<T>) ptr = 0) : ptr(ptr) {}
+		// Default constructor
+		list_iterator(pointer(list_node<T>) ptr = 0) : ptr(ptr) {}
+		// Copy constructor
+		list_iterator(list_iterator<T> const& o) : ptr(o.ptr) {}
+		// Move constructor
+		list_iterator(list_iterator<T> && o) : ptr(o.ptr) 
+		{
+			o.ptr = 0;
+		}
+		// Copy assignment
+		list_iterator<T>& operator=(list_iterator<T> const& o)
+		{
+			ptr = o.ptr;
+			return *this;
+		}
+		// Move assignment
+		list_iterator<T>& operator=(list_iterator<T> && o)
+		{
+			ptr = o.ptr;
+			o.ptr = 0;
+			return *this;
+		}
+	};
+
+	// Equality
+	template<typename T>
+		requires(Regular(T))
+	bool operator==(list_iterator<T> const& l, list_iterator<T> const& r)
+	{
+		return l.ptr == r.ptr;
+	}
+
+	// Inequality
+	template<typename T>
+		requires(Regular(T))
+	bool operator!=(list_iterator<T> const& l, list_iterator<T> const& r)
+	{
+		return !(l == r);
+	}
+
+	template<typename T>
+		requires(Regular(T))
+	struct iterator_concept<list_iterator<T>>
+	{
+		typedef bidirectional_iterator_tag concept;
+	};
+
+	template<typename T>
+		requires(Regular(T))
+	struct value_type<list_iterator<T>>
+	{
+		typedef T type;
+	};
+
+	template<typename T>
+		requires(Regular(T))
+	struct distance_type<list_iterator<T>>
+	{
+		typedef T type;
+	};
+
+	template<typename T>
+		requires(Regular(T))
+	bool empty(list_iterator<T> const& i)
+	{
+		typedef pointer(slist_node<T>) I;
+		return i.ptr == I{0};
+	}
+
+	template<typename T>
+		requires(Regular(T))
+	list_iterator<T> successor(list_iterator<T> t)
+	{
+		return list_iterator<T>(source(t.ptr).forward_link);
+	}
+
+	template<typename T>
+		requires(Regular(T))
+	bool has_successor(list_iterator<T> t)
+	{
+		return !empty(successor(t));
+	}
+	
+	template<typename T>
+		requires(Regular(T))
+	void set_link_forward(list_iterator<T> c, list_iterator<T> s)
+	{
+		forward_linker<list_iterator<T>>()(c, s);
+	}
+
+	template<typename T>
+		requires(Regular(T))
+	list_iterator<T> predecessor(list_iterator<T> t)
+	{
+		return list_iterator<T>(source(t.ptr).backward_link);
+	}
+
+	template<typename T>
+		requires(Regular(T))
+	bool has_predecessor(list_iterator<T> t)
+	{
+		return !empty(predecessor(t));
+	}
+	
+	template<typename T>
+		requires(Regular(T))
+	void set_link_backward(list_iterator<T> c, list_iterator<T> s)
+	{
+		backward_linker<list_iterator<T>>()(c, s);
+	}
+
+	template<typename T>
+		requires(Regular(T))
+	void set_link_bidirectional(list_iterator<T> c, list_iterator<T> s)
+	{
+		bidirectional_linker<list_iterator<T>>()(c, s);
+	}
+
+	template<typename T>
+		requires(Regular(T))
+	const T& source(list_iterator<T> i)
+	{
+		return source(i.ptr).value;
+	}
+
+	template<typename T>
+		requires(Regular(T))
+	T& sink(list_iterator<T> i)
+	{
+		return sink(i.ptr).value;
+	}
+
+	template<typename T>
+		requires(Regular(T))
+	struct less<list_iterator<T>>
+	{
+		bool operator()(list_iterator<T> i,
+					 	list_iterator<T> j)
+		{
+			return i.ptr < j.ptr;	
+		}
+	};
+
+	template<typename T>
+		requires(Regular(T))
+	void erase(list_iterator<T> i)
+	{
+		bidirectional_linker<list_iterator<T>>(predecessor(i), successor(i));
+		delete i.ptr;
+		--list_node_count();
+	}
+
+	template<typename T>
+		requires(Regular(T))
+	struct list
+	{
+		
 	};
 
 } // namespace eop

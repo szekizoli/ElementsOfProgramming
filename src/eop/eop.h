@@ -2389,7 +2389,28 @@ namespace eop {
 	// T(N) = C*N + 2*T(N/2) = C*N + 2*(C*N/2 + 2*T(N/4)) = C*N + C*N + 4*(C*N/4 + 2*T(N/8)) = lg(N)*C*N = O(N*lgN) 
 	// Worst-case of calling relinking - when always call set_link after calling relation_source
 	// o(N*lgN)
-	
-	 
+
+	template<typename I, typename S, typename R>
+		requires(Readable(I) && ForwardLinker(S) && I == IteratorType(S)
+			&& Relation(R) && ValueType(I) == Domain(R))
+	std::pair<I, I> sort_linked_n(I f, DistanceType(I) n, R r, S set_link)
+	{
+		typedef DistanceType(I) N;
+		if (n == N(0)) return std::pair<I, I>(f, f);
+		return sort_linked_nonempty_n(f, n, r, set_link);
+	}
+
+	template<typename I, typename R>
+		requires(Readable(I) && Relation(R) && ValueType(I) == Domain(R))
+	std::pair<I, I> sort_bidirectioanl_linked_nonempty_n(I f, DistanceType(I) n, R r)
+	{
+		std::pair<I, I> p = sort_linked_nonempty_n(f, n, r, forward_linker<I>());
+		f = p.first;
+		while(f != p.second) { 
+			set_backward_link(f, successor(f)); 
+			f = sucessor(f); 
+		}
+		return p;
+	}
 
 } // namespace eop

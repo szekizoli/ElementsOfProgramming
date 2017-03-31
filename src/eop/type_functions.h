@@ -180,4 +180,26 @@ using CoordinateType = typename coordinate_type< T >::type;
 template<typename T>
 using IteratorType = typename iterator_type<T>::type;
 
+
+// Chapter 10 - Rearrangements
+
+// The IteratorTag concept has the following models:
+
+struct iterator_tag               {};
+struct forward_iterator_tag       {};
+struct bidirectional_iterator_tag {};
+struct indexed_iterator_tag       {};
+struct random_access_iterator_tag {};
+
+
+	template<typename I>
+		requires(Iterator(I))
+	struct iterator_concept
+	{
+		typedef iterator_tag concept;
+	};
+
+template<typename I>
+using IteratorConcept = typename iterator_concept<I>::concept;
+
 } // namespace eop 

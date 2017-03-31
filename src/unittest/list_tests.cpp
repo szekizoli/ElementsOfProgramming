@@ -21,7 +21,7 @@ namespace eoptest {
 		EXPECT_FALSE(eop::has_successor(i));
 	}
 
-	TEST(slist_tests, test_set_successor)
+	TEST(slist_tests, test_set_forward_link)
 	{
 		eop::slist_node<int> n0{ 1 };
 		eop::slist_iterator<int> i0{ addressof(n0) };
@@ -33,7 +33,7 @@ namespace eoptest {
 		EXPECT_FALSE(eop::empty(i1));
 		EXPECT_FALSE(eop::has_successor(i1));
 
-		set_successor(i0, i1);
+		set_forward_link(i0, i1);
 		EXPECT_TRUE(eop::has_successor(i0));
 		EXPECT_FALSE(eop::has_successor(i1));
 		EXPECT_EQ(i1, successor(i0));
@@ -54,7 +54,7 @@ namespace eoptest {
 		eop::slist_iterator<int> i0{ addressof(n0) };
 		eop::slist_node<int> n1{ 2 };
 		eop::slist_iterator<int> i1{ addressof(n1) };
-		eop::set_successor(i0, i1);
+		eop::set_forward_link(i0, i1);
 
 		I i_copy = eop::list_copy<I, I, Cons>(i0);
 		EXPECT_FALSE(eop::empty(i_copy));
