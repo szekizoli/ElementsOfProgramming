@@ -4,6 +4,9 @@
 
 
 namespace epwc {
+
+	// Lecture 5
+
 	template<typename I, typename Comparator>
 	// requires I is a ForwardIterator
 	// and Compare is StrictWeakOrdering on ValueType(I)
@@ -47,4 +50,9 @@ namespace epwc {
 		}
 		return result;
 	}
+
+	//
+	// Lecture 6
+	//
+	
 }
