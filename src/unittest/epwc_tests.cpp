@@ -58,6 +58,7 @@ namespace epwctest {
 	// requires Regular(T)
 	struct adder
 	{
+	        typedef T argument_type;
 		T operator()(T const& l, T const& r)
 		{
 			return l + r;
@@ -79,7 +80,7 @@ namespace epwctest {
 	TEST(binary_counter, add_elements_w_counter) 
 	{
 		std::vector<int> elements {8, 3, 1, 7, 9, 6, 2, 5 };
-		binary_counter<int, adder<int>> counter(adder<int>(), 0);
+		binary_counter<adder<int>> counter(adder<int>(), 0);
 		for (int i : elements) counter.add(i);
 		int result = counter.reduce();
 		EXPECT_EQ(41, result);
@@ -89,10 +90,11 @@ namespace epwctest {
 	// requires Regular(T)
 	struct min
 	{
-		T operator()(T const& l, T const& r)
-		{
-			return r < l ? r : l; 
-		}
+	  typedef T argument_type;
+	  T operator()(T const& l, T const& r)
+	  {
+	    return r < l ? r : l; 
+	  }
 	};
 
 	TEST(binary_counter, min_elements) 

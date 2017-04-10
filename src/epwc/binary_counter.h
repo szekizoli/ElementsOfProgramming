@@ -73,7 +73,7 @@ T reduce_counter(I f, I l, Op op, T const& zero)
 // - vector for the counter
 // - zero
 // - op
-template<typename T, typename Op>
+template<typename Op, typename T = typename Op::argument_type>
 class binary_counter
 {
   // Members.
@@ -104,7 +104,7 @@ public:
 
 template<typename I, typename Compare>
 I min_element_binary(I f, I l, Compare cmp) {
-  binary_counter<I, MinOp<Compare>> min_counter(MinOp<Compare>(cmp), l);
+  binary_counter<MinOp<Compare>, I> min_counter(MinOp<Compare>(cmp), l);
   while(f != l) min_counter.add(f++);
   return min_counter.reduce();
 }
