@@ -2,15 +2,16 @@
 #include "list_pool.h"
 
 template<typename I>
-struct iterator_with_list
+struct iterator_and_list
 {
-  I i;
   typedef typename I::value_type value_type;
-  typedef typename list_pool<value_type>::list_type list_type;
+  typedef typename list_pool<I>::list_type list_type;
+
+  I i;
   list_type list;
-  iterator_with_list(I i, list_type list = list_type())
+  iterator_and_list(I i, list_type list = list_type())
     : i(i), list(list) {}
-  iterator_with_list operator=(iterator_with_list const& x) {
+  iterator_and_list operator=(iterator_and_list const& x) {
     i = x.i;
     list = x.list;
     return *this;
@@ -22,23 +23,23 @@ struct iterator_with_list
 };
 
 template<typename I>
-bool operator==(iterator_with_list<I> const& l, iterator_with_list<I> const& r) {
+bool operator==(iterator_and_list<I> const& l, iterator_and_list<I> const& r) {
   return l.i == r.i;
 }
 
 template<typename I>
-bool operator!=(iterator_with_list<I> const& l, iterator_with_list<I> const& r) {
+bool operator!=(iterator_and_list<I> const& l, iterator_and_list<I> const& r) {
   return l.i != r.i;
 }
 
 template<typename I>
-iterator_with_list<I> operator++(iterator_with_list<I> const& i) {
-  return iterator_with_list<I>(++i.i, i.list);
+iterator_and_list<I> operator++(iterator_and_list<I> const& i) {
+  return iterator_and_list<I>(++i.i, i.list);
 }
 
-template<typename I>
-I merge(list_pool<typename I::value_type>& pool, I x, I y) {
-  x.list = pool.allocate(*y, x.list);
+template<typename T, typename I>
+I merge(list_pool<T>& pool, I x, I y) {
+  x.list = pool.allocate(y.i, x.list);
   free_list(pool, y.list);
   return x;
 }
@@ -63,14 +64,27 @@ public:
   }
 };
 
+template<typename Compare>
+class compare_source {
+private:
+  Compare cmp;
+public:
+  compare_source(Compare cmp) : cmp(cmp) {}
+
+  template<typename I>
+  bool operator()(I x, I y) {
+    return cmp(*x, *y);
+  }  
+};
+
 template<typename I, typename Compare>
-std::pair<I, typename I::value_type> min_two_element_binary(I f, I l, Compare cmp) {
-  typedef iterator_with_list<I> IL;
-  typedef typename I::value_type T;
-  list_pool<T> pool;
-  binary_counter<MinTwoOp<T, Compare>, IL> min_counter(MinTwoOp<T, Compare>(cmp, pool), IL(l));
+std::pair<I, I> min_two_element_binary(I f, I l, Compare cmp) {
+  typedef iterator_and_list<I> IL;
+  // typedef typename I::value_type T;
+  list_pool<I> pool;
+  binary_counter<MinTwoOp<I, Compare>, IL> min_counter(MinTwoOp<I, Compare>(cmp, pool), IL(l));
   while(f != l) min_counter.add(IL(f++));
   IL result = min_counter.reduce();
-  return make_pair(result.i, min_element(pool, result.list, cmp));
+  return make_pair(result.i, min_element(pool, result.list, compare_source<Compare>(cmp)));
 }
 

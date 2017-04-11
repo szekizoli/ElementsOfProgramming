@@ -15,5 +15,5 @@ int main() {
   std::cout << min << std::endl;
   std::vector<int> v {3, 7, 2, 4, 6, 1, 8, 5};
   auto min_two = min_two_element_binary(begin(v), end(v), std::less<int>());
-  std::cout << *min_two.first << ", " << min_two.second << std::endl;
+  std::cout << *min_two.first << ", " << *min_two.second << std::endl;
 }
