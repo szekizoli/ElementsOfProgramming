@@ -86,6 +86,6 @@ std::pair<I, I> min_two_element_binary(I f, I l, Compare cmp) {
   binary_counter<MinTwoOp<I, CompareSource>, IL> min_counter(MinTwoOp<I, CompareSource>(CompareSource(cmp), pool), IL(l));
   while(f != l) min_counter.add(IL(f++));
   IL result = min_counter.reduce();
-  return make_pair(result.value, min_element(pool, result.list, compare_source<Compare>(cmp)));
+  return make_pair(result.value, pool.value(min_element(pool, result.list, compare_source<Compare>(cmp))));
 }
 
