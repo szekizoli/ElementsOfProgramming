@@ -2413,4 +2413,109 @@ namespace eop {
 		return p;
 	}
 
+	template<typename I, typename R>
+		requires(Readable(I) && Iterator(I) && Relation(R) && ValueType(I) == Domain(R))
+	struct equals_last_predicate
+	{
+		const R r;
+		I last_value;
+		equals_last_predicate(R const& r) : r(r), last_value(I{}) {}
+		bool operator()(I i)
+		{
+			bool result = !empty(last_value) && r(source(last_value), source(i));
+			last_value = i;
+			return result;
+		}
+	};
+
+	template<typename I, typename R, typename S>
+		requires(Readable(I) && Iterator(I) && Relation(R) &&
+			ValueType(I) == Domain(R) && I == IteratorType(S))
+	std::pair<std::pair<I, I>, std::pair<I, I>>
+	unique(I f, I l, R r, S set_link)
+	{
+		equals_last_predicate<I, R> elp(r);
+		return split_linked(f, l, elp, set_link);
+	}
+
+	// Chapter 8.4 Linked Bifurcate Coordinates
+
+	template<typename C>
+	requires(EmptyLinkedBifurcateCoordinate(C))
+	void tree_rotate(C& curr, C& prev)
+	{
+		C tmp = left_successor(curr);
+		set_left_successor(curr, right_successor(curr));
+		set_right_successor(curr, prev);
+		if (empty(tmp)) { prev = tmp; return; }
+		prev = curr;
+		curr = tmp;
+	}
+
+	template<typename C, typename Proc>
+	requires(EmptyLinkedBifurcateCoordinate(C) && Procedure(Proc) && 
+			Arity(Proc) == 1 && C == InputType(Proc))
+	Proc traverse_rotating(C c, Proc proc)
+	{
+		visit v = visit::pre;
+		// Precondition: tree(c)
+		if (empty(c)) return proc;
+	    C curr = c;
+		C prev;
+		do {
+			proc(curr);
+			tree_rotate(curr, prev);
+		} while (curr != c);
+		do {
+			proc(curr);
+			tree_rotate(curr, prev);
+		} while (curr != c);
+		proc(curr);
+		tree_rotate(curr, prev);
+		return proc;
+	}
+
+	template<typename T, typename N>
+	struct counter
+	{
+		N n;
+		counter(N n = N(0)) : n(n) {}
+		void operator()(T const&) { n = successor(n); }
+	};
+
+	template<typename C>
+		requires(EmptyLinkedBifurcateCoordinate(C))
+	WeightType(C) weight_rotating(C c)
+	{
+		return traverse_rotating(c, counter<C, WeightType(C)>()).n / 3;
+	}
+
+	template<typename N, typename Proc>
+	    requires(Integer(N) && Procedure(Proc) && Arity(Proc) == 1)
+	struct phased_applicator 
+	{
+		N period;
+		N phase;
+		N n;
+		// Invariant: n, phase E [0, period)
+		Proc proc;
+		phased_applicator(N period, N phase, N n, Proc proc) 
+		: period(period), phase(phase), n(n), proc(proc) {}
+		void operator()(InputType(Proc, 0) c) {
+			if (n == phase) proc(c);
+			n = successor(n);
+			if (n == period) n = 0;
+		}
+	};
+
+	template<typename C, typename Proc>
+	    requires(EmptyLinkedBifurcateCoordinate(C) && Procedure(Proc) && Arity(Proc) == 1 &&
+			 	InputType(Proc, 0) == C)
+	Proc traverse_phased_rotating(C c, int phase, Proc proc)
+	{
+		// Precondition: tree(c)
+        phased_applicator<int, Proc> applicator(3, phase, 0, proc);
+		return traverse_rotating(c, applicator).proc;
+	}
+
 } // namespace eop

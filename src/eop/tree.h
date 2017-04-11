@@ -122,6 +122,13 @@ namespace eop {
 
 	template<typename T>
 		requires(Regular(T))
+	constexpr bool operator!=(stree_coordinate<T> a, stree_coordinate<T> b)
+	{
+		return !(a == b);
+	}
+
+	template<typename T>
+		requires(Regular(T))
 	constexpr const T& source(stree_coordinate<T> t)
 	{
 		return source(t.ptr).value;
@@ -305,6 +312,13 @@ namespace eop {
 
 	template<typename T>
 		requires(Regular(T))
+	bool operator!=(const stree<T>& x, const stree<T>& y)
+	{
+		return !(x == y);
+	}
+
+	template<typename T>
+		requires(Regular(T))
 	bool operator<(const stree<T>& x, const stree<T>& y)
 	{
 		if (empty(x)) return !empty(y);
@@ -387,7 +401,7 @@ namespace eop {
 		requires(Regular(T))
 	constexpr bool operator!=(const tree_coordinate<T>& x, const tree_coordinate<T>& y)
 	{
-		return !(x.ptr == y.ptr);
+		return !(x == y);
 	}
 
 	template<typename T>
@@ -602,6 +616,13 @@ namespace eop {
 	bool operator==(const tree<T>& x, const tree<T>& y)
 	{
 		return bifurcate_equal(begin(x), begin(y));
+	}
+
+	template<typename T>
+		requires(Regular(T))
+	bool operator!=(const tree<T>& x, const tree<T>& y)
+	{
+		return !(x == y);
 	}
 
 	template<typename T, typename Proc>

@@ -911,6 +911,17 @@ namespace eoptest
 			STree{ 12 , STree{ 14 }, STree{} } };
 	}
 
+	STree create_stree7() {
+		//      1
+		//    /   \
+		//   2     3 
+		//  / \   / \
+		// 4   5 6   7 
+		return STree { 1,
+			STree{ 2 , STree{ 4 }, STree{ 5 } },
+			STree{ 3 , STree{ 6 }, STree{ 7 } } };
+	}
+
 	//     3
 	//   /   \
 	//  1     2
@@ -1025,6 +1036,15 @@ namespace eoptest
 		EXPECT_EQ(0, eop::tree_node_count) << "After construct test";
 	}
 
+	std::ostream& operator<<(std::ostream& s, visit v) {
+		switch(v) {
+			case visit::pre  : s << "pre " ; break;
+			case visit::in   : s << "in  "  ; break;
+			case visit::post : s << "post"; break;
+		}
+		return s;
+	}
+
 	template<typename C>
 		requires(BifurcateCoordinate(C))
 	struct traverse_result
@@ -1034,31 +1054,26 @@ namespace eoptest
 		vector<int> postorder;
 		void operator()(eop::visit v, C c)
 		{
+			std::cout << v << " " << source(c) << std::endl;
 			switch(v) {
-				case eop::visit::pre:  preorder.push_back(sink(c.ptr).value);  break;
-				case eop::visit::in:   inorder.push_back(sink(c.ptr).value);   break;
-				case eop::visit::post: postorder.push_back(sink(c.ptr).value); break; 
+				case eop::visit::pre:  preorder.push_back(source(c));  break;
+				case eop::visit::in:   inorder.push_back(source(c));   break;
+				case eop::visit::post: postorder.push_back(source(c)); break; 
 			}
 		}
 	};
 
 	TEST(coordinatestest, test_traverse_nonempty)
 	{
-		// TODO test with a complex tree
-		//    n_2
+		//     3
 		//   /   \
-		// n_0   n_1
+		//  1     2 
 		//  \     /
-		//  n_3 n_4
-		typedef eop::tree_node<int> Node;
-		typedef eop::tree_coordinate<int> Coordinate;
-		Node n_3{ 4 };
-		Node n_4{ 5 };
-		Node n_0{ 1, 0, addressof(n_3) };
-		Node n_1{ 2, addressof(n_4), 0 };
-		Node n_2{ 3 , &n_0 , &n_1 };
-		Coordinate c{ &n_2 };
-		traverse_result<Coordinate> r = eop::traverse_nonempty(c, traverse_result<Coordinate>());
+		//   4   5 
+		Tree t { 3,
+			Tree{ 1 , Tree{}, Tree{ 4 } },
+			Tree{ 2 , Tree{ 5 }, Tree{} } };
+		traverse_result<Coordinate> r = eop::traverse_nonempty(begin(t), traverse_result<CoordinateType<Tree>>());
 		vector<int> pre_expected{ 3, 1, 4, 2, 5 };
 		EXPECT_EQ(pre_expected, r.preorder) << "pre order not as expected";
 		vector<int> in_expected{ 1, 4, 3, 5, 2 };
@@ -1854,5 +1869,76 @@ namespace eoptest
 			common_test_sort_linked_nonempty_n({0, 1, 2, 5, 3, 4}, {0, 1, 2, 3, 4, 5}, "sort faiiled");
 		}
 		EXPECT_EQ(0, eop::slist_node_count());
+	}
+
+	TEST(applications_of_link_rearrangements, test_unique)
+	{
+		{
+			SList list{ 0, 0, 1, 2, 2, 1, 3, 3, 4, 4, 4};
+			EXPECT_EQ(11, eop::slist_node_count());
+			auto result = eop::unique(begin(list), 
+												end(list),
+												std::equal_to<int>(),
+												eop::forward_linker<eop::IteratorType<SList>>());
+
+			SList list_evens;
+			set_root(list_evens, result.second.first); // so it's cleaned uppercase
+			set_forward_link(result.first.second, slist_iterator<int>()); // close first list
+			set_forward_link(result.second.second, slist_iterator<int>()); // close second list									
+
+			auto size_odds = result.first.second - result.first.first + 1;
+			EXPECT_EQ(6, size_odds);
+			auto size_evens = result.second.second - result.second.first + 1;
+			EXPECT_EQ(5, size_evens);
+
+			std::vector<int> odds = list_to_vector(begin(list));
+			std::vector<int> expected_odds {0, 1, 2, 1, 3, 4};
+			EXPECT_EQ(expected_odds, odds);
+
+			std::vector<int> evens = list_to_vector(begin(list_evens));
+			std::vector<int> expected_evens {0, 2, 3, 4, 4};
+			EXPECT_EQ(expected_evens, evens);
+		}
+		EXPECT_EQ(0, eop::slist_node_count());
+	}
+
+	template<typename C>
+	struct mono_traverse_result {
+		typedef C first_argument_type;
+		std::vector<ValueType(C)> order;
+		mono_traverse_result() { order.reserve(16); }
+		void operator()(C c) {
+			order.push_back(source(c));
+		}
+	};
+
+	TEST(linked_bifurcate_coordinates, test_traverse_nonempty)
+	{
+		STree st = create_stree7();
+		auto r = eop::traverse_rotating(begin(st), mono_traverse_result<CoordinateType<STree>>());
+		vector<int> expected{ 1, 2, 4, 4, 4, 2, 5, 5, 5, 2, 1, 3, 6, 6, 6, 3, 7, 7, 7, 3, 1 };
+		EXPECT_EQ(expected, r.order) << "order not as expected";
+	}
+
+	TEST(linked_bifurcate_coordinates, test_traverse_rotating_weight)
+	{
+		STree st = create_stree7();
+		WeightType(CoordinateType<STree>) weight = eop::weight_rotating(begin(st));
+		EXPECT_EQ(7, weight);
+	}
+
+	TEST(linked_bifurcate_coordinates, test_phased_traverse_nonempty)
+	{
+		STree st = create_stree7();
+
+		auto result0 = eop::traverse_phased_rotating(begin(st), 0, mono_traverse_result<CoordinateType<STree>>());
+		vector<int> expected0{ 1, 4, 5, 2, 6, 3, 7 };
+		EXPECT_EQ(expected0, result0.order) << "order not as expected";
+		auto result1 = eop::traverse_phased_rotating(begin(st), 1, mono_traverse_result<CoordinateType<STree>>());
+		vector<int> expected1{ 2, 4, 5, 1, 6, 7, 3 };
+		EXPECT_EQ(expected1, result1.order) << "order not as expected";
+		auto result2 = eop::traverse_phased_rotating(begin(st), 2, mono_traverse_result<CoordinateType<STree>>());
+		vector<int> expected2{ 4, 2, 5, 3, 6, 7, 1 };
+		EXPECT_EQ(expected2, result2.order) << "order not as expected";
 	}
 }

@@ -51,11 +51,29 @@ namespace eoptest {
 		return a;
 	}
 
+	template<int N, typename I>
+	std::array<eop::slist_node<int>, N> create_list(I f, I l)
+	{
+		// Precondition: l - f == N
+		typedef eop::slist_node<int> SN;
+		std::array<SN, N> a;
+		for (int i = 0; i < N && f != l; ++i) {
+			a[i] = SN(eop::source(f));
+			i = eop::successor(i);
+			f = eop::successor(f);
+		}
+		for (int i = 0; i < N - 1 ; ++i) {
+			a[i].forward_link = addressof(a[i+1]); 
+		}
+		return a;
+	}
+
 	template<int N>
 	struct test_slist
 	{
 		std::array<eop::slist_node<int>, N> array;
 		test_slist(int first = 0, int diff = 1) : array(create_list<N>(first, diff)) {}
+		test_slist(std::initializer_list<int> const& l) : array(create_list<N>(begin(l), end(l))) {} 
 		test_slist(test_slist<N> const& o) : array(o.array) {}
 		test_slist(test_slist<N> && o) : array(std::move(o.array)) {}
 	};
