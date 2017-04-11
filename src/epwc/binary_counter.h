@@ -5,8 +5,10 @@
 // 
 // Finds the first two minimum elements in a sequence
 
-#include <array>
+#pragma once
+
 #include <utility>
+#include <vector>
 
 using namespace std;
 
