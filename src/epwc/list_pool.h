@@ -91,15 +91,16 @@ void free_list(list_pool<T, N>& pool,
 }
 
 template<typename T, typename N, typename Cmp>
-T min_element(list_pool<T, N> const& pool,
-		   typename list_pool<T, N>::list_type x,
+typename list_pool<T, N>::list_type
+min_element(list_pool<T, N> const& pool,
+		   typename list_pool<T, N>::list_type list,
 		   Cmp cmp) {
-  T min = pool.value(x);
-  x = pool.next(x);
-  while(!pool.is_empty(x)) {
-    if (cmp(pool.value(x), min)) min = pool.value(x);
-    x = pool.next(x);    
+  if (pool.is_empty(list)) return list;
+  typename list_pool<T, N>::list_type current_min = list;
+  while(!pool.is_empty(list)) {
+    if (cmp(pool.value(list), pool.value(current_min))) current_min = list;
+    list = pool.next(list);    
   }
-  return min;
+  return current_min;
 }
 		 
