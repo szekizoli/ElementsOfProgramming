@@ -4,42 +4,42 @@
 template<typename I>
 struct iterator_and_list
 {
-  typedef typename I::value_type value_type;
-  typedef typename list_pool<I>::list_type list_type;
+  typedef I value_type;
+  typedef typename list_pool<value_type>::list_type list_type;
 
-  I i;
+  value_type value;
   list_type list;
-  iterator_and_list(I i, list_type list = list_type())
-    : i(i), list(list) {}
+  iterator_and_list(value_type value, list_type list = list_type())
+    : value(value), list(list) {}
   iterator_and_list operator=(iterator_and_list const& x) {
-    i = x.i;
+    value = x.value;
     list = x.list;
     return *this;
   }
   
   value_type operator*() {
-    return *i;
+    return value;
   }
 };
 
 template<typename I>
 bool operator==(iterator_and_list<I> const& l, iterator_and_list<I> const& r) {
-  return l.i == r.i;
+  return l.value == r.value;
 }
 
 template<typename I>
 bool operator!=(iterator_and_list<I> const& l, iterator_and_list<I> const& r) {
-  return l.i != r.i;
+  return l.value != r.value;
 }
 
 template<typename I>
 iterator_and_list<I> operator++(iterator_and_list<I> const& i) {
-  return iterator_and_list<I>(++i.i, i.list);
+  return iterator_and_list<I>(++i.value, i.list);
 }
 
 template<typename T, typename I>
 I merge(list_pool<T>& pool, I x, I y) {
-  x.list = pool.allocate(y.i, x.list);
+  x.list = pool.allocate(y.value, x.list);
   free_list(pool, y.list);
   return x;
 }
@@ -55,7 +55,7 @@ private:
   list_pool<T>& pool;
 public:
   // Constructor.
-   MinTwoOp(Compare const& cmp, list_pool<T>& pool) : cmp(cmp), pool(pool) {}
+  MinTwoOp(Compare const& cmp, list_pool<T>& pool) : cmp(cmp), pool(pool) {}
 
   template<typename I>
   I operator()(I & x, I & y) {
@@ -80,11 +80,12 @@ public:
 template<typename I, typename Compare>
 std::pair<I, I> min_two_element_binary(I f, I l, Compare cmp) {
   typedef iterator_and_list<I> IL;
-  // typedef typename I::value_type T;
+  typedef compare_source<Compare> CompareSource;
+
   list_pool<I> pool;
-  binary_counter<MinTwoOp<I, Compare>, IL> min_counter(MinTwoOp<I, Compare>(cmp, pool), IL(l));
+  binary_counter<MinTwoOp<I, CompareSource>, IL> min_counter(MinTwoOp<I, CompareSource>(CompareSource(cmp), pool), IL(l));
   while(f != l) min_counter.add(IL(f++));
   IL result = min_counter.reduce();
-  return make_pair(result.i, min_element(pool, result.list, compare_source<Compare>(cmp)));
+  return make_pair(result.value, min_element(pool, result.list, compare_source<Compare>(cmp)));
 }
 
