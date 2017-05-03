@@ -13,7 +13,10 @@ void print(I f, I l) {
 void min_1_2(std::vector<int> const& v) {
   auto min_two = min_two_element_binary(begin(v), end(v), std::less<int>());
   print(min_two.first, end(v));
-  std::cout << ", ";
+  cout << ", ";
+  if (min_two.second != end(v)) {
+    cout << min_two.second - begin(v) << " ";
+  }
   print(min_two.second, end(v));
   cout << std::endl;
 }
@@ -27,7 +30,7 @@ int main() {
   }
   list_type min = min_element(pool, l, std::less<int>());
   std::cout << pool.value(min) << std::endl;
-  min_1_2(std::vector<int> {3, 7, 2, 4, 6, 1, 8, 5} );
+  min_1_2(std::vector<int> {3, 7, 4, 6, 1, 2, 9, 2, 8, 5} );
   min_1_2(std::vector<int> {1} );
   min_1_2(std::vector<int> {} );
 }

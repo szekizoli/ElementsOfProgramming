@@ -69,7 +69,7 @@ class list_pool
     next(x) = free_list;
     return cdr;
   }
-
+ 
   list_type allocate(const T& x, list_type tail = list_type()) {
     list_type list = free_list;
     if (is_empty(free_list)) {
@@ -98,7 +98,7 @@ min_element(list_pool<T, N> const& pool,
   if (pool.is_empty(list)) return list;
   typename list_pool<T, N>::list_type current_min = list;
   while(!pool.is_empty(list)) {
-    if (cmp(pool.value(list), pool.value(current_min))) current_min = list;
+    if (!cmp(pool.value(current_min), pool.value(list))) current_min = list;
     list = pool.next(list);    
   }
   return current_min;
