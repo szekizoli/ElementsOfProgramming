@@ -515,7 +515,7 @@ namespace eop {
   template<typename I>
     requires(Iterator(I))
   I successor(I n) {
-    return n + 1;
+    return ++n;
   }
 
   template<typename I>
@@ -2514,5 +2514,296 @@ namespace eop {
     phased_applicator<int, Proc> applicator(3, phase, 0, proc);
     return traverse_rotating(c, applicator).proc;
   }
+
+  // *******************************************************
+  // Chapter 9 - Copying
+  // *******************************************************
+
+  template<typename I, typename O>
+    requires(Readable(I) && Iterator(I) &&
+	     Writable(O) && Iterator(O) &&
+	     ValueType(I) == ValueType(O))
+  void copy_step(I & f_i, O & f_o)
+  {
+    // Precondition: source(f_i) and sink(f_0) are defined
+    sink(f_o) = source(f_i);
+    f_i = successor(f_i);
+    f_o = successor(f_o);
+  }
+
+  template<typename I, typename O>
+    requires(Readable(I) && Iterator(I) &&
+	     Writable(O) && Iterator(O) &&
+	     ValueType(I) == ValueType(O))
+  O copy(I f_i, I l_i, O f_o)
+  {
+    // Precondition: not_overlapped_forward(fi, li, fo, fo+(li-fi))
+    while (f_i != l_i) copy_step(f_i, f_o);
+    return f_o;
+  }
+
+  template<typename I, typename O>
+    requires(Readable(I) && Iterator(I) &&
+	     Readable(O) && Iterator(O) &&
+	     ValueType(I) == ValueType(O))
+  std::pair<I, O> copy_bounded(I f_i, I l_i, O f_o, O l_o)
+  {
+    // Precondition: not_overlapped_forward(fi, li, fo, lo)
+    while(f_i != l_i && f_o != l_o) copy_step(f_i, f_o);
+    return std::make_pair(f_i, f_o);
+  }
+
+  template<typename N>
+    requires(Integer(N))
+  bool count_down(N& n)
+  {
+    // Precondition: n >= 0
+    if (zero(n)) return false;
+    n = predecessor(n);
+    return true;
+  }
+
+  template<typename I, typename O, typename N>
+    requires(Readable(I) && Iterator(I) &&
+	     Readable(O) && Iterator(O) &&
+	     ValueType(I) == ValueType(O))
+  std::pair<I, O> copy_n(I f_i, N n, O f_o)
+  {
+    // Precondition: non_overlapped_forward(fi, fi+n, fo, fo+n)
+    while(count_down(n)) copy_step(f_i, f_o);
+    return std::make_pair(f_i, f_o);
+  }
+
+  template<typename I, typename O>
+    requires(Readable(I) && BidirectionalIterator(I) &&
+	     Readable(O) && BidirectionalIterator(O) &&
+	     ValueType(I) == ValueType(O))
+  void copy_backward_step(I& l_i, O& l_o)
+  {
+    // Precondition: source(predeccessor(l_i)) and sink(predecessor(l_o)) are defined
+    l_i = predecessor(l_i);
+    l_o = predecessor(l_o);
+    sink(l_o) = source(l_i);
+  }
+
+  template<typename I, typename O>
+    requires(Readable(I) && BidirectionalIterator(I) &&
+	     Readable(O) && BidirectionalIterator(O) &&
+	     ValueType(I) == ValueType(O))
+  O copy_backward(I f_i, I l_i, O l_o)
+  {
+    // Precondition: not_overlapped_backward(fi, li, lo - (li - fi), lo)
+    while(f_i != l_i) copy_backward_step(l_i, l_o);
+    return l_o;
+  }
+
+  template<typename I, typename O, typename N>
+    requires(Readable(I) && BidirectionalIterator(I) &&
+	     Readable(O) && BidirectionalIterator(O) &&
+	     ValueType(I) == ValueType(O) && Integer(N))
+  std::pair<I, O> copy_backward_n(I l_i, N n, O l_o)
+  {
+    // Precondition: not_overlapped_backward(fi, li, lo - (li - fi), lo)
+    while(count_down(n)) copy_backward_step(l_i, l_o);
+    return std::make_pair(l_i, l_o);
+  }
+
+  template<typename I, typename O>
+    requires(Readable(I) && BidirectionalIterator(I) &&
+	     Readable(O) && Iterator(O) &&
+	     ValueType(I) == ValueType(O))
+  void reverse_copy_step(I& l_i, O& f_o)
+  {
+    // Precondition: source(predecessor(l_i)) and sink(f_o) are defined
+    l_i = predecessor(l_i);
+    sink(f_o) = source(l_i);
+    f_o = successor(f_o);
+  }
+
+  template<typename I, typename O>
+    requires(Readable(I) && Iterator(I) &&
+	     Readable(O) && BidirectionalIterator(O) &&
+	     ValueType(I) == ValueType(O))
+  void reverse_copy_backward_step(I& f_i, O& l_o)
+  {
+    // Precondition: source(f_i) and sink(predecessor(l_o)) are defined
+    l_o = predecessor(l_o);
+    sink(l_o) = source(f_i);
+    f_i = successor(f_i);
+  }
+
+  template<typename I, typename O>
+    requires(Readable(I) && BidirectionalIterator(I) &&
+	     Readable(O) && Iterator(O) &&
+	     ValueType(I) == ValueType(O))
+  O reverse_copy(I f_i, I l_i, O f_o)
+  {
+    // Precondition: not_overlapped(fi, li, fo, fo + (li - fi))
+    while(f_i != l_i) reverse_copy_step(l_i, f_o);
+    return f_o;
+  }
+
+  template<typename I, typename O>
+    requires(Readable(I) && Iterator(I) &&
+	     Readable(O) && BidirectionalIterator(O) &&
+	     ValueType(I) == ValueType(O))
+  O reverse_copy_backward(I f_i, I l_i, O l_o)
+  {
+    // Precondition: not_overlapped(fi, li, lo - (li - fi), lo)
+    while(f_i != l_i) reverse_copy_backward_step(f_i, l_o);
+    return l_o;
+  }
   
+  template<typename I, typename O, typename P>
+    requires(Readable(I) && Iterator(I) &&
+	     Writeable(O) && Iterator(O) &&
+	     ValueType(I) == ValueType(O) &&
+	     UnaryPredicate(P) && I == Domain(P))
+  O copy_select(I f_i, I l_i, O f_t, P p)
+  {
+    // Precondtion: not_overlapped_forward(fi, li, f_t, f_t + nt)
+    // where nt is the upper bound for the nuumber of iterators satisfying p
+    while (f_i != l_i)
+      if (p(f_i)) copy_step(f_i, f_t);
+      else f_i = sucessor(f_i);
+    return f_t;
+  }
+
+  template<typename I, typename O, typename P>
+    requires(Readable(I) && Iterator(I) &&
+       Writeable(O) && Iterator(O) &&
+       ValueType(I) == ValueType(O) &&
+       UnaryPredicate(P) && ValueType(I) == Domain(P))
+  O copy_if(I f_i, I l_i, O f_t, P p)
+  {
+    // Precondtion: not_overlapped_forward(fi, li, f_t, f_t + n_t)
+    // where n_t is the upper bound for the number of iterators satisfying p
+    predicate_source<I, P> ps(p);
+    return copy_select(f_i, l_i, f_t, ps);
+  }
+
+  template<typename I, typename O_f, typename O_t, typename P>
+    requires(Readable(I) && Iterator(I) &&
+      Writeable(O_f) && Iterator(O_f) &&
+      Writeable(O_t) && Iterator(O_t) &&
+      ValueType(I) == ValueType(O_f) &&
+      ValueType(I) == ValueType(O_t) &&
+      UnaryPredicate(P) && I == Domain(P))
+  std::pair<O_f, O_t> split_copy(I f_i, I l_i, O_f f_f, O_t f_t, P p)
+  {
+    // Precondition: not_overlapped(f_t, f_t + n_t, f_f, f_f + n_f) &&
+    //               (not_overlapped_forward(f_i, l_i, f_f, f_f + n_f) && not_overlapped(f_i, l_i, f_f, f_t + n_t)) ||
+    //               (not_overlapped(f_i, l_i, f_f, f_f + n_f) && not_overlapped_forward(f_i, l_i, f_f, f_t + n_t)) ||
+    // where n_t is the upper bound for the number of iterators satisfying p
+    // where n_f is the upper bound for the number of iterators not satisfying p
+    while(f_i != l_i)
+      if (p(f_i)) copy_step(f_i, f_t);
+      else        copy_step(f_i, f_f);
+    return std::pair<O_f, O_t>(f_f, f_t);
+  }
+
+  template<typename I, typename O_f, typename O_t, typename P>
+    requires(Readable(I) && Iterator(I) &&
+       Writeable(O_f) && Iterator(O_f) &&
+       Writeable(O_t) && Iterator(O_t) &&
+       ValueType(I) == ValueType(O_f) &&
+       ValueType(I) == ValueType(O_t) &&
+       UnaryPredicate(P) && I == Domain(P))
+  std::pair<O_f, O_t> partition_copy(I f_i, I l_i, O_f f_f, O_t f_t, P p)
+  {
+    // Precondition: same as split_copy
+    predicate_source<I, P> ps(p);
+    return split_copy(f_i, l_i, f_f, f_t, ps);
+  }
+
+
+  template<typename I0, typename I1,  typename O, typename R>
+    requires(Readable(I0) && Iterator(I0) &&
+       Readable(I1) && Iterator(I1) &&
+       Writable(O) && Iterator(O) &&
+       BinaryPredicate(R) &&
+       ValueType(I0) == ValueType(0) &&
+       ValueType(I1) == ValueType(0) &&
+       IO == InputType(R, 1) && I1 == InputType(R, O))
+  O combine_copy(I0 f_i0, I0 l_i0, I1 f_i1, I1 l_i1, O f_o, R r)
+  {
+    // Precondition: (backward_offset(f_i0, l_i0, f_o, l_o, l_i1 - f_i1) && not_overlapped(f_i1, l_i1, f_o, l_o) ||
+    //                backward_offset(f_i1, l_i1, f_o, l_o, l_i0 - f_i0) && not_overlapped(f_i0, l_i0, f_o, l_o) )
+    while(f_i0 != l_i0 && f_i1 != l_i1)
+      if (r(f_i1, f_i0)) copy_step(f_i1, f_o);
+      else               copy_step(f_i0, f_o);
+    return copy(f_i1, l_i1, copy(f_i0, l_i0, f_o));
+    // Postcondition:
+  }
+
+  template<typename I0, typename I1,  typename O, typename R>
+    requires(Readable(I0) && Iterator(I0) &&
+       Readable(I1) && Iterator(I1) &&
+       Writable(O) && Iterator(O) &&
+       BinaryPredicate(R) &&
+       ValueType(I0) == ValueType(0) &&
+       ValueType(I1) == ValueType(0) &&
+       IO == InputType(R, 1) && I1 == InputType(R, O))
+  O combine_copy_backward(I0 f_i0, I0 l_i0, I1 f_i1, I1 l_i1, O f_o, R r)
+  {
+    while(f_i0 != l_i0 && f_i1 != l_i1)
+      if (r(predecessor(l_i1), predecessor(f_i0)))
+        copy_backward_step(f_i0, f_o);
+      else
+        copy_backward_step(f_i1, f_o);
+      return copy_backward(f_i0, l_i0, copy_backward(f_i1, l_i1, f_o));
+    // Postcondition: Each element in one of the input ranges appears in the output
+    // range and the they are ordered by R.
+  }
+
+  template<typename I0, typename I1, typename O, typename R>
+    requires(Readable(I0) && Iterator(I0) &&
+      Readable(I1) && Iterator(I1) &&
+      Writable(O) && Iterator(O) &&
+      Relation(R) &&
+      ValueType(I0) == ValueType(I1) &&
+      ValueType(I0) == ValueType(O) &&
+      ValueType(I0) == Domain(R))
+  O merge_copy(I0 f_i0, I0 l_i0, I1 f_i1, I1 l_i1, O f_o, R r)
+  {
+      // Precondition: in addition to that for combine_copy
+      //   weak_ordering(r) &&
+      //   increasing_order(f_i0, l_i0, r) && increasing_order(f_i1, l_i1, r)
+      relation_source<I0, I1, R> rs(r);
+      return combine_copy(f_i0, l_i0, f_i1, l_i0, f_o, rs);
+  }
+
+  template<typename I0, typename I1, typename O, typename R>
+    requires(Readable(I0) && Iterator(I0) &&
+      Readable(I1) && Iterator(I1) &&
+      Writable(O) && Iterator(O) &&
+      Relation(R) &&
+      ValueType(I0) == ValueType(I1) &&
+      ValueType(I0) == ValueType(O) &&
+      ValueType(I0) == Domain(R))
+  O merge_copy_backward(I0 f_i0, I0 l_i0, I1 f_i1, I1 l_i1, O f_o,R r)
+  {
+      // Precondition: in addition to that for combine_copy_backward
+      //  weak_ordering(r) &&
+      //  increasing_order(f_i0, l_i0, r) && increasing_order(f_i1, l_i1, r)
+      relation_source<I0, I1, R> rs(r);
+      return combine_copy_backward(f_i0, l_i0, f_i1, l_i0, f_o, rs);
+  }
+
+  template<typename N, typename I0, typename I1,  typename O, typename R>
+    requires(Readable(I0) && Iterator(I0) &&
+       Readable(I1) && Iterator(I1) &&
+       Writable(O) && Iterator(O) &&
+       BinaryPredicate(R) &&
+       ValueType(I0) == ValueType(0) &&
+       ValueType(I1) == ValueType(0) &&
+       IO == InputType(R, 1) && I1 == InputType(R, O))
+  O combine_copy_n(I0 f_i0, N n_0, I1 f_i1, N n_1, O f_o, R r)
+  {
+    while(!zero(n_0) && !zero(n_1))
+      if (r(f_i1, f_i0)) { copy_step(f_i1, f_o); n_1 = predecessor(n_1); }
+      else               { copy_step(f_i0, f_o); n_0 = predecessor(n_0); }
+    return copy_n(f_i0, n_0, copy_n(f_i1, n_1, f_o));
+  }
+ 
 } // namespace eop
