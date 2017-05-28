@@ -19,29 +19,29 @@
 #include <cstddef> // ptrdiff_t
 
 namespace eop {
-	template<typename T>
-	T& sink(pointer(T) x)
-	{
-		return *x;
-	}
+  template<typename T>
+  T& sink(pointer(T) x)
+  {
+     return *x;
+  }
 
-	template<typename T>
-		requires(Readable(T))
-	constexpr const T& source(const pointer(T) x)
-	{
-		return *x;
-	}
+  template<typename T>
+     requires(Readable(T))
+  constexpr const T& source(const pointer(T) x)
+  {
+    return *x;
+  }
 
-	template<typename T>
-		requires(Readable(T))
-	T& source(pointer(T) x) 
-	{
-		return *x;
-	}
+  template<typename T>
+     requires(Readable(T))
+  T& source(pointer(T) x)
+  {
+    return *x;
+  }
 
-	template<typename T>
-	struct distance_type<pointer(T)>
-	{
-		typedef int type;
-	};
+  template<typename T>
+  struct distance_type<pointer(T)>
+  {
+    typedef int type;
+  };
 }
