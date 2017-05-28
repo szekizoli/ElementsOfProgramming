@@ -39,6 +39,7 @@
 #define Iterator(...)
 #define LinkedBidirectionalIterator(...)
 #define LinkedForwardIterator(...)
+#define Mutable(...)
 #define Procedure(...)
 #define Readable(...)
 #define Relation(...)
@@ -46,6 +47,7 @@
 #define Transformation(...)
 #define UnaryPredicate(...)
 #define UnaryPseudoPredicate(...)
+#define Writable(...)
 
 // Intrinsics
 
