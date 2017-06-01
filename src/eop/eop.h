@@ -19,6 +19,8 @@
 #include "pointers.h"
 #include "type_functions.h"
 
+#include <iostream>
+
 namespace eop {
 
   // *******************************************************
@@ -276,7 +278,7 @@ namespace eop {
     return a;
   }
 
-   /*
+  /*
   *   /  a,    if n is 1
   *  a^n =  |  (a^2)^(n/2),  if n is even
   *   \  (a^2)^( n/2)*a, if n is odd
@@ -284,10 +286,10 @@ namespace eop {
   template<typename I, typename Op>
     requires(Integer(I) && BinaryOperation(Op))
   Domain(Op) power_0(Domain(Op) a, I n, Op op) {
-    // Precondition : n > 0
-    if (n == I{1}) return a;
-    if (n % I{2} == 0) {
-    return power_0(op(a, a), n / I{ 2 }, op);
+      // Precondition : n > 0
+      if (n == I{1}) return a;
+      if (n % I{2} == 0) {
+      return power_0(op(a, a), n / I{ 2 }, op);
     }
     return op(a, power_0(op(a, a), n / I{ 2 }, op));
   }
@@ -334,8 +336,8 @@ namespace eop {
     Domain(Op) power_accumulate_2(Domain(Op) a, Domain(Op) r, I n, Op op) {
     // Precondition : associative(op) ∧ n ≥ 0
     if (n % I{ 2 } != I{ 0 }) {
-    r = op(r, a);
-    if (n == I{ 1 }) return r;
+      r = op(r, a);
+      if (n == I{ 1 }) return r;
     } else if (n == I{ 0 }) return r;
     
     return power_accumulate_2(op(a, a), r, n / I{ 2 }, op);
@@ -348,8 +350,8 @@ namespace eop {
   Domain(Op) power_accumulate_3(Domain(Op) a, Domain(Op) r, I n, Op op) {
     // Precondition : associative(op) ∧ n ≥ 0
     if (n % I{ 2 } != I{ 0 }) {
-    r = op(r, a);
-    if (n == I{ 1 }) return r;
+      r = op(r, a);
+      if (n == I{ 1 }) return r;
     }
     else if (n == I{ 0 }) return r;
     a = op(a, a);
@@ -415,8 +417,8 @@ namespace eop {
     Domain(Op) power_3(Domain(Op) a, I n, Op op) {
     // Precondition : associative(op) ∧ n > 0
     while (n % I{ 2 } == 0) {
-    a = op(a, a);
-    n = n / I{ 2 };
+      a = op(a, a);
+      n = n / I{ 2 };
     }
     n = n / I{ 2 };
     if (n == I{ 0 }) return a;
@@ -1012,7 +1014,7 @@ namespace eop {
     typedef T result_type;
     typedef T input_type;
     T operator()(T a, T b) {
-    return a + b;
+      return a + b;
     }
   };
 
@@ -1023,7 +1025,7 @@ namespace eop {
     typedef T result_type;
     typedef T input_type;
     T operator()(T a, T b) {
-    return a * b;
+      return a * b;
     }
   };
 
@@ -1034,7 +1036,7 @@ namespace eop {
     typedef I result_type;
     typedef I input_type;
     ValueType(I) operator()(I i) {
-    return source(i);
+      return source(i);
     }
   };
 
@@ -1049,8 +1051,8 @@ namespace eop {
     Domain(Op) r = fun(f);
     f = successor(f);
     while (f != l) {
-    r = op(r, fun(f));
-    f = successor(f);
+      r = op(r, fun(f));
+      f = successor(f);
     }
     return r;
   }
@@ -1077,14 +1079,14 @@ namespace eop {
     // Precondition: (All x in [f, l)) fun(x) is defined
     Domain(Op) x;
     do {
-    if (f == l) return z;
-    x = fun(f);
-    f = successor(f);
+      if (f == l) return z;
+      x = fun(f);
+      f = successor(f);
     } while (x == z);
     while (f != l) {
-    Domain(Op) y = fun(f);
-    if (z != y) x = op(x, y);
-    f = successor(f);
+      Domain(Op) y = fun(f);
+      if (z != y) x = op(x, y);
+      f = successor(f);
     }
     return x;
   }
@@ -1096,9 +1098,9 @@ namespace eop {
   std::pair<Proc, I> for_each_n(I f, DistanceType(I) n, Proc proc) {
     // Precondition: readable_weak_range(f, n)
     while (!zero(n)) {
-    n = predecessor(n);
-    proc(source(f));
-    f = successor(f);
+      n = predecessor(n);
+      proc(source(f));
+      f = successor(f);
     }
     return std::pair<Proc, I>(proc, f);
   }
@@ -1110,8 +1112,8 @@ namespace eop {
   {
     // Precondition: readable_weak_range(f, n)
     while (!zero(n) && source(f) != x) {
-    n = predecessor(n);
-    f = successor(f);
+      n = predecessor(n);
+      f = successor(f);
     }
     return std::pair<I, DistanceType(I)>(f, n);
   }
@@ -1124,8 +1126,8 @@ namespace eop {
   {
     // Precondition: readable_weak_range(f, n)
     while (!zero(n) && source(f) != x) {
-    n = predecessor(n);
-    f = successor(f);
+      n = predecessor(n);
+      f = successor(f);
     }
     return std::make_pair(f, n);
   }
@@ -1137,8 +1139,8 @@ namespace eop {
   {
     // Precondition: readable_weak_range(f, n)
     while (!zero(n) && source(f) == x) {
-    n = predecessor(n);
-    f = successor(f);
+      n = predecessor(n);
+      f = successor(f);
     }
     return std::make_pair(f, n);
   }
@@ -1150,8 +1152,8 @@ namespace eop {
   {
     // Precondition: readable_weak_range(f, l)
     while (!zero(n) && p(source(f))) {
-    n = predecessor(n);
-    f = successor(f);
+      n = predecessor(n);
+      f = successor(f);
     }
     return zero(n);
   }
@@ -1163,8 +1165,8 @@ namespace eop {
   {
     // Precondition: readable_weak_range(f, n)
     while (!zero(n) && !p(source(f))) {
-    n = predecessor(n);
-    f = successor(f);
+      n = predecessor(n);
+      f = successor(f);
     }
     return zero(n);
   }
@@ -2665,7 +2667,7 @@ namespace eop {
     // where nt is the upper bound for the nuumber of iterators satisfying p
     while (f_i != l_i)
       if (p(f_i)) copy_step(f_i, f_t);
-      else f_i = sucessor(f_i);
+      else f_i = successor(f_i);
     return f_t;
   }
 
@@ -2729,10 +2731,11 @@ namespace eop {
   {
     // Precondition: (backward_offset(f_i0, l_i0, f_o, l_o, l_i1 - f_i1) && not_overlapped(f_i1, l_i1, f_o, l_o) ||
     //                backward_offset(f_i1, l_i1, f_o, l_o, l_i0 - f_i0) && not_overlapped(f_i0, l_i0, f_o, l_o) )
-    while(f_i0 != l_i0 && f_i1 != l_i1)
+    while(f_i0 != l_i0 && f_i1 != l_i1) {
       if (r(f_i1, f_i0)) copy_step(f_i1, f_o);
       else               copy_step(f_i0, f_o);
-    return copy(f_i1, l_i1, copy(f_i0, l_i0, f_o));
+    }
+    return eop::copy(f_i1, l_i1, eop::copy(f_i0, l_i0, f_o));
     // Postcondition:
   }
 
@@ -2751,7 +2754,7 @@ namespace eop {
         copy_backward_step(f_i0, f_o);
       else
         copy_backward_step(f_i1, f_o);
-      return copy_backward(f_i0, l_i0, copy_backward(f_i1, l_i1, f_o));
+    return copy_backward(f_i0, l_i0, copy_backward(f_i1, l_i1, f_o));
     // Postcondition: Each element in one of the input ranges appears in the output
     // range and the they are ordered by R.
   }
@@ -2770,7 +2773,7 @@ namespace eop {
       //   weak_ordering(r) &&
       //   increasing_order(f_i0, l_i0, r) && increasing_order(f_i1, l_i1, r)
       relation_source<I0, I1, R> rs(r);
-      return combine_copy(f_i0, l_i0, f_i1, l_i0, f_o, rs);
+      return combine_copy(f_i0, l_i0, f_i1, l_i1, f_o, rs);
   }
 
   template<typename I0, typename I1, typename O, typename R>
@@ -2781,7 +2784,7 @@ namespace eop {
       ValueType(I0) == ValueType(I1) &&
       ValueType(I0) == ValueType(O) &&
       ValueType(I0) == Domain(R))
-  O merge_copy_backward(I0 f_i0, I0 l_i0, I1 f_i1, I1 l_i1, O f_o,R r)
+  O merge_copy_backward(I0 f_i0, I0 l_i0, I1 f_i1, I1 l_i1, O f_o, R r)
   {
       // Precondition: in addition to that for combine_copy_backward
       //  weak_ordering(r) &&
@@ -2798,12 +2801,60 @@ namespace eop {
        ValueType(I0) == ValueType(0) &&
        ValueType(I1) == ValueType(0) &&
        IO == InputType(R, 1) && I1 == InputType(R, O))
-  O combine_copy_n(I0 f_i0, N n_0, I1 f_i1, N n_1, O f_o, R r)
+  std::tuple<I0, I1, O> combine_copy_n(I0 f_i0, N n_0, I1 f_i1, N n_1, O f_o, R r)
   {
     while(!zero(n_0) && !zero(n_1))
       if (r(f_i1, f_i0)) { copy_step(f_i1, f_o); n_1 = predecessor(n_1); }
       else               { copy_step(f_i0, f_o); n_0 = predecessor(n_0); }
-    return copy_n(f_i0, n_0, copy_n(f_i1, n_1, f_o));
+    std::pair<I1, O> l1 = copy_n(f_i1, n_1, f_o);
+    std::pair<I0, O> l0 = copy_n(f_i0, n_0, l1.second);
+    return std::tuple<I0, I1, O>(l0.first, l1.first, l0.second);
   }
- 
+
+  template<typename Num, typename InputIterator0, typename InputIterator1,  typename OutputIterator, typename Relation>
+    requires(Readable(I0) && Iterator(I0) &&
+       Readable(I1) && Iterator(I1) &&
+       Writable(O) && Iterator(O) &&
+       BinaryPredicate(R) &&
+       ValueType(I0) == ValueType(0) &&
+       ValueType(I1) == ValueType(0) &&
+       IO == InputType(R, 1) && I1 == InputType(R, O))
+    std::tuple<InputIterator0, InputIterator1, OutputIterator> merge_copy_n(
+                InputIterator0 f_i0, Num n_0, InputIterator1 f_i1, Num n_1, OutputIterator f_o, Relation r)
+  {
+    relation_source<InputIterator0, InputIterator1, Relation> rs(r);
+    return combine_copy_n(f_i0, n_0, f_i1, n_1, f_o, rs);
+  }
+
+  template<typename N, typename I0, typename I1, typename O, typename R>
+    requires(Readable(InputIterator0) && Iterator(InputIterator0) &&
+	     Readable(InputIterator1) && Iterator(InputIterator1) &&
+	     Writable(OutputIterator) && Iterator(OutpuIterator) &&
+	     BinaryPredicate(R) &&
+	     ValueType(InputIterator0) == ValueType(InputIterator1) &&
+	     ValueType(InputIterator0) == ValueType(OutputIterator) &&
+	     InputIterator0 == InputType(Relation, 1) &&
+	     InputIterator1 == InputType(Relation, 0))
+  std::tuple<I0, I1, O> combine_copy_backward_n(I0 f_i0, N n0, I1 f_i1, N n1, O l_o, R r)
+  {
+    // Precondition: in addition to that for combine
+    while(!zero(n0) && !zero(n1))
+      if (r(predecessor(f_i1), predecessor(f_i0)))
+	{ copy_backward_step(f_i1, l_o); n1 = predecessor(n1); }
+      else
+        { copy_backward_step(f_i0, l_o); n0 = predecessor(n0); }
+    std::pair<I1, O> l1 = copy_backward_n(f_i1, n1, l_o);
+    std::pair<I0, O> l0 = copy_backward_n(f_i0, n0, l1.second);
+    return std::tuple<I0, I1, O>(l0.first, l1.first, l0.second);
+  }
+
+  template<typename N, typename I0, typename I1, typename O, typename R>
+  std::tuple<I0, I1, O> merge_copy_backward_n(I0 f_i0, N n0, I1 f_i1, N n1, O l_o, R r)
+  {
+    relation_source<I0, I1, R> rs(r);
+    return combine_copy_backward_n(f_i0, n0, f_i1, n1, l_o, rs);
+  }
+
+
+  
 } // namespace eop

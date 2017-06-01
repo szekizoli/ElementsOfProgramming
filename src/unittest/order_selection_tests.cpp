@@ -1,4 +1,5 @@
 #include <iostream>
+#include <iterator>
 #include <numeric>
 #include <string>
 #include <utility>
@@ -20,22 +21,30 @@
 
 namespace eop
 {	
-	using std::vector;
+  using std::vector;
 
-	template<typename T>
-	struct value_type<typename std::vector<T>>
-	{
-		typedef T type;
-	};
+  template<typename T>
+  struct value_type<typename std::vector<T>>
+  {
+    typedef T type;
+  };
+  
+  template<typename T>
+  struct value_type<typename std::back_insert_iterator< std::vector<T> > >
+  {
+    // ValueType of the back_insert_iterator is back_insert_iterator
+    typedef std::back_insert_iterator< std::vector<T> > type;
+  };
 }
 
 namespace eoptest
 {
-	using std::vector;
-	using std::pair;
-	using std::swap;
+  using std::vector;
+  using std::pair;
+  using std::swap;
+  using std::back_inserter;
 
-	using namespace eop;
+  using namespace eop;
 
 	int less(int a, int b) {
 		return a < b;
@@ -1941,4 +1950,155 @@ namespace eoptest
 		vector<int> expected2{ 4, 2, 5, 3, 6, 7, 1 };
 		EXPECT_EQ(expected2, result2.order) << "order not as expected";
 	}
+
+  // *******************************************************
+  // Chapter 9 - Copying
+  // *******************************************************
+
+  TEST(chapter_9_copying, test_copy_empty)
+  {
+    std::vector<int> x = {};
+    std::vector<int> y;
+    eop::copy(begin(x), end(x), std::back_inserter(y));
+    EXPECT_EQ(0, y.size());
+  }
+  
+  TEST(chapter_9_copying, test_copy)
+  {
+    std::vector<int> x = {1, 2, 3, 4};
+    std::vector<int> y;
+    eop::copy(begin(x), end(x), std::back_inserter(y));
+    EXPECT_EQ(4, y.size());
+    EXPECT_EQ(x, y);
+  }
+
+  TEST(chapter_9_copying, test_copy_bounded)
+  {
+    vector<int> x = {1, 2, 3};
+    vector<int> y(3, 0);
+    eop::copy_bounded(begin(x), end(x), begin(y), end(y));
+    EXPECT_EQ(3, y.size());
+    vector<int> expected{1, 2, 3};
+    EXPECT_EQ(expected, y);
+  }
+
+  TEST(chapter_9_copying, test_copy_n)
+  {
+    vector<int> x = {1, 2, 3};
+    vector<int> y;
+    eop::copy_n(begin(x), 3, std::back_inserter(y));
+    EXPECT_EQ(3, y.size());
+    vector<int> expected{1, 2, 3};
+    EXPECT_EQ(expected, y);
+  }
+
+  TEST(chapter_9_copying, test_copy_n_0)
+  {
+    vector<int> x = {1, 2, 3};
+    vector<int> y;
+    eop::copy_n(begin(x), 0, begin(y));
+    EXPECT_EQ(0, y.size());
+  }
+
+  TEST(chapter_9_copying, test_copy_backward)
+  {
+    vector<int> x = {1, 2, 3};
+    vector<int> y(3, 0);
+    eop::copy_backward(begin(x), end(x), end(y));
+    EXPECT_EQ(3, y.size());
+    vector<int> expected{1, 2, 3};
+    EXPECT_EQ(expected, y);
+  }
+
+  TEST(chapter_9_copying, test_copy_backward_n)
+  {
+    vector<int> x = {1, 2, 3};
+    vector<int> y(3, 0);
+    eop::copy_backward_n(end(x), 3, end(y));
+    EXPECT_EQ(3, y.size());
+    vector<int> expected{1, 2, 3};
+    EXPECT_EQ(expected, y);
+  }
+
+  template<typename I>
+  struct is_even_iterator
+  {
+    bool operator()(I const& i)
+    {
+      return eop::even(*i);
+    }
+  };
+  
+  TEST(chapter_9_copying, test_copy_select)
+  {
+    vector<int> x = {1, 2, 3, 4, 5};
+    vector<int> y;
+    eop::copy_select(begin(x), end(x), back_inserter(y),
+		     is_even_iterator<vector<int>::iterator>());
+    EXPECT_EQ(2, y.size());
+    vector<int> expected{2, 4};
+    EXPECT_EQ(expected, y);
+  }
+
+  TEST(chapter_9_copying, test_split_copy)
+  {
+    vector<int> x = {1, 2, 3, 4, 5};
+    vector<int> y, z;
+    eop::split_copy(begin(x), end(x), back_inserter(y), back_inserter(z),
+		    is_even_iterator<vector<int>::iterator>());
+    vector<int> expected_y{1, 3, 5};
+    EXPECT_EQ(expected_y, y);
+    vector<int> expected_z{2, 4};
+    EXPECT_EQ(expected_z, z);
+  }
+
+  TEST(chapter_9_copying, test_merge_copy)
+  {
+    vector<int> y{1, 3, 7, 8};
+    vector<int> z{2, 4, 5, 6};
+    vector<int> r;
+    eop::merge_copy(begin(y), end(y), begin(z), end(z),
+		    back_inserter(r), std::less<int>());
+    vector<int> expected_r{1, 2, 3, 4, 5, 6, 7, 8};
+    EXPECT_EQ(expected_r, r);
+  }
+
+  TEST(chapter_9_copying, test_merge_copy_n)
+  {
+    vector<int> y{1, 3, 7, 8};
+    vector<int> z{2, 4, 5, 6};
+    vector<int> r;
+    auto result = eop::merge_copy_n(begin(y), 4, begin(z), 4,
+		      std::back_inserter(r), std::less<int>());
+    vector<int> expected_r{1, 2, 3, 4, 5, 6, 7, 8};
+    EXPECT_EQ(expected_r, r);
+    EXPECT_EQ(end(y), std::get<0>(result));
+    EXPECT_EQ(end(z), std::get<1>(result));
+  }
+
+  TEST(chapter_9_copying, test_merge_copy_backward_n)
+  {
+    vector<int> y{8, 7, 3, 1};
+    vector<int> z{6, 5, 4, 2};
+    vector<int> r(8, 0);
+    auto result = eop::merge_copy_backward_n(end(y), 4, end(z), 4, end(r), std::less<int>());
+    vector<int> expected_r{8, 7, 6, 5, 4, 3, 2, 1};
+    EXPECT_EQ(expected_r, r);
+    EXPECT_EQ(begin(y), std::get<0>(result));
+    EXPECT_EQ(begin(z), std::get<1>(result));
+    EXPECT_EQ(begin(r), std::get<2>(result));
+  }
+
+  TEST(chapter_9_copying, test_merge_copy_backward_n_one_empty)
+  {
+    vector<int> y{};
+    vector<int> z{6, 5, 4, 2};
+    vector<int> r(4, 0);
+    auto result = eop::merge_copy_backward_n(end(y), 0, end(z), 4, end(r), std::less<int>());
+    vector<int> expected_r{6, 5, 4, 2};
+    EXPECT_EQ(expected_r, r);
+    EXPECT_EQ(begin(y), std::get<0>(result));
+    EXPECT_EQ(begin(z), std::get<1>(result));
+    EXPECT_EQ(begin(r), std::get<2>(result));
+  }
 }
