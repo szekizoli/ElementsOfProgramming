@@ -2195,4 +2195,56 @@ namespace eoptest
     EXPECT_EQ(e_x, x);
     EXPECT_EQ(e_y, y);
   }
+
+  TEST(chapter_9_4_swap_ranges, test_reverse_swap_ranges_bounded)
+  {
+    vector<int> x {1, 2, 3, 4};
+    vector<int> y {5, 6, 7, 8};
+    auto r = eop::reverse_swap_ranges_bounded(begin(x), end(x), begin(y), end(y));
+    EXPECT_EQ(begin(x), r.first);
+    EXPECT_EQ(end(y), r.second);
+    vector<int> e_x {8, 7, 6, 5};
+    vector<int> e_y {4, 3, 2, 1};
+    EXPECT_EQ(e_x, x);
+    EXPECT_EQ(e_y, y);
+  }
+
+  TEST(chapter_9_4_swap_ranges, test_reverse_swap_ranges_bounded_not_all)
+  {
+    vector<int> x {0, 1, 2, 3, 4};
+    vector<int> y {5, 6, 7, 8, 9};
+    auto r = eop::reverse_swap_ranges_bounded(begin(x) + 3, end(x), begin(y), begin(y) + 3);
+    EXPECT_EQ(begin(x) + 3, r.first);
+    EXPECT_EQ(begin(y) + 2, r.second);
+    vector<int> e_x {0, 1, 2, 6, 5};
+    vector<int> e_y {4, 3, 7, 8, 9};
+    EXPECT_EQ(e_x, x);
+    EXPECT_EQ(e_y, y);
+  }
+
+  TEST(chapter_9_4_swap_ranges, test_reverse_swap_ranges_n)
+  {
+    vector<int> x {1, 2, 3, 4};
+    vector<int> y {5, 6, 7, 8};
+    auto r = eop::reverse_swap_ranges_n(end(x), begin(y), size(x));
+    EXPECT_EQ(begin(x), r.first);
+    EXPECT_EQ(end(y), r.second);
+    vector<int> e_x {8, 7, 6, 5};
+    vector<int> e_y {4, 3, 2, 1};
+    EXPECT_EQ(e_x, x);
+    EXPECT_EQ(e_y, y);
+  }
+
+  TEST(chapter_9_4_swap_ranges, test_reverse_swap_ranges_n_not_all)
+  {
+    vector<int> x {0, 1, 2, 3, 4};
+    vector<int> y {5, 6, 7, 8, 9};
+    auto r = eop::reverse_swap_ranges_n(end(x), begin(y), 2);
+    EXPECT_EQ(begin(x) + 3, r.first);
+    EXPECT_EQ(begin(y) + 2, r.second);
+    vector<int> e_x {0, 1, 2, 6, 5};
+    vector<int> e_y {4, 3, 7, 8, 9};
+    EXPECT_EQ(e_x, x);
+    EXPECT_EQ(e_y, y);
+  }
 }
