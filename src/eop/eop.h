@@ -2915,4 +2915,18 @@ namespace eop {
     while(f0 != l0 && f1 != l1) swap_step(f0, f1);
     return std::make_pair(f0, f1);
   }
+
+  template<typename I0, typename I1, typename N>
+    requires(Mutable(I0) && Forwarditerator(I0) &&
+             Mutable(I1) && ForwardIterator(I1) &&
+             ValueType(I0) == ValueType(I1) &&
+	     Integer(N))
+  std::pair<I0, I1> swap_ranges_n(I0 f0, I1 f1, N n)
+  {
+    // Precondition: mutable_counted_range(f0, n)
+    // Precondition: mutable_counted_range(f1, n)
+    while(count_down(n)) swap_step(f0, f1);
+    return std::make_pair(f0, f1);
+  }
+
 } // namespace eop
