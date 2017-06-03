@@ -2101,4 +2101,25 @@ namespace eoptest
     EXPECT_EQ(begin(z), std::get<1>(result));
     EXPECT_EQ(begin(r), std::get<2>(result));
   }
+
+  TEST(chapter_9_4_swap_ranges, test_swap_ranges_empty)
+  {
+    vector<int> x, y;
+    auto r = eop::swap_ranges(begin(x), end(x), begin(y));
+    EXPECT_EQ(end(y), r);
+    EXPECT_EQ(0, x.size());
+    EXPECT_EQ(0, y.size());
+  }
+
+  TEST(chapter_9_4_swap_ranges, test_swap_ranges)
+  {
+    vector<int> x {1, 2, 3, 4};
+    vector<int> y {5, 6, 7, 8};
+    auto r = eop::swap_ranges(begin(x), end(x), begin(y));
+    EXPECT_EQ(end(y), r);
+    vector<int> e_x {5, 6, 7, 8};
+    vector<int> e_y {1, 2, 3, 4};
+    EXPECT_EQ(e_x, x);
+    EXPECT_EQ(e_y, y);
+  }
 }

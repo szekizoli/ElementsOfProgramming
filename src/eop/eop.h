@@ -2855,6 +2855,52 @@ namespace eop {
     return combine_copy_backward_n(f_i0, n0, f_i1, n1, l_o, rs);
   }
 
-
+/*
+ * Project 9.1 Modern computing systems include highly optimized library
+ * procedures for copying memory; for example, memmove and memcpy, which use
+ * optimization techniques not discussed in this book. Study the procedures
+ * provided on your platform, determine the techniques they use (for example,
+ * loop unrolling and software pipelining), and design abstract procedures
+ * expressing as many of these techniques as possible. What type requirements and
+ * preconditions are necessary for each technique? What language extensions would
+ * allow a compiler full flexibility to carry out these optimizations?
+ */
   
+ // 9.4 Swapping ranges
+
+  template<typename I0, typename I1>
+    requires(Mutable(I0) && Mutable(I1) &&
+	     ValueType(I0) == ValueType(I1))
+  void exchange_values(I0 x, I1 y) {
+    // Precondition: deref(x) and deref(y) are defined
+    ValueType(I0) t = source(x);
+            sink(x) = source(y);
+            sink(y) = t;
+    // Postcondition: x's and y's values has been exchanged
+  }
+
+  template<typename I0, typename I1>
+    requires(Mutable(I0) && ForwardIterator(I0) &&
+             Mutable(I1) && ForwardIterator(I1) &&
+             ValueType(I0) == ValueType(I1))
+  void swap_step(I0& f0, I1& f1)
+  {
+    // Precondition: deref(f0) and deref(f1) are defined
+    exchange_values(f0, f1);
+    f0 = successor(f0);
+    f1 = successor(f1);
+  }
+
+  template<typename I0, typename I1>
+    requires(Mutable(I0) && Forwarditerator(I0) &&
+             Mutable(I1) && ForwardIterator(I1) &&
+             ValueType(I0) == ValueType(I1))
+  I1 swap_ranges(I0 f0, I0 l0, I1 f1)
+  {
+    // Precondition: mutable_bounded_range(f0, l0)
+    // Precondition: mutable_counted_range(f1, l0-f0)
+    while(f0 != l0)
+      swap_step(f0, f1);
+    return f1;
+  }
 } // namespace eop
