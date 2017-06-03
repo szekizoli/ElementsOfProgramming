@@ -2929,4 +2929,27 @@ namespace eop {
     return std::make_pair(f0, f1);
   }
 
+  template<typename I0, typename I1>
+    requires(Mutable(IO) && BidirectionalIterator(I0) &&
+	     Mutable(I1) && ForwardIterator(I1) &&
+	     ValueType(I0) == ValueType(I1))
+  void reverse_swap_step(I0& l0, I1& f1)
+  {
+    l0 = predecessor(l0);
+    exchange_values(l0, f1);
+    f1 = successor(f1);
+  }
+
+  template<typename I0, typename I1>
+    requires(Mutable(IO) && BidirectionalIterator(I0) &&
+	     Mutable(I1) && ForwardIterator(I1) &&
+	     ValueType(I0) == ValueType(I1))
+   I1 reverse_swap_ranges(I0 f0, I0 l0, I1 f1)
+   {
+     // Precondition: mutable_bounded_range(f0, l0)
+     // Precondition: mutable_counted_range(f1, l0 - f0)
+     while(f0 != l0) reverse_swap_step(l0, f1);
+     return f1;
+   }
+
 } // namespace eop
