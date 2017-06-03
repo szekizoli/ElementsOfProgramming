@@ -2903,4 +2903,16 @@ namespace eop {
       swap_step(f0, f1);
     return f1;
   }
+
+  template<typename I0, typename I1>
+    requires(Mutable(I0) && Forwarditerator(I0) &&
+             Mutable(I1) && ForwardIterator(I1) &&
+             ValueType(I0) == ValueType(I1))
+  std::pair<I0, I1> swap_ranges_bounded(I0 f0, I0 l0, I1 f1, I1 l1)
+  {
+    // Precondition: mutable_bounded_range(f0, l0)
+    // Precondition: mutable_bounded_range(f1, l1)
+    while(f0 != l0 && f1 != l1) swap_step(f0, f1);
+    return std::make_pair(f0, f1);
+  }
 } // namespace eop
