@@ -1523,39 +1523,39 @@ namespace eop {
     reverse_iterator(const reverse_iterator& x) : i(x.i) {}
     reverse_iterator<I>& operator=(const reverse_iterator<I>& x)
     {
-    i = x.i;
-    return *this;
+      i = x.i;
+      return *this;
     }
     bool operator==(const reverse_iterator<I>& x)
     {
-    return i == x.i;
+      return i == x.i;
     }
     bool operator!=(const reverse_iterator<I>& x)
     {
-    return !(i == x.i);
+      return !(i == x.i);
     }
     bool operator<(const reverse_iterator<I>& x)
     {
-    return i < x.i;
+      return i < x.i;
     }
     bool operator>(const reverse_iterator<I>& x)
     {
-    return x.i < i;
+      return x.i < i;
     }
     reverse_iterator<I>& operator++()
     {
-    ++i;
-    return *this;
+      ++i;
+      return *this;
     }
     reverse_iterator<I> operator++(int)
     {
-    reverse_iterator<I> r(i);
-    ++i;
-    return r;
+      reverse_iterator<I> r(i);
+      ++i;
+      return r;
     }
     I current()
     {
-    return i;
+      return i;
     }
   private:
     I i;
@@ -2976,5 +2976,23 @@ namespace eop {
     // Precondition: mutable_counted_range(f1, n)
     while(count_down(n)) reverse_swap_step(l0, f1);
     return std::make_pair(l0, f1);
+  }
+
+  
+  // *******************************************************
+  // Chapter 10 - Rearrangements
+  // *******************************************************
+
+  template<typename I, typename F>
+    requires()
+  void cycle_to(I i, F f)
+  {
+    // Precondition: The orbit of i under f is circular.
+    // Precondition: For n in N deref(f^n(i)) is defined.
+    I k = f(i);
+    while(i != k) {
+      exchange_values(i, k);
+      k = f(k);
+    }
   }
 } // namespace eop

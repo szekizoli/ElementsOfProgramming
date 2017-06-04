@@ -2247,4 +2247,27 @@ namespace eoptest
     EXPECT_EQ(e_x, x);
     EXPECT_EQ(e_y, y);
   }
+
+  template<typename I0, typename I1>
+  struct permutation
+  {
+    const I0 first_input;
+    const I1 first_permutation;
+    permutation(I0 first_input, I1 first_permutation) : first_input(first_input), first_permutation(first_permutation) {}
+    I0 operator()(I0 i) const
+    {
+      size_t n = *(first_permutation + std::distance(first_input, i)) - 1;
+      return first_input + n;
+    }
+  };
+
+  TEST(chapter_10_2_rearrangements, test_cycle_to)
+  {
+    vector<int> i_v {1, 2, 3, 4};
+    vector<int> p_v {3, 2, 4, 1};
+    permutation<vector<int>::iterator, vector<int>::iterator> p(begin(i_v), begin(p_v));
+    eop::cycle_to(begin(i_v), p);
+    vector<int> e_v {4, 2, 1, 3};
+    EXPECT_EQ(e_v, i_v);
+  }
 }
