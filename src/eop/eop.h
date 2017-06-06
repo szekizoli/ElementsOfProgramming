@@ -2995,4 +2995,28 @@ namespace eop {
       k = f(k);
     }
   }
+
+  template<typename T>
+  void cycle_to_step(T& k, const T& t0, T& t1)
+  {
+    t1 = k;
+    k = t0;
+  }
+
+  template<typename I, typename F>
+    requires()
+  void cycle_to_2n(I i, F f)
+  {
+    // Precondition: The orbit of i under f is circular.
+    // Precondition: For n in N deref(f^n(i)) is defined.
+    I k = f(i);
+    ValueType(I) t;
+    while(i != k) {
+      cycle_to_step(sink(k), source(i), t);
+      k = f(k);
+      if (i == k) break;
+      cycle_to_step(sink(k), t, sink(i));
+      k = f(k);
+    }
+  }
 } // namespace eop

@@ -2261,13 +2261,43 @@ namespace eoptest
     }
   };
 
-  TEST(chapter_10_2_rearrangements, test_cycle_to)
+  TEST(chapter_10_2_rearrangements, test_cycle_to_even)
   {
     vector<int> i_v {1, 2, 3, 4};
     vector<int> p_v {3, 2, 4, 1};
     permutation<vector<int>::iterator, vector<int>::iterator> p(begin(i_v), begin(p_v));
     eop::cycle_to(begin(i_v), p);
     vector<int> e_v {4, 2, 1, 3};
+    EXPECT_EQ(e_v, i_v);
+  }
+
+  TEST(chapter_10_2_rearrangements, test_cycle_to_2n_even)
+  {
+    vector<int> i_v {1, 2, 3, 4};
+    vector<int> p_v {3, 2, 4, 1};
+    permutation<vector<int>::iterator, vector<int>::iterator> p(begin(i_v), begin(p_v));
+    eop::cycle_to_2n(begin(i_v), p);
+    vector<int> e_v {4, 2, 1, 3};
+    EXPECT_EQ(e_v, i_v);
+  }
+
+  TEST(chapter_10_2_rearrangements, test_cycle_to_odd)
+  {
+    vector<int> i_v {1, 2, 3, 4, 5, 6, 7};
+    vector<int> p_v {3, 5, 2, 6, 7, 1, 4};
+    permutation<vector<int>::iterator, vector<int>::iterator> p(begin(i_v), begin(p_v));
+    eop::cycle_to(begin(i_v), p);
+    vector<int> e_v {6, 3, 1, 7, 2, 4, 5};
+    EXPECT_EQ(e_v, i_v);
+  }
+
+  TEST(chapter_10_2_rearrangements, test_cycle_to_2n_odd)
+  {
+    vector<int> i_v {1, 2, 3, 4, 5, 6, 7};
+    vector<int> p_v {3, 5, 2, 6, 7, 1, 4};
+    permutation<vector<int>::iterator, vector<int>::iterator> p(begin(i_v), begin(p_v));
+    eop::cycle_to_2n(begin(i_v), p);
+    vector<int> e_v {6, 3, 1, 7, 2, 4, 5};
     EXPECT_EQ(e_v, i_v);
   }
 }

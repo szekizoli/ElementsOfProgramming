@@ -26,6 +26,12 @@ namespace eop {
   }
 
   template<typename T>
+  T& deref(pointer(T) x)
+  {
+     return *x;
+  }
+
+  template<typename T>
      requires(Readable(T))
   constexpr const T& source(const pointer(T) x)
   {
