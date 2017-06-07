@@ -14,6 +14,7 @@
 #pragma once
 
 #include <tuple>
+#include <vector>
 
 #include "intrinsics.h"
 #include "pointers.h"
@@ -3037,5 +3038,62 @@ namespace eop {
     sink(j) = tmp;
   }
 
-  
+  template<typename I, typename F>
+    requires(Mutable(I) && Transformation(F) && I == ValueType(F))
+  void cycle_to_marking(I i, F f, std::vector<bool>& marked)
+  {
+    // Precondition: The orbit of i under f is circular.
+    // Precondition: For n in N deref(f^n(i)) is defined.
+    I k = f(i);
+    while(i != k) {
+      exchange_values(i, k);
+      k = f(k);
+    }
+  }
+
+  template<typename I, typename N>
+  struct marker
+  {
+    std::vector<bool> marked;
+    const I first;
+    marker(N n, I first) : marked(std::vector<bool>(n, false)), first(first) {}
+    void mark(I i) { marked[std::distance(first, i)] = true; }
+    auto next() const { return find(begin(), end(), false); }
+    auto begin() const { return marked.begin(); };
+    auto end() const { return marked.end(); }
+  };
+
+  template<typename I, typename N>
+  std::vector<bool>::iterator begin(marker<I, N> const& m) { return m.begin(); }
+
+  template<typename I, typename N>
+  std::vector<bool>::iterator end(marker<I, N> const& m) { return m.end(); }
+
+  /*
+   * Exercise 10.4 
+   * Implement an algorithm that performs an arbitrary rearrangement
+   * of a range of indexed iterators. Use an array of n Boolean values
+   * to mark elements as they are placed, and scan this array for an
+   * unmarked value to determine a representive of the next cycle.
+   */
+  template<typename I, typename N, typename F>
+    requires()
+  void cycle(I i, N n, F f)
+  {
+    // Precondition:
+    marker<I, N> marked(n, i);
+    auto next = begin(marked);
+    do {
+      I j = i + std::distance(begin(marked), next);
+      marked.mark(j);
+      I k = f(j);
+      while(k != j) {
+        marked.mark(k);
+        exchange_values(j, k);
+        k = f(k);
+      }
+
+      next = marked.next();
+    } while(next != end(marked));    
+  }
 } // namespace eop

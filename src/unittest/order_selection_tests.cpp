@@ -2310,4 +2310,14 @@ namespace eoptest
     vector<int> e_v {3, 2, 4, 1};
     EXPECT_EQ(e_v, i_v);
   }
+
+  TEST(chapter_10_2_reartangements, test_cycle)
+  {
+    vector<int> i_v {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13};
+    vector<int> p_v {3, 5, 2, 6, 7, 1, 4, 9, 8, 12, 13, 11, 10};
+    permutation<vector<int>::iterator, vector<int>::iterator> p(begin(i_v), begin(p_v));
+    eop::cycle(begin(i_v), size(i_v), p);
+    vector<int> e_v {6, 3, 1, 7, 2, 4, 5, 9, 8, 13, 12, 10, 11};
+    EXPECT_EQ(e_v, i_v);
+  }
 }
