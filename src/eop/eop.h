@@ -2984,7 +2984,7 @@ namespace eop {
   // *******************************************************
 
   template<typename I, typename F>
-    requires()
+    requires(Mutable(I) && Transformation(F) && I == ValueType(F))
   void cycle_to(I i, F f)
   {
     // Precondition: The orbit of i under f is circular.
@@ -3004,7 +3004,7 @@ namespace eop {
   }
 
   template<typename I, typename F>
-    requires()
+    requires(Mutable(I) && Transformation(F) && I == ValueType(F))
   void cycle_to_2n(I i, F f)
   {
     // Precondition: The orbit of i under f is circular.
@@ -3019,4 +3019,23 @@ namespace eop {
       k = f(k);
     }
   }
+
+  template<typename I, typename F>
+    requires(Mutable(I) && Transformation(F) && I == ValueType(F))
+  void cycle_from(I i, F f)
+  {
+    // Precondition: The orbit of i under f is circular.
+    // Precondition: For n in N deref(f^n(i)) is defined.
+    ValueType(I) tmp = source(i);
+    I j = i;
+    I k = f(i);
+    while (i != k) {
+      sink(j) = source(k);
+      j = k;
+      k = f(k);
+    }
+    sink(j) = tmp;
+  }
+
+  
 } // namespace eop
