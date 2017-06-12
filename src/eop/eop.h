@@ -3051,23 +3051,23 @@ namespace eop {
     }
   }
 
-  template<typename I, typename N>
+  template<typename I>
   struct marker
   {
     std::vector<bool> marked;
     const I first;
-    marker(N n, I first) : marked(std::vector<bool>(n, false)), first(first) {}
+    marker(I first, DistanceType(I) n) : marked(std::vector<bool>(n, false)), first(first) {}
     void mark(I i) { marked[std::distance(first, i)] = true; }
     auto next() const { return find(begin(), end(), false); }
     auto begin() const { return marked.begin(); };
     auto end() const { return marked.end(); }
   };
 
-  template<typename I, typename N>
-  std::vector<bool>::iterator begin(marker<I, N> const& m) { return m.begin(); }
+  template<typename I>
+  std::vector<bool>::iterator begin(marker<I> const& m) { return m.begin(); }
 
-  template<typename I, typename N>
-  std::vector<bool>::iterator end(marker<I, N> const& m) { return m.end(); }
+  template<typename I>
+  std::vector<bool>::iterator end(marker<I> const& m) { return m.end(); }
 
   /*
    * Exercise 10.4 
@@ -3076,12 +3076,12 @@ namespace eop {
    * to mark elements as they are placed, and scan this array for an
    * unmarked value to determine a representive of the next cycle.
    */
-  template<typename I, typename N, typename F>
+  template<typename I, typename F>
     requires()
-  void cycle(I i, N n, F f)
+  void cycle(I i, DistanceType(I) n, F f)
   {
     // Precondition:
-    marker<I, N> marked(n, i);
+    marker<I> marked(i, n);
     auto next = begin(marked);
     do {
       I j = i + std::distance(begin(marked), next);
@@ -3096,4 +3096,112 @@ namespace eop {
       next = marked.next();
     } while(next != end(marked));    
   }
+
+  /* Exercise 10.5
+   * Assuming iterators with total ordering, design an algorithm
+   * that uses constant storage to determine whether an iterator
+   * is a representative for a cycle; use this algorithm
+   * to implement an arbitrary rearrangement.
+   */
+  template<typename I, typename F>
+  bool is_representative(I i, F f)
+  {
+    // TODO: 
+  }
+
+  // 10.3 Reverse Algorithms
+  template<typename I>
+    requires(Mutabel(I) && RandomAccessIterator(I))
+  void reverse_n_random_access(I f, DistanceType(I) n)
+  {
+    //Precondition: mutable_counted_range(f, n)
+    DistanceType(I) h = half_nonnegative(n);
+    I l = f + n;
+    while(count_down(h)) exchange_values(f + h, l - 1 - h);
+  }
+
+  template<typename I>
+    requires(Mutabel(I) && IndexedIterator(I))
+  void reverse_n_indexed(I f, DistanceType(I) n)
+  {
+    //Precondition: mutable_counted_range(f, n)
+    DistanceType(I) i = 0;
+    n = predecessor(n);
+    while(i < n) {
+      exchange_values(f + i, f + n);
+      i = successor(i);
+      n = predecessor(n);
+    }
+  }
+
+  template<typename I>
+    requires(Mutable(I) && BidirectionalIterator(I))
+  void reverse_bidirectional(I f, I l)
+  {
+    //Precondtion: mutable_bounde_range(f, l)
+    while(f != l) {
+      l = predecessor(l);
+      if (f == l) return;
+      exchange_values(f, l);
+      f = successor(f);
+    }
+  }
+
+  template<typename I>
+    requires(Mutable(I) && BidirectionIterator(I))
+  void reverse_n_bidirectional(I f, I l, DistanceType(I) n)
+  {
+    //Precondition: mutable_bounded_range(f, l) && 0 <= n <= l-f
+    reverse_swap_ranges_n(l, f, half_nonnegative(n));
+  }
+
+  template<typename I, typename B>
+    requires(Mutable(I) && ForwardIterator(I) &&
+             Mutable(B) && BidirectionalIterator(B) &&
+             ValueType(I) == ValueType(B))
+  I reverse_n_with_buffer(I f_i, DistanceType(I) n, B f_b)
+  {
+    //Precondition: mutable_counted_range(f_i, n)
+    //Precondition: mutable_counted_range(f_b, n)
+    return reverse_copy(f_b, copy_n(f_i, n, f_b).second, f_i);
+  }
+
+  template<typename I>
+    requires(Mutable(I) && ForwardIterator(I))
+  I reverse_n_forward(I f, DistanceType(I) n)
+  {
+    //Precondition: mutable_counted_range(f, n)
+    typedef DistanceType(I) N;
+    if (n < N(2)) return f + n;
+    N h = half_nonnegative(n);
+    N n_mod_2 = n - twice(h);
+    I m = reverse_n_forward(f, h) + n_mod_2;
+    I l = reverse_n_forward(m, h);
+    swap_ranges_n(f, m, h);
+    return l;
+  } 
+
+  template<typename I, typename B>
+    requires(Mutable(I) && ForwardIterator(I) &&
+             Mutable(B) && BidirectionalIterator(B) &&
+             ValueType(I) == ValueType(B))
+  I reverse_n_adaptive(I f_i, DistanceType(I) n_i,
+                       B f_b, DistanceType(I) n_b)
+  {
+    // Precondition: mutable_counted_range(f_i, n_i)
+    // Precondition: mutable_counted_range(f_b, n_b)
+    typedef DistanceType(I) N;
+    if (n_i < N(2))
+      return f_i + n_i;
+    if (n_i <= n_b)
+      return reverse_n_with_buffer(f_i, n_i, f_b);
+    N h_i = half_nonnegative(n_i);
+    N n_mod_2 = n_i - twice(h_i);
+    I m_i = reverse_n_adaptive(f_i, h_i, f_b, n_b) + n_mod_2;
+    I l_i = reverse_n_adaptive(m_i, h_i, f_b, n_b);
+    swap_ranges_n(f_i, m_i, h_i);
+    return l_i;
+  }
+
+  
 } // namespace eop

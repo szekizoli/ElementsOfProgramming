@@ -1,3 +1,4 @@
+#include <array>
 #include <iostream>
 #include <iterator>
 #include <numeric>
@@ -39,6 +40,7 @@ namespace eop
 
 namespace eoptest
 {
+  using std::array;
   using std::vector;
   using std::pair;
   using std::swap;
@@ -2301,7 +2303,7 @@ namespace eoptest
     EXPECT_EQ(e_v, i_v);
   }
 
-  TEST(chapter_10_2_reartangements, test_cycle_from)
+  TEST(chapter_10_2_rearrangements, test_cycle_from)
   {
     vector<int> i_v {1, 2, 3, 4};
     vector<int> p_v {3, 2, 4, 1};
@@ -2311,7 +2313,7 @@ namespace eoptest
     EXPECT_EQ(e_v, i_v);
   }
 
-  TEST(chapter_10_2_reartangements, test_cycle)
+  TEST(chapter_10_2_rearrangements, test_cycle)
   {
     vector<int> i_v {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13};
     vector<int> p_v {3, 5, 2, 6, 7, 1, 4, 9, 8, 12, 13, 11, 10};
@@ -2320,4 +2322,78 @@ namespace eoptest
     vector<int> e_v {6, 3, 1, 7, 2, 4, 5, 9, 8, 13, 12, 10, 11};
     EXPECT_EQ(e_v, i_v);
   }
+
+  TEST(chapter_10_3_rearangements, test_reverse_n_indexed)
+  {
+    vector<int> v0 = {1, 2, 3, 4, 5, 6};
+    eop::reverse_n_indexed(begin(v0), size(v0));
+    vector<int> e_v0 = {6, 5, 4, 3, 2, 1};
+    EXPECT_EQ(e_v0, v0);
+    vector<int> v1 = {1, 2, 3, 4, 5};
+    eop::reverse_n_indexed(begin(v1), size(v1));
+    vector<int> e_v1 = {5, 4, 3, 2, 1};
+    EXPECT_EQ(e_v1, v1);
+  }
+
+  TEST(chapter_10_3_rearangements, test_reverse_n_random_access)
+  {
+    vector<int> v0 = {1, 2, 3, 4, 5, 6};
+    eop::reverse_n_random_access(begin(v0), size(v0));
+    vector<int> e_v0 = {6, 5, 4, 3, 2, 1};
+    EXPECT_EQ(e_v0, v0);
+    vector<int> v1 = {1, 2, 3, 4, 5};
+    eop::reverse_n_random_access(begin(v1), size(v1));
+    vector<int> e_v1 = {5, 4, 3, 2, 1};
+    EXPECT_EQ(e_v1, v1);
+  }
+
+  TEST(chapter_10_3_rearangements, test_reverse_bidirectional)
+  {
+    vector<int> v0 = {1, 2, 3, 4, 5, 6};
+    eop::reverse_bidirectional(begin(v0), end(v0));
+    vector<int> e_v0 = {6, 5, 4, 3, 2, 1};
+    EXPECT_EQ(e_v0, v0);
+    vector<int> v1 = {1, 2, 3, 4, 5};
+    eop::reverse_bidirectional(begin(v1), end(v1));
+    vector<int> e_v1 = {5, 4, 3, 2, 1};
+    EXPECT_EQ(e_v1, v1);
+  }
+
+  TEST(chapter_10_3_rearangements, test_reverse_n_bidirectional)
+  {
+    vector<int> v0 = {1, 2, 3, 4, 5, 6};
+    eop::reverse_n_bidirectional(begin(v0), end(v0), size(v0));
+    vector<int> e_v0 = {6, 5, 4, 3, 2, 1};
+    EXPECT_EQ(e_v0, v0);
+    vector<int> v1 = {1, 2, 3, 4, 5};
+    eop::reverse_n_bidirectional(begin(v1), end(v1), size(v1));
+    vector<int> e_v1 = {5, 4, 3, 2, 1};
+    EXPECT_EQ(e_v1, v1);
+  }
+
+  TEST(chapter_10_3_rearangements, test_reverse_n_forward)
+  {
+    vector<int> v0 = {1, 2, 3, 4, 5, 6};
+    eop::reverse_n_forward(begin(v0), size(v0));
+    vector<int> e_v0 = {6, 5, 4, 3, 2, 1};
+    EXPECT_EQ(e_v0, v0);
+    vector<int> v1 = {1, 2, 3, 4, 5};
+    eop::reverse_n_forward(begin(v1), size(v1));
+    vector<int> e_v1 = {5, 4, 3, 2, 1};
+    EXPECT_EQ(e_v1, v1);
+  }
+
+  TEST(chapter_10_3_rearrangements, test_reverse_n_adaptive)
+  {
+    array<int, 4> buffer;
+    vector<int> v0 = {1, 2, 3, 4, 5, 6, 7, 8};
+    eop::reverse_n_adaptive(begin(v0), size(v0), begin(buffer), buffer.size());
+    vector<int> e_v0 = {8, 7,  6, 5, 4, 3, 2, 1};
+    EXPECT_EQ(e_v0, v0);
+    vector<int> v1 = {1, 2, 3, 4, 5, 6, 7, 8, 9};
+    eop::reverse_n_adaptive(begin(v1), size(v1), begin(buffer), buffer.size());
+    vector<int> e_v1 = {9, 8, 7, 6, 5, 4, 3, 2, 1};
+    EXPECT_EQ(e_v1, v1);    
+  }
 }
+
