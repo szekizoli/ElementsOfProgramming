@@ -850,6 +850,28 @@ namespace eop {
   }
 
   // *******************************************************
+  // Chapter 5 - Ordered Algebraic Structures
+  // *******************************************************
+
+  template<typename T>
+  T remainder(T a, T b)
+  {
+    return a % b;
+  }
+
+  template<typename T>
+  T gcd(T a, T b)
+  {
+    //Precondition:
+    while(true) {
+      if (b == T(0)) return a;
+      a = remainder(a, b);
+      if (a == T(0)) return b;
+      b = remainder(b, a);
+    }
+  }
+
+  // *******************************************************
   // Chapter 6 - Iterators
   // *******************************************************
 
@@ -889,8 +911,8 @@ namespace eop {
   {
     // Precondition: n >= 0 & weak_range(f, n)
     while (!zero(n)) {
-    n = predecessor(n);
-    f = successor(f);
+     n = predecessor(n);
+     f = successor(f);
     }
     return f;
   }
@@ -902,8 +924,8 @@ namespace eop {
     // Precondition: bounded_range(f, l)
     DistanceType(I) n(0);
     while (f != l) {
-    n = successor(n);
-    f = successor(f);
+     n = successor(n);
+     f = successor(f);
     }
     return n;
   }
@@ -915,8 +937,8 @@ namespace eop {
   {
     // Precondition: readable_bounded_range(f, l)
     while (f != l) {
-    proc(source(f));
-    f = successor(f);
+     proc(source(f));
+     f = successor(f);
     }
     return proc;
   }
@@ -3027,7 +3049,7 @@ namespace eop {
   {
     // Precondition: The orbit of i under f is circular.
     // Precondition: For n in N deref(f^n(i)) is defined.
-    ValueType(I) tmp = source(i);
+    auto tmp = source(i);
     I j = i;
     I k = f(i);
     while (i != k) {
@@ -3110,6 +3132,7 @@ namespace eop {
   }
 
   // 10.3 Reverse Algorithms
+
   template<typename I>
     requires(Mutabel(I) && RandomAccessIterator(I))
   void reverse_n_random_access(I f, DistanceType(I) n)
@@ -3203,5 +3226,141 @@ namespace eop {
     return l_i;
   }
 
-  
+  // 10.4 Rotate Algorithms
+  template<typename I>
+    requires(RandomAccessIterator(I))
+  struct k_rotate_from_permutation_random_access
+  {
+    DistanceType(I) k;
+    DistanceType(I) n_minus_k;
+    I m_prime;
+    k_rotate_from_permutation_random_access(I f, I m, I l)
+     : k(l - m), n_minus_k(m - f), m_prime(f + (l-m))
+    {
+      //Precondition: bounded_range(f, l) && m in [f, l)
+    }
+    I operator()(I x)
+    {
+      //Precondition: x in [f, l)
+      if (x < m_prime) return x + n_minus_k;
+      else             return x - k;
+    }
+  };
+
+  template<typename I>
+    requires(IndexedIterator(I))
+  struct k_rotate_from_permutation_indexed
+  {
+    DistanceType(I) k;
+    DistanceType(I) n_minus_k;
+    I f;
+    k_rotate_from_permutation_indexed(I f, I m, I l) :
+      k(l - m), n_minus_k(m - f), f(f)
+    {
+      //Precondition: bounded_range(f, l) && m in [f, l)
+    }
+    I operator()(I x)
+    {
+      //Precondition: x in [f, l)
+      DistanceType(I) i = x - f;
+      if (i < k) return x + n_minus_k;
+      else       return f + (i - k);
+    }
+  };
+
+  template<typename I, typename F>
+    requires(Mutable(I) && IndexedIterator(I) &&
+             Transformation(F) && I == Domain(F))
+  I rotate_cycles(I f, I m, I l, F from)
+  {
+    //Precondition: mutable_bounded_range(f, l) && m in [f, l]
+    //Precondition: from  is a from-permutaion on [f, l)
+    typedef DistanceType(I) N;
+    N d = gcd<N>(m - f, l - m);
+    while(count_down(d)) cycle_from(f + d, from);
+    return f + (l - m);
+  }
+
+  template<typename I>
+    requires(Mutable(I) && RandomAccessIterator(I))
+  I rotate_random_access_nontrivial(I f, I m, I l)
+  {
+    // Precondition: mutable_bounded_range(f, l) && f < m < l
+    k_rotate_from_permutation_random_access<I> from(f, m, l);
+    return rotate_cycles(f, m, l, from);
+  }
+
+  template<typename I>
+    requires(Mutable(I) && IndexedIterator(I))
+  I rotate_indexed_nontrivial(I f, I m, I l)
+  {
+    // Precondition: mutable_bounded_range(f, l) && f < m < l
+    k_rotate_from_permutation_indexed<I> from(f, m, l);
+    return rotate_cycles(f, m, l, from);
+  }
+
+  template<typename I>
+    requires(Mutable(I) && BidirectionalIterator(I))
+  I rotate_bidirectional_nontrivial(I f, I m, I l)
+  {
+    // Precondition: mutable_bounded_range(f, l) && f < m < l
+    reverse_bidirectional(f, m);
+    reverse_bidirectional(m, l);
+    std::pair<I, I> p = reverse_swap_ranges_bounded(m, l, f, m);
+    reverse_bidirectional(p.second, p.first);
+    if (m == p.first) return p.second;
+    else              return p.first;
+  }
+
+  template<typename I>
+   requires(Mutable(I) && ForwardIterator(I))
+  void rotate_forward_annotated(I f, I m, I l)
+  {
+    // Precondition: mutable_bounded_range(f, l) && f < m < l
+    DistanceType(I) a = m - f;
+    DistanceType(I) b = l - m;
+    while (true) {
+      std::pair<I, I> p = swap_ranges_bounded(f, m, m, l);
+      if (p.first == m && p.second == l) { assert(a == b);
+        return;
+      }
+      f = p.first;
+      if (f == m) {          assert(b > a);
+        m = p.second;        b = b - a;
+      } else {               assert(a > b);
+                             a = a - b;
+      }
+    }  
+  }
+
+  template<typename I>
+    requires(Mutable(I) && ForwardIterator(I))
+  void rotate_forward_step(I& f, I& m, I l)
+  {
+    // Precondition: mutable_bounded_range(f, m, l) && f < m < l
+    I c = m;
+    do {
+      swap_step(f, c);
+      if (f == m) m = c;
+    } while (c != l);
+  }
+
+  template<typename I>
+    requires(Mutable(I) && ForwardIterator(I))
+  I rotate_forward_nontrivial(I f, I m, I l)
+  {
+    // Precondition: mutable_bounded_range(f, l) && f < m < l
+    rotate_forward_step(f, m, l);
+    I m_prime = f;
+    while (m != l) rotate_forward_step(f, m, l);
+    return m_prime;
+  }
+
+  template<typename I>
+    requires(Mutable(I) && ForwardIterator(I))
+  I rotate_partial_nontrivial(I f, I m, I l)
+  {
+    return swap_ranges(m, l, f); 
+  }
+
 } // namespace eop
