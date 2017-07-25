@@ -21,7 +21,7 @@ void min_1_2(std::vector<int> const& v) {
   cout << std::endl;
 }
 
-int main() {
+/*int main() {
   typedef list_pool<int>::list_type list_type;
   list_pool<int> pool;
   list_type l;
@@ -33,4 +33,4 @@ int main() {
   min_1_2(std::vector<int> {3, 7, 4, 6, 1, 2, 9, 2, 8, 5} );
   min_1_2(std::vector<int> {1} );
   min_1_2(std::vector<int> {} );
-}
+}*/
