@@ -365,68 +365,68 @@ namespace eoptest
         {
                 vector<int> v{ 1, 4, 3, 2 };
                 bool all = eop::all(v.begin(), v.end(), less_Than(10));
-                EXPECT_EQ(true, all);
+                EXPECT_TRUE(all);
                 all = eop::all(v.begin(), v.end(), less_Than(4));
-                EXPECT_EQ(false, all);
+                EXPECT_FALSE(all);
         }
 
         TEST(iteratorstest, test_all_empty)
         {
                 vector<int> v{ };
                 bool all = eop::all(v.begin(), v.end(), less_Than(10));
-                EXPECT_EQ(true, all);
+                EXPECT_TRUE(all);
         }
 
         TEST(iteratorstest, test_none)
         {
                 vector<int> v{ 1, 4, 3, 2 };
                 bool none = eop::none(v.begin(), v.end(), less_Than(0));
-                EXPECT_EQ(true, none);
+                EXPECT_TRUE(none);
                 none = eop::none(v.begin(), v.end(), equals_To(0));
-                EXPECT_EQ(true, none);
+                EXPECT_TRUE(none);
                 none = eop::none(v.begin(), v.end(), equals_To(3));
-                EXPECT_EQ(false, none);
+                EXPECT_FALSE(none);
         }
 
         TEST(iteratorstest, test_none_empty)
         {
                 vector<int> v{};
                 bool none = eop::none(v.begin(), v.end(), less_Than(10));
-                EXPECT_EQ(true, none);
+                EXPECT_TRUE(none);
         }
 
         TEST(iteratorstest, test_not_all)
         {
                 vector<int> v{ 1, 4, 3, 2 };
                 bool not_all = eop::not_all(v.begin(), v.end(), less_Than(10));
-                EXPECT_EQ(false, not_all);
+                EXPECT_FALSE(not_all);
                 not_all = eop::not_all(v.begin(), v.end(), less_Than(4));
-                EXPECT_EQ(true, not_all);
+                EXPECT_TRUE(not_all);
         }
 
         TEST(iteratorstest, test_not_all_empty)
         {
                 vector<int> v{};
                 bool not_all = eop::not_all(v.begin(), v.end(), less_Than(10));
-                EXPECT_EQ(false, not_all);
+                EXPECT_FALSE(not_all);
         }
 
         TEST(iteratorstest, test_some)
         {
                 vector<int> v{ 1, 4, 3, 2 };
                 bool some = eop::some(v.begin(), v.end(), less_Than(0));
-                EXPECT_EQ(false, some);
+                EXPECT_FALSE(some);
                 some = eop::some(v.begin(), v.end(), equals_To(0));
-                EXPECT_EQ(false, some);
+                EXPECT_FALSE(some);
                 some = eop::some(v.begin(), v.end(), equals_To(3));
-                EXPECT_EQ(true, some);
+                EXPECT_TRUE(some);
         }
 
         TEST(iteratorstest, test_some_empty)
         {
                 vector<int> v{};
                 bool some = eop::some(v.begin(), v.end(), less_Than(10));
-                EXPECT_EQ(false, some);
+                EXPECT_FALSE(some);
         }
 
         TEST(iteratorstest, test_count_if)
@@ -541,68 +541,68 @@ namespace eoptest
         {
                 vector<int> v{ 1, 4, 3, 2 };
                 bool all = eop::all_n(v.begin(), v.size(), less_Than(10));
-                EXPECT_EQ(true, all);
+                EXPECT_TRUE(all);
                 all = eop::all_n(v.begin(), v.size(), less_Than(4));
-                EXPECT_EQ(false, all);
+                EXPECT_FALSE(all);
         }
 
         TEST(iteratorstest, test_all_n_empty)
         {
                 vector<int> v{};
                 bool all = eop::all_n(v.begin(), v.size(), less_Than(10));
-                EXPECT_EQ(true, all);
+                EXPECT_TRUE(all);
         }
 
         TEST(iteratorstest, test_none_n)
         {
                 vector<int> v{ 1, 4, 3, 2 };
                 bool none = eop::none_n(v.begin(), v.size(), less_Than(0));
-                EXPECT_EQ(true, none);
+                EXPECT_TRUE(none);
                 none = eop::none_n(v.begin(), v.size(), equals_To(0));
-                EXPECT_EQ(true, none);
+                EXPECT_TRUE(none);
                 none = eop::none_n(v.begin(), v.size(), equals_To(3));
-                EXPECT_EQ(false, none);
+                EXPECT_FALSE(none);
         }
 
         TEST(iteratorstest, test_none_n_empty)
         {
                 vector<int> v{};
                 bool none = eop::none_n(v.begin(), v.size(), less_Than(10));
-                EXPECT_EQ(true, none);
+                EXPECT_TRUE(none);
         }
 
         TEST(iteratorstest, test_not_all_n)
         {
                 vector<int> v{ 1, 4, 3, 2 };
                 bool not_all = eop::not_all_n(v.begin(), v.size(), less_Than(10));
-                EXPECT_EQ(false, not_all);
+                EXPECT_FALSE(not_all);
                 not_all = eop::not_all_n(v.begin(), v.size(), less_Than(4));
-                EXPECT_EQ(true, not_all);
+                EXPECT_TRUE(not_all);
         }
 
         TEST(iteratorstest, test_not_all_n_empty)
         {
                 vector<int> v{};
                 bool not_all = eop::not_all_n(v.begin(), v.size(), less_Than(10));
-                EXPECT_EQ(false, not_all);
+                EXPECT_FALSE(not_all);
         }
 
         TEST(iteratorstest, test_some_n)
         {
                 vector<int> v{ 1, 4, 3, 2 };
                 bool some = eop::some_n(v.begin(), v.size(), less_Than(0));
-                EXPECT_EQ(false, some);
+                EXPECT_FALSE(some);
                 some = eop::some_n(v.begin(), v.size(), equals_To(0));
-                EXPECT_EQ(false, some);
+                EXPECT_FALSE(some);
                 some = eop::some_n(v.begin(), v.size(), equals_To(3));
-                EXPECT_EQ(true, some);
+                EXPECT_TRUE(some);
         }
 
         TEST(iteratorstest, test_some_n_empty)
         {
                 vector<int> v{};
                 bool some = eop::some_n(v.begin(), v.size(), less_Than(10));
-                EXPECT_EQ(false, some);
+                EXPECT_FALSE(some);
         }
 
         TEST(iteratorstest, test_find_if_ungarded)
@@ -671,27 +671,27 @@ namespace eoptest
                 {
                         vector<int> v{};
                         bool r = eop::strictly_increasing_range(begin(v), end(v), std::less<int>());
-                        EXPECT_EQ(true, r) << "empty case failed";
+                        EXPECT_TRUE(r) << "empty case failed";
                 }
                 {
                         vector<int> v{ 1 };
                         bool r = eop::strictly_increasing_range(begin(v), end(v), std::less<int>());
-                        EXPECT_EQ(true, r) << "one element case failed";
+                        EXPECT_TRUE(r) << "one element case failed";
                 }
                 {
                         vector<int> v{ 1, 2 };
                         bool r = eop::strictly_increasing_range(begin(v), end(v), std::less<int>());
-                        EXPECT_EQ(true, r) << "two elements strictly increasing case failed";
+                        EXPECT_TRUE(r) << "two elements strictly increasing case failed";
                 }
                 {
                         vector<int> v{ 1, 1 };
                         bool r = eop::strictly_increasing_range(begin(v), end(v), std::less<int>());
-                        EXPECT_EQ(false, r) << "two elements increasing case failed";
+                        EXPECT_FALSE(r) << "two elements increasing case failed";
                 }
                 {
                         vector<int> v{ 2, 1 };
                         bool r = eop::strictly_increasing_range(begin(v), end(v), std::less<int>());
-                        EXPECT_EQ(false, r) << "two elements non increasing case failed";
+                        EXPECT_FALSE(r) << "two elements non increasing case failed";
                 }
         }
 
@@ -700,27 +700,27 @@ namespace eoptest
                 {
                         vector<int> v{};
                         bool r = eop::increasing_range(begin(v), end(v), std::less<int>());
-                        EXPECT_EQ(true, r) << "empty case failed";
+                        EXPECT_TRUE(r) << "empty case failed";
                 }
                 {
                         vector<int> v{ 1 };
                         bool r = eop::increasing_range(begin(v), end(v), std::less<int>());
-                        EXPECT_EQ(true, r) << "one element case failed";
+                        EXPECT_TRUE(r) << "one element case failed";
                 }
                 {
                         vector<int> v{ 1, 2 };
                         bool r = eop::increasing_range(begin(v), end(v), std::less<int>());
-                        EXPECT_EQ(true, r) << "two elements strictly increasing case failed";
+                        EXPECT_TRUE(r) << "two elements strictly increasing case failed";
                 }
                 {
                         vector<int> v{ 1, 1 };
                         bool r = eop::increasing_range(begin(v), end(v), std::less<int>());
-                        EXPECT_EQ(true, r) << "two elements increasing case failed";
+                        EXPECT_TRUE(r) << "two elements increasing case failed";
                 }
                 {
                         vector<int> v{ 2, 1 };
                         bool r = eop::increasing_range(begin(v), end(v), std::less<int>());
-                        EXPECT_EQ(false, r) << "two elements non increasing case failed";
+                        EXPECT_FALSE(r) << "two elements non increasing case failed";
                 }
         }
 
@@ -728,7 +728,7 @@ namespace eoptest
         {
                 vector<int> v{ 7, 9, 6, 8, 3, 4, 1, 5, 2 };
                 auto r0 = eop::partitioned(begin(v), end(v), less_Than(6));
-                EXPECT_EQ(true, r0);
+                EXPECT_TRUE(r0);
         }
 
         TEST(iteratorstest, test_partition_point_n) 
@@ -1307,8 +1307,8 @@ namespace eoptest
         TEST(tree_tests, test_is_dag_false)
         {
                 Tree t = create_tree();
-                EXPECT_EQ(false, eop::is_dag(begin(t)));
-                EXPECT_EQ(false, eop::is_dag(begin(t), eop::transformation_trait{}));
+                EXPECT_FALSE(eop::is_dag(begin(t)));
+                EXPECT_FALSE(eop::is_dag(begin(t), eop::transformation_trait{}));
         }
 
         TEST(tree_tests, test_is_dag_true)
@@ -1331,8 +1331,8 @@ namespace eoptest
                 eop::set_predecessor(c_1, c_2);
                 eop::set_predecessor(c_0, c_2);
                 
-                EXPECT_EQ(true, eop::is_dag(c_2));
-                EXPECT_EQ(true, eop::is_dag(c_2, eop::transformation_trait{}));
+                EXPECT_TRUE(eop::is_dag(c_2));
+                EXPECT_TRUE(eop::is_dag(c_2, eop::transformation_trait{}));
         }
 
         TEST(project_7_1_tests, test_find)
