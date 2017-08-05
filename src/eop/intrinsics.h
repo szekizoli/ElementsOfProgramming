@@ -60,5 +60,5 @@
 template<typename T>
 pointer(T) addressof(T& x)
 {
-	return &x;
+  return &x;
 }

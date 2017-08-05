@@ -39,6 +39,18 @@ namespace eop
     // ValueType of the back_insert_iterator is back_insert_iterator
     typedef std::back_insert_iterator< std::vector<T> > type;
   };
+
+  template<>
+  struct iterator_concept<typename std::vector<int>::iterator> 
+  {
+    typedef random_access_iterator_tag concept;
+  };
+
+  template<>
+  struct iterator_concept<typename std::vector<std::pair<int, int>>::iterator> 
+  {
+    typedef random_access_iterator_tag concept;
+  };
 }
 
 namespace eoptest
@@ -1710,28 +1722,26 @@ namespace eoptest
                 }
         };
 
-        TEST(link_rearrangements, test_combine_linked_nonempty)
-        {
-                typedef eop::IteratorType<SList> I;
-                test_slist<3> l0(0, 2);
-                test_slist<3> l1(1, 2);
-                I f0 = begin(l0);
-                I f1 = begin(l1);
-                EXPECT_EQ(0, eop::source(f0));
-                EXPECT_EQ(1, eop::source(f1));
+  TEST(link_rearrangements, test_combine_linked_nonempty)
+  {
+    typedef eop::IteratorType<SList> I;
+    test_slist<3> l0(0, 2);
+    test_slist<3> l1(1, 2);
+    ASSERT_EQ(0, eop::source(begin(l0)));
+    ASSERT_EQ(1, eop::source(begin(l1)));
 
-                iterator_less<I> relation;
+    iterator_less<I> relation;
 
-                std::tuple<I, I, I> result = eop::combine_linked_nonempty(
-                                                                                                f0, end(l0),
-                                                                                                f1, end(l1),
-                                                                                                relation,
-                                                                                                eop::forward_linker<I>());
+    std::tuple<I, I, I> result = eop::combine_linked_nonempty(
+      begin(l0), end(l0),
+      begin(l1), end(l1),
+      relation,
+      eop::forward_linker<I>());
 
-                auto actual = list_to_vector(std::get<0>(result));
-                std::vector<int> expected = {0, 1, 2, 3, 4, 5};
-                EXPECT_EQ(expected, actual);
-        }
+    auto actual = list_to_vector(std::get<0>(result));
+    std::vector<int> expected = {0, 1, 2, 3, 4, 5};
+    EXPECT_EQ(expected, actual);
+  }
 
         TEST(link_rearrangements, test_combine_linked_first_empty)
         {
@@ -1843,15 +1853,12 @@ namespace eoptest
                 typedef slist_iterator<int> I;
                 test_slist<3> list0(0, 2);
                 test_slist<3> list1(1, 2);
-                I f0 = begin(list0);
-                I l0 = end(list0);
-                I f1 = begin(list1);
-                I l1 = end(list1);
-                EXPECT_EQ(0, eop::source(f0));
-                EXPECT_EQ(1, eop::source(f1));
-                EXPECT_TRUE(eop::empty(l0));
-                EXPECT_TRUE(eop::empty(l1));
-                EXPECT_FALSE(eop::empty(f1)) << "List1 is not empty";
+                ASSERT_FALSE(eop::empty(begin(list0))) << "List0 is empty";
+                ASSERT_FALSE(eop::empty(begin(list1))) << "List1 is empty";
+                EXPECT_EQ(0, eop::source(begin(list0)));
+                EXPECT_EQ(1, eop::source(begin(list1)));
+                EXPECT_TRUE(eop::empty(end(list0)));
+                EXPECT_TRUE(eop::empty(end(list1)));
 
                 std::less<int> relation;
 
@@ -2056,6 +2063,18 @@ namespace eoptest
     vector<int> x = {1, 2, 3, 4, 5};
     vector<int> y, z;
     eop::split_copy(begin(x), end(x), back_inserter(y), back_inserter(z),
+                    is_even_iterator<vector<int>::iterator>());
+    vector<int> expected_y{1, 3, 5};
+    EXPECT_EQ(expected_y, y);
+    vector<int> expected_z{2, 4};
+    EXPECT_EQ(expected_z, z);
+  }
+
+  TEST(chapter_9_copying, test_split_copy_n)
+  {
+    vector<int> x = {1, 2, 3, 4, 5};
+    vector<int> y, z;
+    eop::split_copy_n(begin(x), x.size(), back_inserter(y), back_inserter(z),
                     is_even_iterator<vector<int>::iterator>());
     vector<int> expected_y{1, 3, 5};
     EXPECT_EQ(expected_y, y);
@@ -2506,5 +2525,299 @@ namespace eoptest
     std::iota(begin(expected), begin(expected) + K, SIZE - K);
     std::iota(begin(expected) + K, end(expected), 0);
     EXPECT_EQ(expected, test_input);
+  }
+
+  TEST(chapter_11_1_partition, test_partitioned_at_point)
+  {
+     vector<int> v0 {1, 3, 5, 2, 4};
+     bool result0 = eop::partitioned_at_point(begin(v0), begin(v0)+3, end(v0), eop::is_Even<int>());
+     EXPECT_TRUE(result0);
+     vector<int> v1 {1, 3, 2, 5, 4};
+     bool result1 = eop::partitioned_at_point(begin(v1), begin(v1)+3, end(v1), eop::is_Even<int>());
+     EXPECT_FALSE(result1);
+     vector<int> v2 {1, 3, 5, 7, 4};
+     bool result2 = eop::partitioned_at_point(begin(v2), begin(v2)+3, end(v2), eop::is_Even<int>());
+     EXPECT_FALSE(result2);
+     vector<int> v3 {1, 3, 5, 2, 7};
+     bool result3 = eop::partitioned_at_point(begin(v3), begin(v3)+3, end(v3), eop::is_Even<int>());
+     EXPECT_FALSE(result3);
+  }
+
+  TEST(chapter_11_1_partition, test_potential_partition_point)
+  {
+     vector<int> v0 {1, 3, 5, 2, 4};
+     auto result0 = eop::potential_partition_point(begin(v0), end(v0), eop::is_Even<int>());
+     EXPECT_EQ(begin(v0)+3, result0);
+     auto result1 = eop::potential_partition_point(begin(v0), end(v0), eop::is_Odd<int>());
+     EXPECT_EQ(begin(v0)+2, result1);
+
+     vector<int> v2 {1, 3, 5, 7, 9};
+     auto result2 = eop::potential_partition_point(begin(v2), end(v2), eop::is_Even<int>());
+     EXPECT_EQ(begin(v2)+5, result2);
+     auto result3 = eop::potential_partition_point(begin(v2), end(v2), eop::is_Odd<int>());
+     EXPECT_EQ(begin(v2), result3);
+
+     vector<int> v4 {};
+     auto result4 = eop::potential_partition_point(begin(v4), end(v4), eop::is_Even<int>());
+     EXPECT_EQ(begin(v4), result4);
+  }
+
+  TEST(chapter_11_1_partition, test_partition_semistable)
+  {
+    vector<int> v { 1, 2, 3, 9, 6, 7, 4, 5};
+    auto m = eop::partition_semistable(begin(v), end(v), eop::is_Even<int>());
+    vector<int> expected {1, 3, 9, 7, 5, 2, 4, 6};
+    EXPECT_EQ(expected, v);
+    EXPECT_TRUE(eop::partitioned_at_point(begin(v), m, end(v), eop::is_Even<int>())) << "Not partitioned at the returned iterator";
+  }
+
+  TEST(chapter_11_1_partition, test_partition_semistable_expanded)
+  {
+    vector<int> v { 1, 2, 3, 9, 6, 7, 4, 5};
+    auto m = eop::partition_semistable_expanded(begin(v), end(v), eop::is_Even<int>());
+    vector<int> expected {1, 3, 9, 7, 5, 2, 4, 6};
+    EXPECT_EQ(expected, v);
+    EXPECT_TRUE(eop::partitioned_at_point(begin(v), m, end(v), eop::is_Even<int>())) << "Not partitioned at the returned iterator";
+
+    vector<int> v1 { 1, 2 };
+    eop::partition_semistable_expanded(begin(v1), end(v1), eop::is_Even<int>());
+    vector<int> expected1 {1, 2};
+    EXPECT_EQ(expected1, v1);    
+  }
+
+  TEST(chapter_11_1_partition, test_semipartition)
+  {
+    vector<int> v { 1, 2, 3, 9, 6, 7, 4, 5};
+    auto m = eop::semipartition(begin(v), end(v), eop::is_Even<int>());
+    vector<int> expected {2, 4, 6};
+    EXPECT_TRUE(eop::equals(m, end(v), begin(expected), end(expected)));
+  }
+
+  TEST(chapter_11_1_partition, test_partition)
+  {
+    vector<int> v0 { 1, 2, 3, 9, 6, 7, 4, 5};
+    eop::partition(begin(v0), end(v0), eop::is_Even<int>());
+    vector<int> expected0 {3, 9, 7, 5, 1, 2, 4, 6};
+    EXPECT_EQ(expected0, v0);
+
+    vector<int> v1 { 1, 2 };
+    eop::partition(begin(v1), end(v1), eop::is_Even<int>());
+    vector<int> expected1 {1, 2};
+    EXPECT_EQ(expected1, v1);
+  }
+
+  TEST(chapter_11_1_partition, test_partition_forward)
+  {
+    vector<int> v0 { 1, 2, 3, 9, 6, 7, 4, 5};
+    auto m0 = eop::partition_forward(begin(v0), end(v0), eop::is_Even<int>());
+    vector<int> expected0 {1, 7, 3, 9, 5, 2, 4, 6};
+    EXPECT_EQ(expected0, v0);
+    EXPECT_TRUE(eop::partitioned_at_point(begin(v0), m0, end(v0), eop::is_Even<int>())) << "Not partitioned at the returned iterator";
+
+    vector<int> v1 { 1, 2 };
+    auto m1 = eop::partition_forward(begin(v1), end(v1), eop::is_Even<int>());
+    vector<int> expected1 {1, 2};
+    EXPECT_EQ(expected1, v1);
+
+    vector<int> v2 { 2, 1 };
+    auto m2 = eop::partition_forward(begin(v2), end(v2), eop::is_Even<int>());
+    vector<int> expected2 {1, 2};
+    EXPECT_EQ(expected2, v2);
+  }
+
+  TEST(chapter_11_1_partition, test_partition_single_cycle)
+  {
+    vector<int> v0 { 1, 2 };
+    auto m0 = eop::partition_single_cycle(begin(v0), end(v0), eop::is_Even<int>());
+    vector<int> expected0 {1, 2};
+    EXPECT_EQ(expected0, v0);
+
+    vector<int> v1 { 2, 1 };
+    auto m1 = eop::partition_single_cycle(begin(v1), end(v1), eop::is_Even<int>());
+    vector<int> expected1 {1, 2};
+    EXPECT_EQ(expected1, v1);
+
+    vector<int> v2 { 1, 2, 3, 9, 6, 7, 4, 5};
+    auto m2 = eop::partition_single_cycle(begin(v2), end(v2), eop::is_Even<int>());
+    vector<int> expected2 {1, 7, 3, 9, 5, 6, 4, 2};
+    EXPECT_EQ(expected2, v2);
+    EXPECT_TRUE(eop::partitioned_at_point(begin(v2), m2, end(v2), eop::is_Even<int>())) << "Not partitioned at the returned iterator";
+
+    vector<int> v3 { 1, 3, 9, 7, 5};
+    auto m3 = eop::partition_single_cycle(begin(v3), end(v3), eop::is_Even<int>());
+    vector<int> expected3 {1, 3, 9, 7, 5};
+    EXPECT_EQ(expected3, v3);
+    EXPECT_TRUE(eop::partitioned_at_point(begin(v3), m3, end(v3), eop::is_Even<int>())) << "Not partitioned at the returned iterator";
+
+    vector<int> v4 { 2, 4, 6, 8};
+    auto m4 = eop::partition_single_cycle(begin(v4), end(v4), eop::is_Even<int>());
+    vector<int> expected4 {2, 4, 6, 8};
+    EXPECT_EQ(expected4, v4);
+    EXPECT_TRUE(eop::partitioned_at_point(begin(v4), m4, end(v4), eop::is_Even<int>())) << "Not partitioned at the returned iterator";
+  }
+  
+  TEST(chapter_11_1_partition, test_partition_stable_with_buffer)
+  {
+    vector<int> buffer(8);
+
+    vector<int> v0 { 1, 2 };
+    auto m0 = eop::partition_stable_with_buffer(begin(v0), end(v0), begin(buffer), eop::is_Even<int>());
+    vector<int> expected0 {1, 2};
+    EXPECT_EQ(expected0, v0);
+
+    vector<int> v1 { 2, 1 };
+    auto m1 = eop::partition_stable_with_buffer(begin(v1), end(v1), begin(buffer), eop::is_Even<int>());
+    vector<int> expected1 {1, 2};
+    EXPECT_EQ(expected1, v1);
+
+    vector<int> v2 { 1, 2, 3, 9, 6, 7, 4, 5};
+    auto m2 = eop::partition_stable_with_buffer(begin(v2), end(v2), begin(buffer), eop::is_Even<int>());
+    vector<int> expected2 {1, 3, 9, 7, 5, 2, 6, 4};
+    EXPECT_EQ(expected2, v2);
+    EXPECT_TRUE(eop::partitioned_at_point(begin(v2), m2, end(v2), eop::is_Even<int>())) << "Not partitioned at the returned iterator";
+  }
+
+  TEST(chapter_11_1_partition, test_partition_stable_with_buffer_n)
+  {
+    vector<int> buffer(8);
+
+    vector<int> v0 { 1, 2 };
+    auto m0 = eop::partition_stable_with_buffer_n(begin(v0), v0.size(), begin(buffer), eop::is_Even<int>());
+    vector<int> expected0 {1, 2};
+    EXPECT_EQ(expected0, v0);
+
+    vector<int> v1 { 2, 1 };
+    auto m1 = eop::partition_stable_with_buffer_n(begin(v1), v1.size(), begin(buffer), eop::is_Even<int>());
+    vector<int> expected1 {1, 2};
+    EXPECT_EQ(expected1, v1);
+
+    vector<int> v2 { 1, 2, 3, 9, 6, 7, 4, 5};
+    auto m2 = eop::partition_stable_with_buffer_n(begin(v2), v2.size(), begin(buffer), eop::is_Even<int>());
+    vector<int> expected2 {1, 3, 9, 7, 5, 2, 6, 4};
+    EXPECT_EQ(expected2, v2);
+    EXPECT_TRUE(eop::partitioned_at_point(begin(v2), m2.first, end(v2), eop::is_Even<int>())) << "Not partitioned at the returned iterator";
+  }
+
+  TEST(chapter_11_1_partition, test_partition_stable_singleton)
+  {
+    vector<int> even{14};
+    auto m0 = eop::partition_stable_singleton(begin(even), eop::is_Even<int>());
+    EXPECT_EQ(begin(even), m0.first); 
+    EXPECT_EQ(end(even), m0.second);
+
+    vector<int> odd{7};
+    auto m1 = eop::partition_stable_singleton(begin(odd), eop::is_Even<int>());
+    EXPECT_EQ(end(odd), m1.first); 
+    EXPECT_EQ(end(odd), m1.second);
+  }
+
+  TEST(chapter_11_1_partition, test_partition_stable_n_nonempty)
+  {
+    vector<int> v0{1, 2, 3, 4, 5, 6, 7, 8, 9};
+    auto m0 = eop::partition_stable_n_nonempty(begin(v0), v0.size(), eop::is_Even<int>());
+    vector<int> e0{1, 3, 5, 7, 9, 2, 4, 6, 8};
+    EXPECT_EQ(e0, v0);
+    EXPECT_TRUE(eop::partitioned_at_point(begin(v0), m0.first, end(v0), eop::is_Even<int>())) << "Not partitioned at the returned iterator";
+
+    vector<int> v1{2, 4, 6, 8, 1, 3, 5, 7, 9};
+    auto m1 = eop::partition_stable_n_nonempty(begin(v1), v1.size(), eop::is_Even<int>());
+    vector<int> e1{1, 3, 5, 7, 9, 2, 4, 6, 8};
+    EXPECT_EQ(e1, v1);
+    EXPECT_TRUE(eop::partitioned_at_point(begin(v1), m1.first, end(v1), eop::is_Even<int>())) << "Not partitioned at the returned iterator";
+
+    vector<int> v2{2, 1};
+    auto m2 = eop::partition_stable_n_nonempty(begin(v2), v2.size(), eop::is_Even<int>());
+    vector<int> e2{1, 2};
+    EXPECT_EQ(e2, v2);
+    EXPECT_TRUE(eop::partitioned_at_point(begin(v2), m2.first, end(v2), eop::is_Even<int>())) << "Not partitioned at the returned iterator"; 
+
+    vector<int> v3;
+    auto m3 = eop::partition_stable_n(begin(v3), v3.size(), eop::is_Even<int>());
+    ASSERT_TRUE(v3.empty());
+  }
+
+  TEST(chapter_11_1_partition, test_partition_stable_n_adaptive)
+  {
+    vector<int> buffer(8);
+
+    vector<int> v0 { 1, 2 };
+    auto m0 = eop::partition_stable_n_adaptive(begin(v0), v0.size(), begin(buffer), buffer.size(), eop::is_Even<int>());
+    vector<int> expected0 {1, 2};
+    EXPECT_EQ(expected0, v0);
+
+    vector<int> v1 { 2, 1 };
+    auto m1 = eop::partition_stable_n_adaptive(begin(v1), v1.size(), begin(buffer), buffer.size(), eop::is_Even<int>());
+    vector<int> expected1 {1, 2};
+    EXPECT_EQ(expected1, v1);
+
+    vector<int> v2 { 1, 2, 3, 9, 6, 7, 4, 5};
+    auto m2 = eop::partition_stable_n_adaptive(begin(v2), v2.size(), begin(buffer), buffer.size(), eop::is_Even<int>());
+    vector<int> expected2 {1, 3, 9, 7, 5, 2, 6, 4};
+    EXPECT_EQ(expected2, v2);
+    EXPECT_TRUE(eop::partitioned_at_point(begin(v2), m2.first, end(v2), eop::is_Even<int>())) << "Not partitioned at the returned iterator";
+
+    vector<int> v3 { 1, 2, 3, 9, 6, 7, 4, 5, 10, 14, 11, 13, 15, 12, 8};
+    auto m3 = eop::partition_stable_n_adaptive(begin(v3), v3.size(), begin(buffer), buffer.size(), eop::is_Even<int>());
+    vector<int> expected3 {1, 3, 9, 7, 5, 11, 13, 15, 2, 6, 4, 10, 14, 12, 8};
+    EXPECT_EQ(expected3, v3);
+    EXPECT_TRUE(eop::partitioned_at_point(begin(v3), m3.first, end(v3), eop::is_Even<int>())) << "Not partitioned at the returned iterator";
+  }
+
+  template<typename P, typename T1>
+  struct compare_first {
+    typedef Domain(P) T0;
+    P pred;
+    typedef pair<T0, T1> first_argument_type;
+    typedef bool result_type;
+    typedef pair<T0, T1> input_type;
+    compare_first(P pred) : pred(pred) {}
+    bool operator()(pair<T0, T1> x) {
+      return pred(x.first);
+    }
+  };
+
+  TEST(chapter_11_1_partition, test_partition_stable_iterative)
+  {
+    vector<int> v0 { 1, 2 };
+    auto m0 = eop::partition_stable_iterative(begin(v0), end(v0), eop::is_Even<int>());
+    vector<int> expected0 {1, 2};
+    EXPECT_EQ(expected0, v0);
+
+    vector<int> v1 { 2, 1 };
+    auto m1 = eop::partition_stable_iterative(begin(v1), end(v1), eop::is_Even<int>());
+    vector<int> expected1 {1, 2};
+    EXPECT_EQ(expected1, v1);
+
+    vector<int> v2 { 1, 2, 3, 9, 6, 7, 4, 5};
+    auto m2 = eop::partition_stable_iterative(begin(v2), end(v2), eop::is_Even<int>());
+    vector<int> expected2 {1, 3, 9, 7, 5, 2, 6, 4};
+    EXPECT_EQ(expected2, v2);
+    EXPECT_TRUE(eop::partitioned_at_point(begin(v2), m2, end(v2), eop::is_Even<int>())) << "Not partitioned at the returned iterator";
+
+    vector<int> v3 { 1, 2, 3, 9, 6, 7, 4, 5, 10, 14, 11, 13, 15, 12, 8};
+    auto m3 = eop::partition_stable_iterative(begin(v3), end(v3), eop::is_Even<int>());
+    vector<int> expected3 {1, 3, 9, 7, 5, 11, 13, 15, 2, 6, 4, 10, 14, 12, 8};
+    EXPECT_EQ(expected3, v3);
+    EXPECT_TRUE(eop::partitioned_at_point(begin(v3), m3, end(v3), eop::is_Even<int>())) << "Not partitioned at the returned iterator";
+  }
+
+  template<typename T>
+  struct is_First_Even
+  {
+    typedef pair<T, T> first_argument_type;
+    typedef bool result_type;
+    typedef pair<T, T> input_type;
+    bool operator()(pair<T, T> value) {
+      return eop::even(value.first);
+    }
+  };
+
+  TEST(chapter_11_1_partition, test_partition_stable_iterative_stability)
+  {
+    using type = pair<int, int>;
+    vector<type> v0 { {1, 2}, {2, 1}, {1, 1}, {2, 2} };
+    auto m0 = eop::partition_stable_iterative(begin(v0), end(v0), is_First_Even<int>());
+    vector<type> expected0 {{1, 2}, {1, 1}, {2, 1}, {2, 2}};
+    EXPECT_EQ(expected0, v0);
   }
 }

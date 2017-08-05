@@ -882,7 +882,7 @@ namespace eop {
     typedef bool result_type;
     typedef T input_type;
     bool operator()(T value) {
-    return eop::even(value);
+      return eop::even(value);
     }
   };
 
@@ -893,7 +893,7 @@ namespace eop {
     typedef bool result_type;
     typedef T input_type;
     bool operator()(T value) {
-    return eop::odd(value);
+      return eop::odd(value);
     }
   };
 
@@ -1023,11 +1023,39 @@ namespace eop {
   }
 
   template<typename I, typename P>
-  requires(Readable(I) && Iterator(I) && UnaryPredicate(P)
-    && ValueType(I) == Domain(P))
+    requires(Readable(I) && Iterator(I) && UnaryPredicate(P)
+      && ValueType(I) == Domain(P))
   DistanceType(I) count_if(I f, I l, P p) {
     // Precondition: readable_bounded_range(f, l)
     return count_if(f, l, p, DistanceType(I){0});
+  }
+
+  template<typename P, typename J>
+    requires(UnaryPredicate(P))
+  struct counter_if_not {
+    typedef Domain(P) first_argument_type;
+    J j;
+    P p;
+    counter_if_not(P p, J j) : p(p), j(j) {}
+    void operator()(Domain(P) x) {
+    if (!p(x)) j = successor(j);
+    }
+  };
+
+  template<typename I, typename P, typename J>
+    requires(Readable(I) && Iterator(I) && UnaryPredicate(P)
+    && ValueType(I) == Domain(P))
+  J count_if_not(I f, I l, P p, J j) {
+    // Precondition: readable_bounded_range(f, l)
+    return for_each(f, l, counter_if_not<P, J>(p, j)).j;
+  }
+
+  template<typename I, typename P>
+    requires(Readable(I) && Iterator(I) && UnaryPredicate(P)
+      && ValueType(I) == Domain(P))
+  DistanceType(I) count_if_not(I f, I l, P p) {
+    // Precondition: readable_bounded_range(f, l)
+    return count_if_not(f, l, p, DistanceType(I){0});
   }
 
   template<typename T>
@@ -1110,6 +1138,65 @@ namespace eop {
       Domain(Op) y = fun(f);
       if (z != y) x = op(x, y);
       f = successor(f);
+    }
+    return x;
+  }
+
+  template<typename I>
+  void step(I& f, DistanceType(I)& n) {
+    f = successor(f);
+    n = predecessor(n);
+  }
+
+  template<typename I, typename Op, typename F>
+  requires(Iterator(I) && BinaryOperation(Op) &&
+    UnaryFunction(F) &&
+    I == Domain(F) && Codomain(F) == Domain(Op))
+  Domain(Op) reduce_nonempty_n(I f, DistanceType(I) n, Op op, F fun) {
+    // Precondition: weak_range(f, n) && !zero(n)
+    // Precondition: partially_associative(op)
+    // Precondition: (All x in [f, f+n)) fun(x) is defined
+    Domain(Op) r = fun(f);
+    step(f, n);
+    while (!zero(n)) {
+      r = op(r, fun(f));
+      step(f, n);
+    }
+    return r;
+  }
+
+  template<typename I, typename Op, typename F>
+  requires(Iterator(I) && BinaryOperation(Op) &&
+    UnaryFunction(F) &&
+    I == Domain(F) && Codomain(F) == Domain(Op))
+  Domain(Op) reduce_nonempty_n(I f, DistanceType(I) n, Op op, F fun, const Domain(Op)& z) {
+    // Precondition: weak_range(f, n) && n != 0
+    // Precondition: partially_associative(op)
+    // Precondition: (All x in [f, f+n)) fun(x) is defined
+    if (zero(n)) return z;
+    return reduce_nonempty_n(f, n, op, fun);
+  }
+  
+  template<typename I, typename Op, typename F>
+  requires(Iterator(I) && BinaryOperation(Op) && 
+    UnaryFunction(F) &&
+    I == Domain(F) && Codomain(F) == Domain(Op))
+  Domain(Op) reduce_nonzeros_n(I f, DistanceType(I) n, Op op, const Domain(Op)& z) {
+    // Precondition: bounded_range(f, l)
+    // Precondition: partially_associative(op)
+    // Precondition: (All x in [f, l)) fun(x) is defined
+    Domain(Op) x;
+    do {
+      if (zero(n)) return z;
+      x = fun(f);
+      f = successor(f);
+      n = predecessor(n);
+    } while (x == z);
+    while (!zero(n)) {
+      Domain(Op) y = fun(f);
+      if (z != y) x = op(x, y);
+      f = successor(f);
+      n = predecessor(n);
     }
     return x;
   }
@@ -1247,6 +1334,22 @@ namespace eop {
     }
     return std::make_pair(f0, f1);
     // Postcondition: 
+  }
+
+  template<typename T>
+  struct is_equal {
+    bool operator()(T const& a, T const& b) {
+      return a == b;
+    }
+  };
+
+  template<typename I0, typename I1>
+  requires(Readable(I0) && Iterator(I0) &&
+    Readable(I1) && Iterator(I1) &&
+    ValueType(I0) == ValueType(I1))
+  bool equals(I0 f0, I0 l0, I1 f1, I1 l1) {
+    std::pair<I0, I1> mismatch = find_mismatch(f0, l0, f1, l1, is_equal<ValueType(I0)>());
+    return mismatch.first == l0 && mismatch.second == l1;
   }
 
   template<typename I0, typename I1, typename R>
@@ -2729,6 +2832,28 @@ namespace eop {
 
   template<typename I, typename O_f, typename O_t, typename P>
     requires(Readable(I) && Iterator(I) &&
+      Writeable(O_f) && Iterator(O_f) &&
+      Writeable(O_t) && Iterator(O_t) &&
+      ValueType(I) == ValueType(O_f) &&
+      ValueType(I) == ValueType(O_t) &&
+      UnaryPredicate(P) && I == Domain(P))
+  std::pair<O_f, O_t> split_copy_n(I f_i, DistanceType(I) n_i, O_f f_f, O_t f_t, P p)
+  {
+    // Precondition: not_overlapped(f_t, f_t + n_t, f_f, f_f + n_f) &&
+    //               (not_overlapped_forward(f_i, l_i, f_f, f_f + n_f) && not_overlapped(f_i, l_i, f_f, f_t + n_t)) ||
+    //               (not_overlapped(f_i, l_i, f_f, f_f + n_f) && not_overlapped_forward(f_i, l_i, f_f, f_t + n_t)) ||
+    // where n_t is the upper bound for the number of iterators satisfying p
+    // where n_f is the upper bound for the number of iterators not satisfying p
+    while(!zero(n_i)) {
+      if (p(f_i)) copy_step(f_i, f_t);
+      else        copy_step(f_i, f_f);
+      n_i = predecessor(n_i);
+    }
+    return std::pair<O_f, O_t>(f_f, f_t);
+  }
+
+  template<typename I, typename O_f, typename O_t, typename P>
+    requires(Readable(I) && Iterator(I) &&
        Writeable(O_f) && Iterator(O_f) &&
        Writeable(O_t) && Iterator(O_t) &&
        ValueType(I) == ValueType(O_f) &&
@@ -2741,6 +2866,19 @@ namespace eop {
     return split_copy(f_i, l_i, f_f, f_t, ps);
   }
 
+  template<typename I, typename O_f, typename O_t, typename P>
+    requires(Readable(I) && Iterator(I) &&
+       Writeable(O_f) && Iterator(O_f) &&
+       Writeable(O_t) && Iterator(O_t) &&
+       ValueType(I) == ValueType(O_f) &&
+       ValueType(I) == ValueType(O_t) &&
+       UnaryPredicate(P) && I == Domain(P))
+  std::pair<O_f, O_t> partition_copy_n(I f_i, DistanceType(I) n_i, O_f f_f, O_t f_t, P p)
+  {
+    // Precondition: same as split_copy
+    predicate_source<I, P> ps(p);
+    return split_copy_n(f_i, n_i, f_f, f_t, ps);
+  }
 
   template<typename I0, typename I1,  typename O, typename R>
     requires(Readable(I0) && Iterator(I0) &&
@@ -3459,12 +3597,390 @@ namespace eop {
   // whether a given bounded range is partitioned at a
   // specified iterator
 
-  template<typename I>
-    requires()
-  bool partitioned_at_point(I f, I m, I l, I p)
+  template<typename I, typename P>
+    requires(Readable(I) && Iterator(I) && 
+             UnaryPredicate(P) && ValueType(I) == Domain(P))
+  bool partitioned_at_point(I f, I m, I l, P p)
   {
-    // Preconditions: bounded_range(f, l) && p in [f, l)
-    return true;
+    // Preconditions: bounded_range(f, l) && m in [f, l)
+    return m == find_if(f, l, p) && l == find_if_not(m, l, p);
   }
 
+  // Exercise 11.2
+  // Implement an algorithm potential_partition_point returning
+  // the iterator where the partition point would occur after
+  // partitioning
+  template<typename I, typename P>
+    requires(Readable(I) && Iterator(I) && 
+             UnaryPredicate(P) && ValueType(I) == Domain(P))
+  I potential_partition_point(I f, I l, P p)
+  {
+    // Precondition: bounded_range(f,l)
+    return f + count_if_not(f, l, p);
+  }
+
+  template<typename I, typename P>
+    requires(Mutable(I) &&  ForwardIterator(I) &&
+             UnaryPredicate(P) && ValueType(I) == Domain(P))
+  I partition_semistable(I f, I l, P p)
+  {
+    // Precondition: mutable_bounded_ragne(f, l)
+    I i = find_if(f, l, p);
+    if (i == l) return i;
+    I j = successor(i);
+    while(true) {
+      j = find_if_not(j, l, p);
+      assert(none(f, i, p) && all(i, j, p));
+      if (j == l) return i;
+      assert(p(source(i)) && ! p(source(j)));
+      assert(none(f, i, p) && all(i, j, p));
+      swap_step(i, j);
+    }
+  }
+
+  // Exercise 11.3
+  // Rewrite partition_semistable, expanding the call of find_if_not
+  // inline and eliminating the extra test against l. 
+
+  template<typename I, typename P>
+    requires(Mutable(I) &&  ForwardIterator(I) &&
+             UnaryPredicate(P) && ValueType(I) == Domain(P))
+  I partition_semistable_expanded(I f, I l, P p)
+  {
+    // Precondition: mutable_bounded_ragne(f, l)
+    I i = find_if(f, l, p);
+    if (i == l) return i;
+    I j = successor(i);
+    while(true) {
+      while (true) {
+        if (j == l) return i;
+        if (!p(source(j))) break;
+        j = successor(j);
+      }
+      swap_step(i, j);
+    }
+  }
+
+  // Exercise 11.4
+  // Give the postcondition of the algorithm that results from replacing
+  // swap_step(i, j) with copy_step(i, j) in partition_semistable, suggest
+  // an appropriate name, and compare its use with the use of partition_semistable
+
+  template<typename I, typename P>
+    requires(Mutable(I) &&  ForwardIterator(I) &&
+             UnaryPredicate(P) && ValueType(I) == Domain(P))
+  I semipartition(I f, I l, P p)
+  {
+    // Precondition: mutable_bounded_ragne(f, l)
+    I i = find_if(f, l, p);
+    if (i == l) return i;
+    I j = successor(i);
+    while(true) {
+      j = find_if_not(j, l, p);
+      if (j == l) return i;
+      copy_step(i, j);
+    }
+    // Postcondition: All elements statisfying the predicate is within [i ,l)
+  }
+
+  // Exercise 11.5
+  // Implement a partition rearrangement for nonempty ranges that performs
+  // n - 1 predicate applications
+  template<typename I, typename P>
+    requires(Mutable(I) && ForwardIterator(I) &&
+             UnaryPredicate(P) && ValueType(I) == Domain(P))
+  void partition(I f, I l, P p)
+  {
+    if (f == l) return;
+    I n = successor(f);
+    I m = partition_semistable_expanded(n, l, p);
+    if (m == l || m == n) return;
+    rotate_forward_nontrivial(f, n, m);
+  }
+
+  template<typename I, typename P>
+    requires(Mutable(I) && BidirectionalIterator(I) &&
+             UnaryPredicate(P) && ValueType(I) == Domain(P))
+  I partition_bidirectional(I f, I l, P p)
+  {
+    // Precondition: mutable_bounded_range(f, l)
+    while (true) {
+      f = find_if(f, l, p);
+      l = find_backward_if_not(f, l, p);
+      if (f == l) return f;
+      reverse_swap_step(l, f);
+    }
+  }
+
+  // Exercise 11.6 
+  // Implement a partition rearrangement for forward iterators that calls
+  // exchange_values the same number of times as partition_bidirectional
+  // by first computing the potential partition point
+
+  template<typename I, typename P>
+  requires(Mutable(I) && ForwardIterator(I) &&
+           UnaryPredicate(P) && ValueType(I) == Domain(P))
+  I partition_forward(I f, I l, P p)
+  {
+    //Precondition: mutable_bounded_range(f, l)
+    I m = potential_partition_point(f, l, p);
+    I i;
+    while (true) {
+      f = find_if(f, m, p);
+      i = find_if_not(m, l, p);
+      if (f == m || i == l) return m;
+      swap_step(f, i);
+    }
+  }
+
+  // Exercise 11.7
+  // Implement partition_single_cycle
+  template<typename I, typename P>
+    requires(Mutable(I) && BidirectionalIterator(I) &&
+             UnaryPredicate(P) && ValueType(I) == Domain(P))
+  I partition_single_cycle(I f, I l, P p)
+  {
+    //Precondition: mutable_bounded_range(f, l)
+    I m = potential_partition_point(f, l, p);
+    // if either all element statisfy the predicate or none
+    if (f == m || l == m) return m;
+
+    f = find_if(f, m, p);
+    // If there isn't any misplaced element
+    if (f == m) return m;
+
+    ValueType(I) hole = source(f);
+    I i;
+    while(true) {
+      i = find_if_not(m, l, p);
+      sink(f) = source(i);
+      f = find_if(f, m, p);
+      if (f == m) break;
+      sink(i) = source(f);
+    }
+    sink(i) = hole;
+    return m;
+  }
+
+  // Exercise 11.8
+  // Implement a partition rearrangement for bidirectional iterators
+  // that finds appropriate sentinel elements and then uses find_if_ungarded
+  // and an ungarded version of find_backward_if_not.
+  template<typename I, typename P>
+    requires(Mutable(I) && BidirectionalIterator(I) &&
+             UnaryPredicate(P) && ValueType(I) == Domain(P))
+  I partition_backward_unguarded(I f, I l, P p)
+  {
+    // TODO: read Quicksort
+    return f;
+  }
+
+  template<typename I, typename B, typename P>
+    requires(Mutable(I) && ForwardIterator(I) &&
+             Mutable(B) && ForwardIterator(B) &&
+             ValueType(I) == ValueType(B) &&
+             UnaryPredicate(P) && ValueType(I) == Domain(P))
+  I partition_stable_with_buffer(I f, I l, B f_b, P p)
+  {
+    // Precondition: mutable_bounded_range(f, l)
+    // Precondition: mutable_counted_range(f_b, l-f)
+    std::pair<I, B> x = partition_copy(f, l, f, f_b, p);
+    eop::copy(f_b, x.second, x.first);
+    return x.first;
+  }
+
+  template<typename I, typename B, typename P>
+    requires(Mutable(I) && ForwardIterator(I) &&
+             Mutable(B) && ForwardIterator(B) &&
+             ValueType(I) == ValueType(B) &&
+             UnaryPredicate(P) && ValueType(I) == Domain(P))
+  std::pair<I, I> partition_stable_with_buffer_n(I f, DistanceType(I) n, B f_b, P p)
+  {
+    // Precondition: mutable_counted_range(f, n)
+    // Precondition: mutable_counted_range(f_b, n)
+    std::pair<I, B> x = partition_copy_n(f, n, f, f_b, p);
+    I l = eop::copy(f_b, x.second, x.first);
+    return std::pair<I, I>(x.first, l);
+  }
+  
+  template<typename I, typename P>
+    requires(Mutable(I) && ForwardIterator(I) &&
+             UnaryPredicate(P) && ValueType(I) == Domain(P))
+  std::pair<I, I> partition_stable_singleton(I f, P p)
+  {
+    // Precondition: readable_bounded_range(f, successor(f))
+    I l = successor(f);
+    if (!p(source(f))) f = l;
+    return std::pair<I, I>(f, l);
+  }
+
+  template<typename I>
+    requires(Mutable(I) && ForwardIterator(I))
+  std::pair<I, I> combine_ranges(const std::pair<I, I>& x,
+                                 const std::pair<I, I>& y)
+  {
+    // Precondition: mutable_bounded_range(x.first, x.second)
+    // Precondtiion: x.second is in [x.first, y.first]
+    return std::pair<I, I>(rotate(x.first, x.second, y.first), y.second);
+  }
+
+  template<typename I, typename P>
+    requires(Mutable(I) && ForwardIterator(I) &&
+             UnrayPredicate(P) && ValueType(I) == Domain(P))
+  // returns the first and last iterator for the elements statisfying the predicate
+  std::pair<I, I> partition_stable_n_nonempty(I f, DistanceType(I) n, P p)
+  {
+    // Precondition: mutable_bounded_range(f, n)
+    if (one(n)) return partition_stable_singleton(f, p);
+    DistanceType(I) h = half_nonnegative(n);
+    std::pair<I, I> x = partition_stable_n_nonempty(f, h, p);
+    std::pair<I, I> y = partition_stable_n_nonempty(x.second, n - h, p);
+    return combine_ranges(x, y);
+  }
+
+  template<typename I, typename P>
+    requires(Mutable(I) && ForwardIterator(I) &&
+             UnrayPredicate(P) && ValueType(I) == Domain(P))
+  std::pair<I, I> partition_stable_n(I f, DistanceType(I) n, P p)
+  {
+    // Precondition: mutbale_counted_range
+    if (zero(n)) return std::pair<I, I>(f, f);
+    return partition_stable_n_nonempty(f, n, p);
+  }
+  
+  // Exercise 11.10
+  // Use techniques from the previous chapter to produce
+  // a memory-adaptive version of partition stable_n
+  template<typename I, typename B, typename P>
+    requires(Mutable(I) && ForwardIterator(I) &&
+             Mutable(B) && ForwardIterator(B) &&
+             ValueType(I) == ValueType(B) &&
+             UnaryPredicate(P) && ValueType(I) == Domain(P))
+  std::pair<I, I>  partition_stable_n_adaptive_nonempty(I f_i, DistanceType(I) n_i,
+                                                        B f_b, DistanceType(I) n_b, P p)
+  {
+    if (one(n_i)) return partition_stable_singleton(f_i, p);
+    if (n_i <= n_b) return partition_stable_with_buffer_n(f_i, n_i, f_b, p);
+    DistanceType(I) h = half_nonnegative(n_i);
+    std::pair<I, I> x = partition_stable_n_nonempty(f_i, h, p);
+    std::pair<I, I> y = partition_stable_n_nonempty(x.second, n_i - h, p);
+    return combine_ranges(x, y);
+  }
+
+  template<typename I, typename B, typename P>
+    requires(Mutable(I) && ForwardIterator(I) &&
+             Mutable(B) && ForwardIterator(B) &&
+             ValueType(I) == ValueType(B) &&
+             UnaryPredicate(P) && ValueType(I) == Domain(P))
+  std::pair<I, I>  partition_stable_n_adaptive(I f_i, DistanceType(I) n_i,
+                                               B f_b, DistanceType(I) n_b, P p)
+  {
+    if (zero(n_i)) return std::pair<I, I>(f_i, f_i);
+    return partition_stable_n_adaptive_nonempty(f_i, n_i, f_b, n_b, p);
+  }
+
+  // 11.2 Balanced Reduction
+
+  template<typename I, typename P>
+    requires(ForwardIterator(I) &&
+             UnaryPredicate(P) && ValueType(I) == Domain(P))
+  struct partition_trivial
+  {
+    P p;
+    partition_trivial(P p) : p(p) {} 
+    std::pair<I, I> operator()(I i)
+    {
+      return partition_stable_singleton(i, p);
+    }
+  };
+
+  template<typename I, typename Op>
+    requires(Mutable(I) && ForwardIterator(I) &&
+             BinaryOperation(Op) && ValueType(I) == Domain(Op))
+  Domain(Op) add_to_counter(I f, I l, Op op, Domain(Op) x, const Domain(Op)& z)
+  {
+    if (x == z) return z;
+    while (f != l) {
+      if (source(f) == z) {
+        sink(f) = x;
+        return z;
+      }
+      x = op(source(f), x);
+      sink(f) = z;
+      f = successor(f);
+    }
+    return x;
+  }
+
+  // Storage for the counter is provided by the following type, which
+  // handles overflows from add_to_counter by extending the counter
+  template<typename Op>
+    requires(BinaryOperation(Op))
+  struct counter_machine
+  {
+    typedef Domain(Op) T;
+    Op op;
+    T z;
+    // 64 is chosen for 64-bit architectures
+    T f[64];
+    DistanceType(pointer(T)) n;
+
+    counter_machine(Op op, const Domain(Op)& z) :
+      op(op), z(z), n(0) {}
+    void operator()(const T& x)
+    {
+      // Precondition: must not be called more than 2^64 -1 times
+      T tmp = add_to_counter(f, f + n, op, x, z);
+      if (tmp != z) {
+        sink(f+n) = tmp;
+        n = successor(n);
+      }
+    }
+  };
+
+  template<typename Op>
+    requires(BinaryOperation(Op))
+  struct transpose_operation
+  {
+    Op op;
+    transpose_operation(Op op) : op(op) {}
+    typedef Domain(Op) T;
+    typedef T first_argument_type;
+    typedef T second_argument_type;
+    T operator() (const T& x, const T& y)
+    {
+      return op(y, x);
+    }
+  };
+
+  template<typename I, typename Op, typename F>
+    requires(Iterator(I) && BinaryOperation(Op) &&
+             UnaryFunction(F) && I == Domain(F) &&
+             Codomain(F) == Domain(Op))
+  Domain(Op) reduce_balanced(I f, I l, Op op, F fun, const Domain(Op)& z)
+  {
+    // Precondition: bounded_range(f, l) && l-f < 2^64
+    // Precondition: partially_assosiative(op)
+    // Precondition: (for all x is in [f, l) fun(x) is defined
+    counter_machine<Op> c(op, z);
+    while (f != l) {
+      c(fun(f));
+      f = successor(f);
+    }
+    transpose_operation<Op> t_op(op);
+    return reduce_nonzeros(c.f, c.f + c.n, t_op, eop::deref<Domain(Op)>, z);
+  }
+
+  template<typename I, typename P>
+    requires(ForwardIterator(I) && UnaryPredicate(P) &&
+             ValueType(I) == Domain(P))
+  I partition_stable_iterative(I f, I l, P p)
+  {
+    return reduce_balanced(
+      f, l,
+      combine_ranges<I>,
+      partition_trivial<I, P>(p),
+      std::pair<I, I>(f, f)
+    ).first;
+  }
 } // namespace eop
