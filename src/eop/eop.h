@@ -3363,4 +3363,108 @@ namespace eop {
     return swap_ranges(m, l, f); 
   }
 
+  template<typename I, typename B>
+    requires(Mutable(I) && ForwardIterator(I) &&
+             Mutable(B) && ForwardIterator(B))
+  I rotate_with_buffer_nontrivial(I f, I m, I l, B f_b)
+  {
+    // Precondition: mutable_bounded_range(f, l) && f < m < l
+    // Precondition: mutable_bounded_range(f_b, l-f)
+    B l_b = eop::copy(f, m, f_b);
+    I m_prime = eop::copy(m, l, f);
+    eop::copy(f_b, l_b, m_prime);
+    return m_prime;
+  }
+
+  template<typename I, typename B>
+    requires(Mutable(I) && ForwardIterator(I) &&
+             Mutable(B) && ForwardIterator(B))
+  I rotate_with_buffer_backward_nontrivial(I f, I m, I l, B f_b)
+  {
+    // Precondition: mutable_bounded_range(f, l) && f < m < l
+    // Precondition: mutable_bounded_range(f_b, l-f)
+    B l_b = eop::copy(m, l, f_b);
+    copy_backward(f, m, l);
+    return eop::copy(f_b, l_b, f);
+  }
+
+  // 10.5 Algorithm Selection
+
+  template<typename I>
+    requires(Mutable(I) && IndexedIterator(I))
+  void reverse_indexed(I f, I l)
+  {
+    // Precondition: mutable_bounded_range(f, l)
+    reverse_n_indexed(f, l - f);
+  }
+
+  template<typename I>
+  struct temporary_buffer
+  {
+  };
+
+  template<typename I>
+    requires(Mutable(I) && ForwardIterator(I))
+  void reverse_n_with_temporary_buffer(I f, DistanceType(I) n)
+  {
+    // Precondition: mutable_counted_range(f, n)
+    temporary_buffer<ValueType(I)> b(n);
+    reverse_n_apadtive(f, n, begin(b), size(b));
+  }
+
+  template<typename I>
+    requires(Mutable(I) && ForwardIterator(I))
+  I rotate_nontrivial(I f, I m, I l, forward_iterator_tag)
+  {
+    return rotate_forward_nontrivial(f, m, l);
+  }
+
+  template<typename I>
+    requires(Mutable(I) && BidirectionalIterator(I))
+  I rotate_nontrivial(I f, I m, I l, bidirectional_iterator_tag)
+  {
+    return rotate_bidirectional_nontrivial(f, m, l);
+  }
+
+  template<typename I>
+    requires(Mutable(I) && IndexedIterator(I))
+  I rotate_nontrivial(I f, I m, I l, indexed_iterator_tag)
+  {
+    return rotate_indexed_nontrivial(f, m, l);
+  }
+
+  template<typename I>
+    requires(Mutable(I) && RandomAccessIterator(I))
+  I rotate_nontrivial(I f, I m, I l, random_access_iterator_tag)
+  {
+    return rotate_random_access_nontrivial(f, m, l);
+  }
+
+  template<typename I>
+    requires(Mutable(I) && ForwardIterator(I))
+  I rotate(I f, I m, I l)
+  {
+    // Precondition: mutable_bounded_range(f, l) && m E [f, l]
+    if (m == f) return l;
+    if (m == l) return f;
+    return rotate_nontrivial(f, m, l, IteratorConcept<I>());
+  }
+
+  // *******************************************************
+  // Chapter 11 - Partition and merging
+  // *******************************************************
+
+  // Exercise 11.1
+  // Implement an algorithm partitioned_at_point that checks
+  // whether a given bounded range is partitioned at a
+  // specified iterator
+
+  template<typename I>
+    requires()
+  bool partitioned_at_point(I f, I m, I l, I p)
+  {
+    // Preconditions: bounded_range(f, l) && p in [f, l)
+    return true;
+  }
+
 } // namespace eop
