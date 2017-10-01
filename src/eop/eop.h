@@ -43,8 +43,8 @@ namespace eop {
   Domain(F) power_unary(Domain(F) x, N n, F f, transformation_trait) {
     // Precondition: n ≥ 0 ∧ (∀i ∈ N) 0 < i ≤ n => f^i(x) is defined
     while (n != N(0)) {
-    n = n - N(1);
-    x = f(x);
+      n = n - N(1);
+      x = f(x);
     }
     return x;
   }
@@ -55,8 +55,8 @@ namespace eop {
   {
     // Precondition: n ≥ 0 ∧ (∀i ∈ N) 0 < i ≤ n => f^i(x) is defined
     while (n != N(0)) {
-    n = n - N(1);
-    f(x);
+      n = n - N(1);
+      f(x);
     }
     return x;
   }
@@ -76,8 +76,8 @@ namespace eop {
     typedef DistanceType(F) N;
     N n(0);
     while (x != y) {
-    x = f(x);
-    n = n + N(1);
+      x = f(x);
+      n = n + N(1);
     }
     return n;
   }
@@ -89,8 +89,8 @@ namespace eop {
     typedef DistanceType(F) N;
     N n(0);
     while (x != y) {
-    f(x);
-    n = n + N(1);
+      f(x);
+      n = n + N(1);
     }
     return n;
   }
@@ -112,11 +112,11 @@ namespace eop {
     Domain(F) fast = f(x);    // fast = f^1(
               // n <- 0 (completed operations)
     while (fast != slow) {    // slow = f^n(x) ? fast = f^(2n+1)(x)
-    slow = f(slow);   // slow = f^(n+1)(x) ? fast = f^(2n+1)(x)
-    if (!p(fast)) return fast;
-    fast = f(fast);   // slow = f^(n+1)(x) ? fast = f^(2n+2)(x)
-    if (!p(fast)) return fast;
-    fast = f(fast);   // slow = f^(n+1)(x) ? fast = f^(2n+3)(x)
+      slow = f(slow);   // slow = f^(n+1)(x) ? fast = f^(2n+1)(x)
+      if (!p(fast)) return fast;
+      fast = f(fast);   // slow = f^(n+1)(x) ? fast = f^(2n+2)(x)
+      if (!p(fast)) return fast;
+      fast = f(fast);   // slow = f^(n+1)(x) ? fast = f^(2n+3)(x)
     }       // n <- n + 1
     return fast;
     // Postcondition : return value is terminal point or collision point
@@ -132,11 +132,11 @@ namespace eop {
     Domain(F) fast = x; a(fast);  // fast = f^1(
               // n <- 0 (completed operations)
     while (fast != slow) {    // slow = f^n(x) ? fast = f^(2n+1)(x)
-    a(slow);    // slow = f^(n+1)(x) ? fast = f^(2n+1)(x)
-    if (!p(fast)) return fast;
-    a(fast);    // slow = f^(n+1)(x) ? fast = f^(2n+2)(x)
-    if (!p(fast)) return fast;
-    a(fast);    // slow = f^(n+1)(x) ? fast = f^(2n+3)(x)
+      a(slow);    // slow = f^(n+1)(x) ? fast = f^(2n+1)(x)
+      if (!p(fast)) return fast;
+      a(fast);    // slow = f^(n+1)(x) ? fast = f^(2n+2)(x)
+      if (!p(fast)) return fast;
+      a(fast);    // slow = f^(n+1)(x) ? fast = f^(2n+3)(x)
     }       // n <- n + 1
     return fast;
     // Postcondition : return value is terminal point or collision point
@@ -159,9 +159,9 @@ namespace eop {
     Domain(F) fast = f(x);
 
     while (fast != slow) {
-    slow = f(slow);
-    fast = f(fast);
-    fast = f(fast);
+      slow = f(slow);
+      fast = f(fast);
+      fast = f(fast);
     }
     return fast;
     // Postcondition : return value is collision point
@@ -186,8 +186,8 @@ namespace eop {
   Domain(F) convergent_point(Domain(F) x0, Domain(F) x1, F f) {
     // Precondition : (∃n ∈ DistanceType(F)) n ≥ 0 ∧ f^n(x0) = f^n(x1)
     while (x0 != x1) {
-    x0 = f(x0);
-    x1 = f(x1);
+      x0 = f(x0);
+      x1 = f(x1);
     }
     return x0;
   }
@@ -368,13 +368,13 @@ namespace eop {
     Domain(Op) power_accumulate_4(Domain(Op) a, Domain(Op) r, I n, Op op) {
     // Precondition : associative(op) ∧ n ≥ 0
     while (true) {
-    if (n % I{ 2 } != I{ 0 }) {
-      r = op(r, a);
-      if (n == I{ 1 }) return r;
-    }
-    else if (n == I{ 0 }) return r;
-    a = op(a, a);
-    n = n / I{ 2 };
+      if (n % I{ 2 } != I{ 0 }) {
+        r = op(r, a);
+        if (n == I{ 1 }) return r;
+      }
+      else if (n == I{ 0 }) return r;
+      a = op(a, a);
+      n = n / I{ 2 };
     }
   }
 
@@ -477,8 +477,8 @@ namespace eop {
     Domain(Op) power(Domain(Op) a, I n, Op op) {
     // Precondition : associative(op) ∧ n > 0
     while (even(n)) {
-    a = op(a, a);
-    n = half_nonnegative(n);
+      a = op(a, a);
+      n = half_nonnegative(n);
     }
     n = half_nonnegative(n);
     if (zero(n)) return a;
@@ -911,8 +911,8 @@ namespace eop {
   {
     // Precondition: n >= 0 & weak_range(f, n)
     while (!zero(n)) {
-     n = predecessor(n);
-     f = successor(f);
+      n = predecessor(n);
+      f = successor(f);
     }
     return f;
   }
@@ -924,8 +924,8 @@ namespace eop {
     // Precondition: bounded_range(f, l)
     DistanceType(I) n(0);
     while (f != l) {
-     n = successor(n);
-     f = successor(f);
+      n = successor(n);
+      f = successor(f);
     }
     return n;
   }
@@ -937,8 +937,8 @@ namespace eop {
   {
     // Precondition: readable_bounded_range(f, l)
     while (f != l) {
-     proc(source(f));
-     f = successor(f);
+      proc(source(f));
+      f = successor(f);
     }
     return proc;
   }
@@ -1009,8 +1009,8 @@ namespace eop {
     J j;
     P p;
     counter_if(P p, J j) : p(p), j(j) {}
-    void operator()(Domain(P) x) {
-    if (p(x)) j = successor(j);
+      void operator()(Domain(P) x) {
+      if (p(x)) j = successor(j);
     }
   };
 
@@ -1038,7 +1038,7 @@ namespace eop {
     P p;
     counter_if_not(P p, J j) : p(p), j(j) {}
     void operator()(Domain(P) x) {
-    if (!p(x)) j = successor(j);
+      if (!p(x)) j = successor(j);
     }
   };
 
@@ -1363,9 +1363,9 @@ namespace eop {
     // Precondition: readable_weak_range(f0, n0)
     // Precondition: readable_bounded_range(f1, l1)
     while (!zero(n0) && f1 != l1 && r(source(f0), source(f1))) {
-    f0 = successor(f0);
-    n0 = predecessor(n0);
-    f1 = successor(f1);
+      f0 = successor(f0);
+      n0 = predecessor(n0);
+      f1 = successor(f1);
     }
     return std::make_pair(std::make_pair(f0, n0), f1);
     // Postcondition: 
@@ -1382,9 +1382,9 @@ namespace eop {
     // Precondition: readable_bounded_range(f0, l0)
     // Precondition: readable_weak_range(f1, n1)
     while (f0 != l0 && !zero(n1) && r(source(f0), source(f1))) {
-    f0 = successor(f0);
-    f1 = successor(f1);
-    n1 = predecessor(n1);
+      f0 = successor(f0);
+      f1 = successor(f1);
+      n1 = predecessor(n1);
     }
     return std::make_pair(f0, std::make_pair(f1, n1));
     // Postcondition: 
@@ -1401,10 +1401,10 @@ namespace eop {
     // Precondition: readable_weak_range(f0, n0)
     // Precondition: readable_weak_range(f1, n1)
     while (!zero(n0) && !zero(n1) && r(source(f0), source(f1))) {
-    f0 = successor(f0);
-    n0 = predecessor(n0);
-    f1 = successor(f1);
-    n1 = predecessor(n1);
+      f0 = successor(f0);
+      n0 = predecessor(n0);
+      f1 = successor(f1);
+      n1 = predecessor(n1);
     }
     return std::make_pair(std::make_pair(f0, n0), std::make_pair(f1, n1));
     // Postcondition: 
@@ -1420,8 +1420,8 @@ namespace eop {
     ValueType(I) x = source(f);
     f = successor(f);
     while (f != l && r(x, source(f))) {
-    x = source(f);
-    f = successor(f);
+      x = source(f);
+      f = successor(f);
     }
     return f;
     // Postcondition: returns an iterator to the first element that is not in
@@ -1454,7 +1454,7 @@ namespace eop {
     complement_of_converse(const R& r) : r(r) {}
     bool operator()(const T& a, const T& b) 
     {
-    return !r(b, a);
+      return !r(b, a);
     }
   };
 
@@ -1498,8 +1498,8 @@ namespace eop {
     if (f == l) return l;
     I t;
     do {
-    t = f;
-    f = successor(f);
+      t = f;
+      f = successor(f);
     } while (f != l && r(source(t), source(f)));
     return f;
   }
@@ -1511,15 +1511,15 @@ namespace eop {
   {
     // Precondition: readable_counted_range(f, n) & partitioned_n(f, n, p)
     while (!zero(n)) {
-    DistanceType(I) h = half_nonnegative(n);
-    I m = f + h;
-    if (p(source(m))) {
-      n = h;
-    }
-    else {
-      n = n - successor(h);
-      f = successor(m);
-    }
+      DistanceType(I) h = half_nonnegative(n);
+      I m = f + h;
+      if (p(source(m))) {
+        n = h;
+      }
+      else {
+        n = n - successor(h);
+        f = successor(m);
+      }
     }
     return f;
   }
@@ -1621,8 +1621,8 @@ namespace eop {
   {
     // Precondition: n >= 0 & Exists f in I => weak_range(f, l) & l = f + n
     while (!zero(n)) {
-    l = predecessor(l);
-    n = predecessor(n);
+      l = predecessor(l);
+      n = predecessor(n);
     }
     return l;
   }
@@ -1635,7 +1635,7 @@ namespace eop {
     // Precondition: (f, l] is a readable bounde half-open on left range
     I i = l;
     while (f != l && (i = predecessor(i), !p(source(i)))) {
-    l = i;
+      l = i;
     }
     return l;
   }
@@ -1714,9 +1714,9 @@ namespace eop {
   {
     // Precondition: readable_bounded_range(f, l)
     while (f != l && source(f) == source(predecessor(l))) {
-    f = successor(f);
-    if (f == l) return true;
-    l = predecessor(l);
+      f = successor(f);
+      if (f == l) return true;
+      l = predecessor(l);
     }
     return f == l;
     // Postcondition: returns true, if the provided range is a palindrom
@@ -1733,10 +1733,10 @@ namespace eop {
     N l{ 0 };
     N r{ 0 };
     if (has_left_successor(c)) {
-    l = weight_recursive(left_successor(c));
+      l = weight_recursive(left_successor(c));
     }
     if (has_right_successor(c)) {
-    r = weight_recursive(right_successor(c));
+      r = weight_recursive(right_successor(c));
     }
     return successor(l + r);
   }
@@ -1751,10 +1751,10 @@ namespace eop {
     N l{ 0 };
     N r{ 0 };
     if (has_left_successor(c)) {
-    l = height_recursive(left_successor(c));
+      l = height_recursive(left_successor(c));
     }
     if (has_right_successor(c)) {
-    r = height_recursive(right_successor(c));
+      r = height_recursive(right_successor(c));
     }
     return successor(select_1_2(l, r, std::less<N>()));
   }
@@ -1770,11 +1770,11 @@ namespace eop {
     // Precondition: tree(c) && !empty(c)
     proc(visit::pre, c);
     if (has_left_successor(c)) {
-    proc = traverse_nonempty(left_successor(c), proc);
+      proc = traverse_nonempty(left_successor(c), proc);
     }
     proc(visit::in, c);
     if (has_right_successor(c)) {
-    proc = traverse_nonempty(right_successor(c), proc);
+      proc = traverse_nonempty(right_successor(c), proc);
     }
     proc(visit::post, c);
     return proc;
@@ -1803,19 +1803,19 @@ namespace eop {
     // Precondition: !root(c) || v != visit.post
     switch (v)
     {
-    case visit::pre:
-    if (has_left_successor(c)) {
-      c = left_successor(c);    return 1;
-    }   v = visit::in;      return 0;
-    case visit::in:
-    if (has_right_successor(c)) {
-      v = visit::pre; c = right_successor(c); return 1;
-    }   v = visit::post;    return 0;
-    case visit::post:
-    if (is_left_successor(c))
-      v = visit::in;
-    c = predecessor(c);     return -1;
-    //break;
+      case visit::pre:
+      if (has_left_successor(c)) {
+          c = left_successor(c);    return 1;
+      }   v = visit::in;            return 0;
+      case visit::in:
+      if (has_right_successor(c)) {
+        v = visit::pre; c = right_successor(c); 
+                                    return 1;
+      } v = visit::post;            return 0;
+      case visit::post:
+      if (is_left_successor(c))
+        v = visit::in;
+        c = predecessor(c);         return -1;
     }
   }
 
@@ -1828,8 +1828,8 @@ namespace eop {
     C root = x;
     visit v = visit::pre;
     do {
-    if (x == y) return true;
-    traverse_step(x, v);
+      if (x == y) return true;
+      traverse_step(x, v);
     } while (x != root || v != visit::post);
     return false;
   }
@@ -1841,12 +1841,13 @@ namespace eop {
     // Precondition: tree(c)
     typedef WeightType(C) N;
     if (empty(c)) return N{ 0 };
+
     C root = c;
     visit v = visit::pre;
     N n{ 1 }; // Invarian: n counts the number of pre visits so far
     do {
-    traverse_step(c, v);
-    if (v == visit::pre) n = successor(n);
+      traverse_step(c, v);
+      if (v == visit::pre) n = successor(n);
     } while (c != root || v != visit::post);
     return n;
   }
@@ -1858,13 +1859,14 @@ namespace eop {
     //Precondition: tree(c)
     typedef WeightType(C) N;
     if (empty(c)) return N{ 0 };
+
     C root = c;
     visit v = visit::pre;
     N n{ 1 }; // Invariant: n is the height of the current pre visit
     N m{ 1 }; // Invariant: m is the max of height of pre visits so far
     do {
-    n = (n - N{1 }) + N{ traverse_step(c, v) + 1 };
-    if (m < n) m = n;
+      n = (n - N{1 }) + N{ traverse_step(c, v) + 1 };
+      if (m < n) m = n;
     } while (c != root || v != visit::post);
     return m;
   }
@@ -1881,8 +1883,8 @@ namespace eop {
     visit v = visit::pre;
     proc(v, c);
     do {
-    traverse_step(c, v);
-    proc(v, c);
+      traverse_step(c, v);
+      proc(v, c);
     } while (c != root || v != visit::post);
     return proc;
   }
@@ -1901,10 +1903,10 @@ namespace eop {
   {
     std::pair<C, visit> operator()(const std::pair<C, visit>& p)
     {
-    C c = p.first;
-    visit v = p.second;
-    traverse_step(c, v);
-    return std::make_pair(c, v);
+      C c = p.first;
+      visit v = p.second;
+      traverse_step(c, v);
+      return std::make_pair(c, v);
     }
   };
 
@@ -1914,7 +1916,7 @@ namespace eop {
   {
     void operator()(std::pair<C, visit>& p)
     {
-    traverse_step(p.first, p.second);
+      traverse_step(p.first, p.second);
     }
   };
 
@@ -1940,7 +1942,7 @@ namespace eop {
     bidirectional_bifurcate_coordinate_termination_condition(C root = C{ 0 }) : root(root) {}
     bool operator()(const std::pair<C, visit>& p)
     {
-    return p.first != root || p.second != visit::post;
+      return p.first != root || p.second != visit::post;
     }
   };
 
@@ -1960,18 +1962,18 @@ namespace eop {
   {
     // Preconditions: !empty(c0) && !empty(c1)
     if (has_left_successor(c0)) {
-    if (has_left_successor(c1)) {
-      if (!bifurcate_isomorphic_nonempty(left_successor(c0), left_successor(c1)))
-        return false;
-    } else  return false;
+      if (has_left_successor(c1)) {
+        if (!bifurcate_isomorphic_nonempty(left_successor(c0), left_successor(c1)))
+          return false;
+      } else  return false;
     }
     else if (has_left_successor(c1)) return false;
     
     if (has_right_successor(c0)) {
-    if (has_right_successor(c1)) {
-      if (!bifurcate_isomorphic_nonempty(right_successor(c0), right_successor(c1)))
-        return false;
-    } else  return false;
+      if (has_right_successor(c1)) {
+        if (!bifurcate_isomorphic_nonempty(right_successor(c0), right_successor(c1)))
+          return false;
+      } else  return false;
     }
     else if (has_right_successor(c1)) return false;
 
@@ -1988,9 +1990,9 @@ namespace eop {
     visit v0 = visit::pre;
     visit v1 = visit::pre;
     do {
-    traverse_step(c0, v0);
-    traverse_step(c1, v1);
-    if (v0 != v1) return false;
+      traverse_step(c0, v0);
+      traverse_step(c1, v1);
+      if (v0 != v1) return false;
     } while (c0 != root0 || v0 != visit::post);
 
     return true;
@@ -2016,7 +2018,7 @@ namespace eop {
   {
     bool operator()(const T& a, const T& b)
     {
-    return a == b;
+      return a == b;
     }
   };
 
@@ -2043,23 +2045,23 @@ namespace eop {
     if (!r(source(c0), source(c1)))
     return false;
     if (has_left_successor(c0)) {
-    if (has_left_successor(c1)) {
-      if (!bifurcate_equivalent_nonempty(left_successor(c0), left_successor(c1), r))
-        return false;
-    } else  return false;
+      if (has_left_successor(c1)) {
+        if (!bifurcate_equivalent_nonempty(left_successor(c0), left_successor(c1), r))
+          return false;
+      } else  return false;
     }
     else if (has_left_successor(c1))
     return   false;
 
     if (has_right_successor(c0)) {
-    if (has_right_successor(c1)) {
-      if (!bifurcate_equivalent_nonempty(right_successor(c0), right_successor(c1), r))
-        return false;
-    }
-    else  return false;
+      if (has_right_successor(c1)) {
+        if (!bifurcate_equivalent_nonempty(right_successor(c0), right_successor(c1), r))
+          return false;
+      }
+      else  return false;
     }
     else if (has_right_successor(c1))
-    return   false;
+      return false;
     return true;
   }
 
@@ -2090,12 +2092,12 @@ namespace eop {
     visit v1 = visit::pre;
 
     while (true) {
-    if (v0 == visit::pre && !r(source(c0), source(c1)))
-      return false;
-    traverse_step(c0, v0);
-    traverse_step(c1, v1);
-    if (v0 != v1) return false;
-    if (c0 == root0 && v0 == visit::post) return true;
+      if (v0 == visit::pre && !r(source(c0), source(c1)))
+        return false;
+      traverse_step(c0, v0);
+      traverse_step(c1, v1);
+      if (v0 != v1) return false;
+      if (c0 == root0 && v0 == visit::post) return true;
     }
   }
 
@@ -2121,12 +2123,12 @@ namespace eop {
     // Precondition: readable_bounded_range(f1, l1)
     // weak_ordering(r)
     while (true) {
-    if (f1 == l1) return false;
-    if (f0 == l0) return true;
-    if (r(source(f0), source(f1))) return true;
-    if (r(source(f1), source(f0))) return false;
-    f0 = successor(f0);
-    f1 = successor(f1);
+      if (f1 == l1) return false;
+      if (f0 == l0) return true;
+      if (r(source(f0), source(f1))) return true;
+      if (r(source(f1), source(f0))) return false;
+      f0 = successor(f0);
+      f1 = successor(f1);
     }
   }
 
@@ -2136,7 +2138,7 @@ namespace eop {
   {
     bool operator()(const T& x, const T& y)
     {
-    return x < y;
+      return x < y;
     }
   };
 
@@ -2162,25 +2164,25 @@ namespace eop {
     if (r(source(c0), source(c1))) return comparison::less;
     if (r(source(c1), source(c0))) return comparison::greater;
     if (has_left_successor(c0)) {
-    if (has_left_successor(c1)) {
-      comparison c = bifurcate_compare_nonempty_recursive(left_successor(c0), left_successor(c1), r);
-      if (c != comparison::equal) return c;
-    }
-    else return comparison::greater;
+      if (has_left_successor(c1)) {
+        comparison c = bifurcate_compare_nonempty_recursive(left_successor(c0), left_successor(c1), r);
+        if (c != comparison::equal) return c;
+      }
+      else return comparison::greater;
     }
     else if (has_left_successor(c1)) {
-    return comparison::less;
+      return comparison::less;
     }
 
     if (has_right_successor(c0)) {
-    if (has_right_successor(c1)) {
-      comparison c = bifurcate_compare_nonempty_recursive(right_successor(c0), right_successor(c1), r);
-      if (c != comparison::equal) return c;
-    }
-    else return comparison::greater;
+      if (has_right_successor(c1)) {
+        comparison c = bifurcate_compare_nonempty_recursive(right_successor(c0), right_successor(c1), r);
+        if (c != comparison::equal) return c;
+      }
+      else return comparison::greater;
     }
     else if (has_right_successor(c1)) {
-    return comparison::less;
+      return comparison::less;
     }
     return comparison::equal;
   }
@@ -2220,9 +2222,9 @@ namespace eop {
     visit v0 = visit::pre;
     visit v1 = visit::pre;
     while (true) {
-    if (v0 == visit::pre) {
-      if (r(source(c0), source(c1))) return true;
-      if (r(source(c1), source(c0))) return false;
+      if (v0 == visit::pre) {
+        if (r(source(c0), source(c1))) return true;
+        if (r(source(c1), source(c0))) return false;
     }
     traverse_step(c0, v0);
     traverse_step(c1, v1);
@@ -2250,14 +2252,14 @@ namespace eop {
     R r;
     comparator_3_way(R r) : r(r)
     {
-    // Precondition: $\property{weak\_ordering}(r)$
-    // Postcondition: three_way_compare(comparator_3_way(r))
+      // Precondition: $\property{weak\_ordering}(r)$
+      // Postcondition: three_way_compare(comparator_3_way(r))
     }
     int operator()(const T& a, const T& b)
     {
-    if (r(a, b)) return 1;
-    if (r(b, a)) return -1;
-    return 0;
+      if (r(a, b)) return 1;
+      if (r(b, a)) return -1;
+      return 0;
     }
   };
 
@@ -2271,7 +2273,7 @@ namespace eop {
   {
     void operator()(I& x, I& y) const
     {
-    sink(x.ptr).forward_link = y.ptr;
+      sink(x.ptr).forward_link = y.ptr;
     }
   };
 
@@ -2288,7 +2290,7 @@ namespace eop {
   {
     void operator()(I& x, I& y)
     {
-    sink(y.ptr).backward_link = x.ptr;
+      sink(y.ptr).backward_link = x.ptr;
     }
   };
 
@@ -2305,8 +2307,8 @@ namespace eop {
   {
     void operator()(I& x, I& y)
     {
-    forward_linker<I>()(x, y);
-    backward_linker<I>()(x, y);
+      forward_linker<I>()(x, y);
+      backward_linker<I>()(x, y);
     }
   };
 
@@ -2334,9 +2336,9 @@ namespace eop {
     const S set_link;
     linker_to_tail(const S& set_link) : set_link(set_link) {}
     void operator()(I& t, I& f) const {
-    // Precondition: successor(f) is defined
-    set_link(t, f);
-    advance_tail(t, f);
+      // Precondition: successor(f) is defined
+      set_link(t, f);
+      advance_tail(t, f);
     }
   };
   
@@ -2347,7 +2349,7 @@ namespace eop {
     // Precondition: bounded_range(f, l) & f != l
     I t;
     do
-    advance_tail(t, f);
+      advance_tail(t, f);
     while (f != l);
     return t;
   }
@@ -2366,20 +2368,25 @@ namespace eop {
     I h1 = l; I t1 = l;
     if (f == l)      goto s4;
     if (p(f)) { h1 = f; advance_tail(t1, f); goto s1; }
-    else  { h0 = f; advance_tail(t0, f); goto s0; }
-  s0: if (f == l) goto s4;
+    else      { h0 = f; advance_tail(t0, f); goto s0; }
+
+    s0: if (f == l)  goto s4;
     if (p(f)) { h1 = f; advance_tail(t1, f); goto s3; }
-    else  {   advance_tail(t0, f); goto s0; }
-  s1: if (f == l) goto s4;
-    if (p(f)) {   advance_tail(t1, f); goto s1; }
-    else  { h0 = f; advance_tail(t0, f); goto s2; }
-  s2: if (f == l) goto s4;
-    if (p(f)) {   link_to_tail(t1, f); goto s3; }
-    else  {   advance_tail(t0, f); goto s2; }
-  s3: if (f == l) goto s4;
-    if (p(f)) {   advance_tail(t1, f); goto s3; }
-    else  {   link_to_tail(t0, f); goto s2; }
-  s4: return std::pair<P, P>(P(h0, t0), P(h1, t1));
+    else      {         advance_tail(t0, f); goto s0; }
+
+    s1: if (f == l) goto s4;
+    if (p(f)) {         advance_tail(t1, f); goto s1; }
+    else      { h0 = f; advance_tail(t0, f); goto s2; }
+
+    s2: if (f == l) goto s4;
+    if (p(f)) {         link_to_tail(t1, f); goto s3; }
+    else      {         advance_tail(t0, f); goto s2; }
+
+    s3: if (f == l) goto s4;
+    if (p(f)) {         advance_tail(t1, f); goto s3; }
+    else      {         link_to_tail(t0, f); goto s2; }
+
+    s4: return std::pair<P, P>(P(h0, t0), P(h1, t1));
   }
 
   template<typename I, typename S, typename R>
@@ -2391,15 +2398,19 @@ namespace eop {
     linker_to_tail<S> link_to_tail(set_link);
     I h; I t;
     if (r(f1, f0)) { h = f1; advance_tail(t, f1); goto s1; }
-    else     { h = f0; advance_tail(t, f0); goto s0; }
-  s0: if (f0 == l0)       goto s2;
-  if (r(f1, f0)) {   link_to_tail(t, f1); goto s1; }
-    else     {   advance_tail(t, f0); goto s0; }
-  s1: if (f1 == l1)       goto s3;
-    if (r(f1, f0)) {   advance_tail(t, f1); goto s1; }
-    else     {   link_to_tail(t, f0); goto s0; }
-  s2: set_link(t, f1); return std::make_tuple(h, t, l1);
-  s3: set_link(t, f0); return std::make_tuple(h, t, l0);
+    else           { h = f0; advance_tail(t, f0); goto s0; }
+
+    s0: if (f0 == l0)       goto s2;
+    if (r(f1, f0)) {         link_to_tail(t, f1); goto s1; }
+    else           {         advance_tail(t, f0); goto s0; }
+
+    s1: if (f1 == l1)       goto s3;
+    if (r(f1, f0)) {         advance_tail(t, f1); goto s1; }
+    else           {         link_to_tail(t, f0); goto s0; }
+
+    s2: set_link(t, f1); return std::make_tuple(h, t, l1);
+
+    s3: set_link(t, f0); return std::make_tuple(h, t, l0);
   }
 
 
@@ -3983,4 +3994,6 @@ namespace eop {
       std::pair<I, I>(f, f)
     ).first;
   }
+
+
 } // namespace eop
