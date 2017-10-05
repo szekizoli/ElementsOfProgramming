@@ -16,10 +16,8 @@ project "eop"
     includedirs { "src" }
     filter "configurations:Debug"
     	defines {"DEBUG"}
-    	symbols "On"
     
     filter "configurations:Release"
-        defines {"NDEBUG"}
         optimize "On"
     
     configuration "gmake"
@@ -38,10 +36,8 @@ project "epwc"
     includedirs { "src" }
     filter "configurations:Debug"
         defines {"DEBUG"}
-        symbols "On"
     
     filter "configurations:Release"
-        defines {"NDEBUG"}
         optimize "On"
 
     configuration "gmake"
@@ -65,7 +61,6 @@ project "GoogleTest"
         symbols "On"
  
     filter "configurations:Release"
-        defines {"NDEBUG"}
         optimize "On"
 
     configuration "gmake"
@@ -89,7 +84,6 @@ project "eop-unittest"
         symbols "On"
     
     filter "configurations:Release"
-        defines {"NDEBUG"}
         optimize "On"
 
     configuration "gmake"
@@ -138,7 +132,6 @@ project "eop-benchmark"
         symbols "On"
     
     filter "configurations:Release"
-        defines {"NDEBUG"}
         optimize "On"
 
     configuration "gmake"
@@ -148,5 +141,4 @@ project "eop-benchmark"
         linkoptions {
             "-pthread"
         }
-
 

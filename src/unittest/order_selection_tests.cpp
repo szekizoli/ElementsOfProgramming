@@ -1871,32 +1871,31 @@ namespace eoptest
                 EXPECT_EQ(expected, actual);
         }
 
-        slist_iterator<int> common_test_sort_linked_nonempty_n(SList const& list, std::vector<int> const& expected, std::string const& message)
-        {
-                auto result = eop::sort_linked_nonempty_n(eop::begin(list), expected.size(),
-                                                                                                  std::less<int>(),
-                                                                                                  eop::forward_linker<eop::IteratorType<SList>>());                                                                                       
-                auto actual = list_to_vector(result.first);
-                EXPECT_EQ(expected, actual) << message;
-                return result.first;
-        }
+  slist_iterator<int> common_test_sort_linked_nonempty_n(SList const& list, std::vector<int> const& expected, std::string const& message)
+  {
+     auto result = eop::sort_linked_nonempty_n(eop::begin(list), expected.size(),
+                                               std::less<int>(), eop::forward_linker<eop::IteratorType<SList>>());                                                                                       
+     auto actual = list_to_vector(result.first);
+     EXPECT_EQ(expected, actual) << message;
+     return result.first;
+  }
 
-        void common_test_sort_linked_nonempty_n(std::initializer_list<int> input, std::initializer_list<int> expected, std::string const& message)
-        {
-                SList l0(input);
-                l0.root = common_test_sort_linked_nonempty_n(l0, std::vector<int>(expected), message);
-        }
+  void common_test_sort_linked_nonempty_n(std::initializer_list<int> input, std::initializer_list<int> expected, std::string const& message)
+  {
+    SList l0(input);
+    l0.root = common_test_sort_linked_nonempty_n(l0, std::vector<int>(expected), message);
+  }
 
-        TEST(applications_of_link_rearrangements, test_sort_linked_nonempty_n)
-        {
-                {
-                        common_test_sort_linked_nonempty_n({4, 0, 2, 5, 1, 3}, {0, 1, 2, 3, 4, 5}, "sort faiiled");
-                        common_test_sort_linked_nonempty_n({5, 4, 3, 2, 1, 0}, {0, 1, 2, 3, 4, 5}, "sort faiiled");
-                        common_test_sort_linked_nonempty_n({0, 1, 2, 3, 4, 5}, {0, 1, 2, 3, 4, 5}, "sort faiiled");
-                        common_test_sort_linked_nonempty_n({0, 1, 2, 5, 3, 4}, {0, 1, 2, 3, 4, 5}, "sort faiiled");
-                }
-                EXPECT_EQ(0, eop::slist_node_count());
-        }
+  TEST(applications_of_link_rearrangements, test_sort_linked_nonempty_n)
+  {
+    {
+      common_test_sort_linked_nonempty_n({4, 0, 2, 5, 1, 3}, {0, 1, 2, 3, 4, 5}, "sort faiiled");
+      common_test_sort_linked_nonempty_n({5, 4, 3, 2, 1, 0}, {0, 1, 2, 3, 4, 5}, "sort faiiled");
+      common_test_sort_linked_nonempty_n({0, 1, 2, 3, 4, 5}, {0, 1, 2, 3, 4, 5}, "sort faiiled");
+      common_test_sort_linked_nonempty_n({0, 1, 2, 5, 3, 4}, {0, 1, 2, 3, 4, 5}, "sort faiiled");
+    }
+    EXPECT_EQ(0, eop::slist_node_count());
+  }
 
         TEST(applications_of_link_rearrangements, test_unique)
         {
@@ -2776,7 +2775,7 @@ namespace eoptest
     }
   };
 
-  TEST(chapter_11_1_partition, test_partition_stable_iterative)
+  TEST(chapter_11_2_partition, test_partition_stable_iterative)
   {
     vector<int> v0 { 1, 2 };
     auto m0 = eop::partition_stable_iterative(begin(v0), end(v0), eop::is_Even<int>());
@@ -2812,12 +2811,36 @@ namespace eoptest
     }
   };
 
-  TEST(chapter_11_1_partition, test_partition_stable_iterative_stability)
+  TEST(chapter_11_2_partition, test_partition_stable_iterative_stability)
   {
     using type = pair<int, int>;
     vector<type> v0 { {1, 2}, {2, 1}, {1, 1}, {2, 2} };
     auto m0 = eop::partition_stable_iterative(begin(v0), end(v0), is_First_Even<int>());
     vector<type> expected0 {{1, 2}, {1, 1}, {2, 1}, {2, 2}};
     EXPECT_EQ(expected0, v0);
+
+    vector<type> v1 { {1, 2}, {2, 2}, {1, 1}, {2, 1} };
+    auto m1 = eop::partition_stable_iterative(begin(v1), end(v1), is_First_Even<int>());
+    vector<type> expected1 {{1, 2}, {1, 1}, {2, 2}, {2, 1}};
+    EXPECT_EQ(expected1, v1);
+
+  }
+
+  void test_sort_linked_iterative(std::initializer_list<int> const& input, std::initializer_list<int> const& output) 
+  {
+    SList list(input);
+    auto result = eop::sort_linked_iterative(eop::begin(list), eop::end(list), std::less<int>(), eop::forward_linker<eop::IteratorType<SList>>());
+    auto actual = list_to_vector(result);
+    vector<int> expected = vector<int>(output);
+    EXPECT_EQ(expected, actual);   
+  }
+
+
+  TEST(chapter_11_2_partition, test_sort_linked_iterative)
+  {
+    //test_sort_linked_iterative({1}, {1});
+    test_sort_linked_iterative({1, 2}, {1, 2});
+    //test_sort_linked_iterative({1, 3, 2}, {1, 2, 3});
+    //test_sort_linked_iterative({8, 4, 1, 5, 7, 3, 2, 6}, {1, 2, 3, 4, 5, 6, 7, 8});
   }
 }
