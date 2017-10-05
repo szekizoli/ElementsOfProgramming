@@ -1698,9 +1698,9 @@ namespace eoptest
                                                                                 iterator_parity_predicate<eop::IteratorType<SList>>(), 
                                                                                 eop::forward_linker<eop::IteratorType<SList>>());
 
-                auto size_odds = result.first.second - result.first.first + 1;
+                auto size_odds = eop::distance(result.first.first, result.first.second) + 1;
                 EXPECT_EQ(2, size_odds);
-                auto size_evens = result.second.second - result.second.first + 1;
+                auto size_evens = eop::distance(result.second.first, result.second.second)+ 1;
                 EXPECT_EQ(3, size_evens);
 
                 std::vector<int> odds = list_to_vector(result.first.first, result.first.second);
@@ -1834,9 +1834,9 @@ namespace eoptest
                                                                                         parity_predicate<int>(), 
                                                                                         eop::forward_linker<eop::IteratorType<SList>>());
 
-                auto size_odds = result.first.second - result.first.first + 1;
+                auto size_odds = eop::distance(result.first.first, result.first.second) + 1;
                 EXPECT_EQ(3, size_odds);
-                auto size_evens = result.second.second - result.second.first + 1;
+                auto size_evens = eop::distance(result.second.first, result.second.second)+ 1;
                 EXPECT_EQ(2, size_evens);
 
                 std::vector<int> odds = list_to_vector(result.first.first, result.first.second);
@@ -1912,10 +1912,10 @@ namespace eoptest
                         set_forward_link(result.first.second, slist_iterator<int>()); // close first list
                         set_forward_link(result.second.second, slist_iterator<int>()); // close second list                                                                     
 
-                        auto size_odds = result.first.second - result.first.first + 1;
-                        EXPECT_EQ(6, size_odds);
-                        auto size_evens = result.second.second - result.second.first + 1;
-                        EXPECT_EQ(5, size_evens);
+                        auto size_odds = eop::distance(result.first.first, result.first.second) + 1;
+                	EXPECT_EQ(6, size_odds);
+                	auto size_evens = eop::distance(result.second.first, result.second.second)+ 1;
+                	EXPECT_EQ(5, size_evens);
 
                         std::vector<int> odds = list_to_vector(begin(list));
                         std::vector<int> expected_odds {0, 1, 2, 1, 3, 4};
