@@ -13,14 +13,13 @@
 
 #pragma once
 
+#include <iostream>
 #include <tuple>
 #include <vector>
 
 #include "intrinsics.h"
 #include "pointers.h"
 #include "type_functions.h"
-
-#include <iostream>
 
 namespace eop {
 
@@ -919,7 +918,7 @@ namespace eop {
 
   template<typename I>
     requires(Iterator(I))
-  DistanceType(I) operator-(I l, I f) 
+  DistanceType(I) distance(I f, I l) 
   {
     // Precondition: bounded_range(f, l)
     DistanceType(I) n(0);
@@ -929,6 +928,19 @@ namespace eop {
     }
     return n;
   }
+
+  /*template<typename I>
+    requires(Iterator(I))
+  DistanceType(I) operator-(I l, I f) 
+  {
+    // Precondition: bounded_range(f, l)
+    DistanceType(I) n(0);
+    while (f != l) {
+      n = successor(n);
+      f = successor(f);
+    }
+    return n;
+  }*/
 
   template<typename I, typename Proc>
     requires(Readable(I) && Iterator(I) && Procedure(Proc) && Arity(Proc) == 1 && 
@@ -975,7 +987,7 @@ namespace eop {
     && ValueType(I) == Domain(P))
   bool all(I f, I l, P p) {
     // Precondition: readable_bounded_range(f, l)
-    return find_if_not(f, l, p) == l;
+    return eop::find_if_not(f, l, p) == l;
   }
 
   template<typename I, typename P>
@@ -983,7 +995,7 @@ namespace eop {
     && ValueType(I) == Domain(P))
   bool none(I f, I l, P p) {
     // Precondition: readable_bounded_range(f, l)
-    return find_if(f, l, p) == l;
+    return eop::find_if(f, l, p) == l;
   }
 
   template<typename I, typename P>
@@ -1019,7 +1031,7 @@ namespace eop {
     && ValueType(I) == Domain(P))
   J count_if(I f, I l, P p, J j) {
     // Precondition: readable_bounded_range(f, l)
-    return for_each(f, l, counter_if<P, J>(p, j)).j;
+    return eop::for_each(f, l, counter_if<P, J>(p, j)).j;
   }
 
   template<typename I, typename P>
@@ -1047,7 +1059,7 @@ namespace eop {
     && ValueType(I) == Domain(P))
   J count_if_not(I f, I l, P p, J j) {
     // Precondition: readable_bounded_range(f, l)
-    return for_each(f, l, counter_if_not<P, J>(p, j)).j;
+    return eop::for_each(f, l, counter_if_not<P, J>(p, j)).j;
   }
 
   template<typename I, typename P>
@@ -1473,7 +1485,7 @@ namespace eop {
   bool partitioned(I f, I l, P p) 
   {
     // Precondition: readable_bounded_range(f, l)
-    return l == find_if_not(find_if(f, l, p), l, p);
+    return l == eop::find_if_not(eop::find_if(f, l, p), l, p);
   }
 
   template<typename I, typename P>
@@ -1482,8 +1494,8 @@ namespace eop {
   bool partitioned_n(I f, DistanceType(I) n, P p) 
   {
     // Precondition: readable_counted_range(f, n)
-    auto r0 = find_if_n(f, n, p);
-    auto r1 = find_if_not_n(r0.first, r0.second, p);
+    auto r0 = eop::find_if_n(f, n, p);
+    auto r1 = eop::find_if_not_n(r0.first, r0.second, p);
     return zero(r1.second);
   }
 
@@ -2778,7 +2790,7 @@ namespace eop {
   O reverse_copy(I f_i, I l_i, O f_o)
   {
     // Precondition: not_overlapped(fi, li, fo, fo + (li - fi))
-    while(f_i != l_i) reverse_copy_step(l_i, f_o);
+    while(f_i != l_i) eop::reverse_copy_step(l_i, f_o);
     return f_o;
   }
 
@@ -2789,7 +2801,7 @@ namespace eop {
   O reverse_copy_backward(I f_i, I l_i, O l_o)
   {
     // Precondition: not_overlapped(fi, li, lo - (li - fi), lo)
-    while(f_i != l_i) reverse_copy_backward_step(f_i, l_o);
+    while(f_i != l_i) eop::reverse_copy_backward_step(f_i, l_o);
     return l_o;
   }
   
@@ -2978,8 +2990,8 @@ namespace eop {
     while(!zero(n_0) && !zero(n_1))
       if (r(f_i1, f_i0)) { copy_step(f_i1, f_o); n_1 = predecessor(n_1); }
       else               { copy_step(f_i0, f_o); n_0 = predecessor(n_0); }
-    std::pair<I1, O> l1 = copy_n(f_i1, n_1, f_o);
-    std::pair<I0, O> l0 = copy_n(f_i0, n_0, l1.second);
+    std::pair<I1, O> l1 = eop::copy_n(f_i1, n_1, f_o);
+    std::pair<I0, O> l0 = eop::copy_n(f_i0, n_0, l1.second);
     return std::tuple<I0, I1, O>(l0.first, l1.first, l0.second);
   }
 
@@ -3335,7 +3347,7 @@ namespace eop {
   {
     //Precondition: mutable_counted_range(f_i, n)
     //Precondition: mutable_counted_range(f_b, n)
-    return reverse_copy(f_b, copy_n(f_i, n, f_b).second, f_i);
+    return eop::reverse_copy(f_b, eop::copy_n(f_i, n, f_b).second, f_i);
   }
 
   template<typename I>
@@ -3614,7 +3626,7 @@ namespace eop {
   bool partitioned_at_point(I f, I m, I l, P p)
   {
     // Preconditions: bounded_range(f, l) && m in [f, l)
-    return m == find_if(f, l, p) && l == find_if_not(m, l, p);
+    return m == eop::find_if(f, l, p) && l == eop::find_if_not(m, l, p);
   }
 
   // Exercise 11.2
@@ -3636,11 +3648,11 @@ namespace eop {
   I partition_semistable(I f, I l, P p)
   {
     // Precondition: mutable_bounded_ragne(f, l)
-    I i = find_if(f, l, p);
+    I i = eop::find_if(f, l, p);
     if (i == l) return i;
     I j = successor(i);
     while(true) {
-      j = find_if_not(j, l, p);
+      j = eop::find_if_not(j, l, p);
       assert(none(f, i, p) && all(i, j, p));
       if (j == l) return i;
       assert(p(source(i)) && ! p(source(j)));
@@ -3659,7 +3671,7 @@ namespace eop {
   I partition_semistable_expanded(I f, I l, P p)
   {
     // Precondition: mutable_bounded_ragne(f, l)
-    I i = find_if(f, l, p);
+    I i = eop::find_if(f, l, p);
     if (i == l) return i;
     I j = successor(i);
     while(true) {
@@ -3683,11 +3695,11 @@ namespace eop {
   I semipartition(I f, I l, P p)
   {
     // Precondition: mutable_bounded_ragne(f, l)
-    I i = find_if(f, l, p);
+    I i = eop::find_if(f, l, p);
     if (i == l) return i;
     I j = successor(i);
     while(true) {
-      j = find_if_not(j, l, p);
+      j = eop::find_if_not(j, l, p);
       if (j == l) return i;
       copy_step(i, j);
     }
@@ -3716,7 +3728,7 @@ namespace eop {
   {
     // Precondition: mutable_bounded_range(f, l)
     while (true) {
-      f = find_if(f, l, p);
+      f = eop::find_if(f, l, p);
       l = find_backward_if_not(f, l, p);
       if (f == l) return f;
       reverse_swap_step(l, f);
@@ -3737,8 +3749,8 @@ namespace eop {
     I m = potential_partition_point(f, l, p);
     I i;
     while (true) {
-      f = find_if(f, m, p);
-      i = find_if_not(m, l, p);
+      f = eop::find_if(f, m, p);
+      i = eop:: find_if_not(m, l, p);
       if (f == m || i == l) return m;
       swap_step(f, i);
     }
@@ -3756,16 +3768,16 @@ namespace eop {
     // if either all element statisfy the predicate or none
     if (f == m || l == m) return m;
 
-    f = find_if(f, m, p);
+    f = eop::find_if(f, m, p);
     // If there isn't any misplaced element
     if (f == m) return m;
 
     ValueType(I) hole = source(f);
     I i;
     while(true) {
-      i = find_if_not(m, l, p);
+      i = eop::find_if_not(m, l, p);
       sink(f) = source(i);
-      f = find_if(f, m, p);
+      f = eop::find_if(f, m, p);
       if (f == m) break;
       sink(i) = source(f);
     }
@@ -3795,7 +3807,7 @@ namespace eop {
   {
     // Precondition: mutable_bounded_range(f, l)
     // Precondition: mutable_counted_range(f_b, l-f)
-    std::pair<I, B> x = partition_copy(f, l, f, f_b, p);
+    std::pair<I, B> x = eop::partition_copy(f, l, f, f_b, p);
     eop::copy(f_b, x.second, x.first);
     return x.first;
   }
@@ -3832,7 +3844,7 @@ namespace eop {
   {
     // Precondition: mutable_bounded_range(x.first, x.second)
     // Precondtiion: x.second is in [x.first, y.first]
-    return std::pair<I, I>(rotate(x.first, x.second, y.first), y.second);
+    return std::pair<I, I>(eop::rotate(x.first, x.second, y.first), y.second);
   }
 
   template<typename I, typename P>
@@ -3846,7 +3858,7 @@ namespace eop {
     DistanceType(I) h = half_nonnegative(n);
     std::pair<I, I> x = partition_stable_n_nonempty(f, h, p);
     std::pair<I, I> y = partition_stable_n_nonempty(x.second, n - h, p);
-    return combine_ranges(x, y);
+    return eop::combine_ranges(x, y);
   }
 
   template<typename I, typename P>
@@ -3875,7 +3887,7 @@ namespace eop {
     DistanceType(I) h = half_nonnegative(n_i);
     std::pair<I, I> x = partition_stable_n_nonempty(f_i, h, p);
     std::pair<I, I> y = partition_stable_n_nonempty(x.second, n_i - h, p);
-    return combine_ranges(x, y);
+    return eop::combine_ranges(x, y);
   }
 
   template<typename I, typename B, typename P>
@@ -3987,10 +3999,10 @@ namespace eop {
              ValueType(I) == Domain(P))
   I partition_stable_iterative(I f, I l, P p)
   {
-    return reduce_balanced(
+    return eop::reduce_balanced(
       f, l,
-      combine_ranges<I>,
-      partition_trivial<I, P>(p),
+      eop::combine_ranges<I>,
+      eop::partition_trivial<I, P>(p),
       std::pair<I, I>(f, f)
     ).first;
   }
