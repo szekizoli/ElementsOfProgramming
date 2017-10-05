@@ -78,8 +78,8 @@ project "eop-test"
     language  "C++"
     targetdir "build/bin/%{cfg.buildcfg}"
 
-    files { "src/test/**.h", 
-            "src/test/**.cpp" }
+    files { "test/**.h", 
+            "test/**.cpp" }
 
     links {"eop", "epwc", "GoogleTest"}
     libdirs { "../3rd/" }
