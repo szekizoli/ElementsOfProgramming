@@ -73,13 +73,13 @@ project "GoogleTest"
             "-std=c++14"
         }
 
-project "eop-unittest"
+project "eop-test"
     kind      "ConsoleApp"
     language  "C++"
     targetdir "build/bin/%{cfg.buildcfg}"
 
-    files { "src/unittest/**.h", 
-            "src/unittest/**.cpp" }
+    files { "src/test/**.h", 
+            "src/test/**.cpp" }
 
     links {"eop", "epwc", "GoogleTest"}
     libdirs { "../3rd/" }
