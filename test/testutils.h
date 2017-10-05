@@ -1,3 +1,5 @@
+#pragma once
+
 #include <iostream>
 #include <utility>
 #include <vector>
@@ -5,9 +7,52 @@
 #include "list.h"
 #include "type_functions.h"
 
+#include "eop.h"
+
+namespace eop {
+using std::vector;
+
+  template<typename T>
+  struct value_type<typename std::vector<T>>
+  {
+    typedef T type;
+  };
+  
+  template<typename T>
+  struct value_type<typename std::back_insert_iterator< std::vector<T> > >
+  {
+    // ValueType of the back_insert_iterator is back_insert_iterator
+    typedef std::back_insert_iterator< std::vector<T> > type;
+  };
+
+  template<>
+  struct iterator_concept<typename std::vector<int>::iterator> 
+  {
+    typedef random_access_iterator_tag concept;
+  };
+
+  template<>
+  struct iterator_concept<typename std::vector<std::pair<int, int>>::iterator> 
+  {
+    typedef random_access_iterator_tag concept;
+  };
+}
+
 // utility methods for testing
 namespace eoptest {
 
+  template<typename T>
+  T less(T const& a, T const& b) {
+    return a < b;
+  }
+
+  template<typename T>
+    requires(Regular(T))
+  auto size(std::vector<T> const& v) 
+  {
+    return v.size();
+  }
+  
     template<typename T>
                 requires(Regular(T))
         std::vector<T> list_to_vector(eop::slist_iterator<T> i)
@@ -97,4 +142,29 @@ namespace eoptest {
     for(T t : v) o << t << " ";
     return o;
   }
+
+  struct equals_To {
+    const int value;
+    equals_To(int v) : value(v) {};
+    bool operator()(int x) {
+      return value == x;
+    }
+  };
+
+  struct sum {
+    int _sum = 0;
+    void operator()(int value) {
+      _sum += value;
+    }
+  };
+
+  struct less_Than {
+    const int value;
+    typedef int first_argument_type;
+    typedef int input_type;
+    less_Than(int v) : value(v) {};
+    bool operator()(int x) {
+      return x < value;
+    }
+  };
 }
