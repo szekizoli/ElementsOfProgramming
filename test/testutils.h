@@ -3,14 +3,15 @@
 #include <iostream>
 #include <utility>
 #include <vector>
+
+#include "eop.h"
 #include "intrinsics.h"
 #include "list.h"
 #include "type_functions.h"
-
-#include "eop.h"
+#include "tree.h"
 
 namespace eop {
-using std::vector;
+  using std::vector;
 
   template<typename T>
   struct value_type<typename std::vector<T>>
@@ -41,6 +42,8 @@ using std::vector;
 // utility methods for testing
 namespace eoptest {
 
+  using std::vector;
+  
   template<typename T>
   T less(T const& a, T const& b) {
     return a < b;
@@ -53,29 +56,29 @@ namespace eoptest {
     return v.size();
   }
   
-    template<typename T>
-                requires(Regular(T))
-        std::vector<T> list_to_vector(eop::slist_iterator<T> i)
-        {
-                std::vector<T> v;
-                while (!empty(i)) {
-                        v.push_back(source(i));
-                        i = successor(i);
-                }
-                return v;
-        }
-
-    template<typename T>
-                requires(Regular(T))
-        std::vector<T> list_to_vector(eop::slist_iterator<T> f, eop::slist_iterator<T> l)
-        {
-                std::vector<T> v;
-        if (empty(f)) return v;
-                while (f != l) {
-                        v.push_back(source(f));
-                        f = successor(f);
+  template<typename T>
+    requires(Regular(T))
+  std::vector<T> list_to_vector(eop::slist_iterator<T> i)
+  {
+    std::vector<T> v;
+    while (!empty(i)) {
+      v.push_back(source(i));
+      i = successor(i);
     }
-  v.push_back(source(f));
+    return v;
+  }
+
+  template<typename T>
+    requires(Regular(T))
+  std::vector<T> list_to_vector(eop::slist_iterator<T> f, eop::slist_iterator<T> l)
+  {
+    std::vector<T> v;
+    if (empty(f)) return v;
+    while (f != l) {
+      v.push_back(source(f));
+      f = successor(f);
+    }
+    v.push_back(source(f));
     return v;
   }
 
@@ -165,6 +168,36 @@ namespace eoptest {
     less_Than(int v) : value(v) {};
     bool operator()(int x) {
       return x < value;
+    }
+  };
+
+  // Tree testutils
+
+  using eop::begin;
+
+  using namespace eop;
+  typedef eop::stree_node<int> SNode;
+  typedef eop::stree_coordinate<int> SCoordinate;
+  typedef eop::stree<int> STree;
+  typedef eop::stree_node<int> Node;
+  typedef eop::tree_coordinate<int> Coordinate;
+  typedef eop::tree<int> Tree;
+  typedef eop::slist<int> SList;
+
+  template<typename C>
+    requires(BifurcateCoordinate(C))
+  struct traverse_result
+  {
+    vector<int> preorder;
+    vector<int> inorder;
+    vector<int> postorder;
+    void operator()(eop::visit v, C c)
+    {
+      switch(v) {
+        case eop::visit::pre:  preorder.push_back(source(c));  break;
+        case eop::visit::in:   inorder.push_back(source(c));   break;
+        case eop::visit::post: postorder.push_back(source(c)); break; 
+      }
     }
   };
 }

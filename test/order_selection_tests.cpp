@@ -23,11 +23,6 @@
 
 #include "testutils.h"
 
-namespace eop
-{	
-  
-}
-
 namespace eoptest {
   using std::array;
   using std::list;
@@ -229,24 +224,24 @@ namespace eoptest {
     expect_median_5({ 0, 0, 1, 1, 1 }, 2);
   }
 
+  // Tree tests
 
-  using eop::begin;
+  std::ostream& operator<<(std::ostream& s, visit v) {
+    switch(v) {
+      case visit::pre  : s << "pre " ; break;
+      case visit::in   : s << "in  "  ; break;
+      case visit::post : s << "post"; break;
+    }
+    return s;
+  }
 
-  typedef eop::stree_node<int> SNode;
-  typedef eop::stree_coordinate<int> SCoordinate;
-  typedef eop::stree<int> STree;
-  typedef eop::stree_node<int> Node;
-  typedef eop::tree_coordinate<int> Coordinate;
-  typedef eop::tree<int> Tree;
-  typedef eop::slist<int> SList;
-
-  STree create_stree() {
+  STree create_stree_5() {
     return STree{ 0,
       STree{ 11 , STree{}, STree{ 13 } },
       STree{ 12 , STree{ 14 }, STree{} } };
   }
 
-  STree create_stree7() {
+  STree create_stree_7() {
     //      1
     //    /   \
     //   2     3 
@@ -268,7 +263,7 @@ namespace eoptest {
       Tree{ 2 , Tree{ 5 }, Tree{} } };
   }
 
-  //  3
+  //        3
   //     /     \
   //    1       2
   //   /  \    /  \
@@ -278,144 +273,7 @@ namespace eoptest {
       Tree{ 1 , Tree{ 4}, Tree{ 5, create_tree(), Tree{} } },
       Tree{ 2 , Tree{ 6 }, Tree{ 7} } };
   }
-
-  TEST(coordinatestest, test_weight_recursive_stree_coordinate)
-  {
-    //    n_2
-    //   /   \
-    // n_0   n_1
-    //  \     /
-    //  n_3 n_4
-    typedef eop::tree_node<int> Node;
-    typedef eop::tree_coordinate<int> Coordinate;
-    Node n_0{ 1 };
-    Node n_1{ 2 };
-    Node n_2{ 3 , &n_0 , &n_1};
-    Coordinate c( &n_2 );
-    auto weight_0 = eop::weight_recursive(c);
-    EXPECT_EQ(3, weight_0) << "weight calculation wrong";
-    Node n_3{ 4 };
-    eop::set_right_successor(Coordinate{ addressof(n_0) }, Coordinate{ addressof(n_3) });
-    auto weight_1 = eop::weight_recursive(c);
-    EXPECT_EQ(4, weight_1) << "weight calculation wrong";
-
-    Node n_4{ 4 };
-    eop::set_left_successor(Coordinate{ addressof(n_1) }, Coordinate{ addressof(n_4) });
-    auto weight_2 = eop::weight_recursive(c);
-    EXPECT_EQ(5, weight_2) << "weight calculation wrong";
-  }
-
-  TEST(coordinatestest, test_weight_recursive_stree)
-  {
-    EXPECT_EQ(0, eop::stree_node_count) << "Before construct test EOP";
-    {
-      STree x = create_stree();
-      EXPECT_EQ(5, eop::weight_recursive(begin(x)));
-    }
-    EXPECT_EQ(0, eop::stree_node_count) << "Before construct test EOP";
-  }
-
-  TEST(coordinatestest, test_weight_recursive_tree)
-  {
-    EXPECT_EQ(0, eop::tree_node_count) << "Before construct test";
-    {
-      Tree x = create_tree();
-      EXPECT_EQ(5, eop::weight_recursive(begin(x)));
-    }
-    EXPECT_EQ(0, eop::tree_node_count) << "After construct test";
-  }
-
-  TEST(coordinatestest, test_height_recursive)
-  {
-    //    n_2
-    //   /   \
-    // n_0   n_1
-    //  \     /
-    //  n_3 n_4
-    typedef eop::tree_node<int> Node;
-    typedef eop::tree_coordinate<int> Coordinate;
-    Node n_0{ 1 };
-    Node n_1{ 2 };
-    Node n_2{ 3 , &n_0 , &n_1 };
-    Coordinate c{ &n_2 };
-    auto weight_0 = eop::height_recursive(c);
-    EXPECT_EQ(2, weight_0) << "height calculation wrong";
-    Node n_3{ 4 };
-    eop::set_right_successor(Coordinate{ addressof(n_0) }, Coordinate{ addressof(n_3) });
-    auto weight_1 = eop::height_recursive(c);
-    EXPECT_EQ(3, weight_1) << "height calculation wrong";
-
-    Node n_4{ 4 };
-    eop::set_left_successor(Coordinate{ addressof(n_1) }, Coordinate{ addressof(n_4) });
-    auto weight_2 = eop::height_recursive(c);
-    EXPECT_EQ(3, weight_2) << "height calculation wrong";
-  }
-
-  TEST(coordinatestest, test_height_recursive_stree)
-  {
-    EXPECT_EQ(0, eop::stree_node_count) << "Before construct test";
-    {
-      STree x = create_stree();
-      EXPECT_EQ(3, eop::height_recursive(begin(x)));
-    }
-    EXPECT_EQ(0, eop::stree_node_count) << "After construct test";
-  }
-
-  TEST(coordinatestest, test_height_recursive_tree)
-  {
-    EXPECT_EQ(0, eop::tree_node_count) << "Before construct test";
-    {
-      Tree x = create_tree();
-      EXPECT_EQ(3, eop::height_recursive(begin(x)));
-    }
-    EXPECT_EQ(0, eop::tree_node_count) << "After construct test";
-  }
-
-  std::ostream& operator<<(std::ostream& s, visit v) {
-    switch(v) {
-      case visit::pre  : s << "pre " ; break;
-      case visit::in   : s << "in  "  ; break;
-      case visit::post : s << "post"; break;
-    }
-    return s;
-  }
-
-  template<typename C>
-    requires(BifurcateCoordinate(C))
-  struct traverse_result
-  {
-    vector<int> preorder;
-    vector<int> inorder;
-    vector<int> postorder;
-    void operator()(eop::visit v, C c)
-    {
-      switch(v) {
-        case eop::visit::pre:  preorder.push_back(source(c));  break;
-        case eop::visit::in:   inorder.push_back(source(c));   break;
-        case eop::visit::post: postorder.push_back(source(c)); break; 
-      }
-    }
-  };
-
-  TEST(coordinatestest, test_traverse_nonempty)
-  {
-    //     3
-    //   /   \
-    //  1     2 
-    //  \     /
-    //   4   5 
-    Tree t { 3,
-      Tree{ 1 , Tree{}, Tree{ 4 } },
-      Tree{ 2 , Tree{ 5 }, Tree{} } };
-    traverse_result<Coordinate> r = eop::traverse_nonempty(begin(t), traverse_result<CoordinateType<Tree>>());
-    vector<int> pre_expected{ 3, 1, 4, 2, 5 };
-    EXPECT_EQ(pre_expected, r.preorder) << "pre order not as expected";
-    vector<int> in_expected{ 1, 4, 3, 5, 2 };
-    EXPECT_EQ(in_expected, r.inorder) << "in order not as expected";
-    vector<int> post_expected{ 4, 1, 5, 2, 3 };
-    EXPECT_EQ(post_expected, r.postorder) << "post order not as expected";
-  }
-
+  
   TEST(tree_tests, stree_node_construct)
   {
     SNode n0{ 0 };
@@ -490,7 +348,7 @@ namespace eoptest {
   {
     EXPECT_EQ(0, eop::stree_node_count) << "Before construct test";
     {
-      STree t = create_stree();
+      STree t = create_stree_5();
       EXPECT_EQ(5, eop::stree_node_count);
       EXPECT_FALSE(eop::empty(t));
     }
@@ -1243,7 +1101,7 @@ namespace eoptest {
 
   TEST(linked_bifurcate_coordinates, test_traverse_nonempty)
   {
-    STree st = create_stree7();
+    STree st = create_stree_7();
     auto r = eop::traverse_rotating(begin(st), mono_traverse_result<CoordinateType<STree>>());
     vector<int> expected{ 1, 2, 4, 4, 4, 2, 5, 5, 5, 2, 1, 3, 6, 6, 6, 3, 7, 7, 7, 3, 1 };
     EXPECT_EQ(expected, r.order) << "order not as expected";
@@ -1251,14 +1109,14 @@ namespace eoptest {
 
   TEST(linked_bifurcate_coordinates, test_traverse_rotating_weight)
   {
-    STree st = create_stree7();
+    STree st = create_stree_7();
     WeightType(CoordinateType<STree>) weight = eop::weight_rotating(begin(st));
     EXPECT_EQ(7, weight);
   }
 
   TEST(linked_bifurcate_coordinates, test_phased_traverse_nonempty)
   {
-    STree st = create_stree7();
+    STree st = create_stree_7();
 
     auto result0 = eop::traverse_phased_rotating(begin(st), 0, mono_traverse_result<CoordinateType<STree>>());
     vector<int> expected0{ 1, 4, 5, 2, 6, 3, 7 };
