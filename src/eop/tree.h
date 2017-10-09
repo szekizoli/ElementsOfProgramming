@@ -142,7 +142,7 @@ namespace eop {
     return sink(t.ptr).ptrvalue;
   }
 
-  static int stree_node_count = 0; /* ***** TESTING ***** */
+  int& stree_node_count();
 
   template<typename T>
     requires(Regular(T))
@@ -152,7 +152,7 @@ namespace eop {
     stree_node_construct() {}
     C operator()(T x, C l = C(0), C r = C(0)) const
     {
-      ++stree_node_count;
+      ++stree_node_count();
       return C(new stree_node<T>(x, l.ptr, r.ptr));
     }
     C operator()(C c)     const { return (*this) (source(c), left_successor(c), right_successor(c)); }
@@ -165,7 +165,7 @@ namespace eop {
     stree_node_destroy() {}
     void operator()(stree_coordinate<T> c) const
     {
-      --stree_node_count;
+      --stree_node_count();
       delete c.ptr;
     }
   };
@@ -480,7 +480,7 @@ namespace eop {
     return sink(c.ptr).value;
   }
 
-  static int tree_node_count = 0; /* ******* TESTING ******* */
+  int& tree_node_count(); /* ******* TESTING ******* */
 
   template<typename T>
     requires(Regular(T))
@@ -490,7 +490,7 @@ namespace eop {
     tree_node_construct() {}
     C operator()(T x, C l = C{ 0 }, C r = C{ 0 }, C p = C{ 0 })
     {
-      ++tree_node_count;
+      ++tree_node_count();
       return C(new tree_node<T>(x, l.ptr, r.ptr, p.ptr));
     }
     C operator()(C c)     { return (*this)(source(c), left_successor(c), right_successor(c)); }
@@ -504,7 +504,7 @@ namespace eop {
     tree_node_destroy() = default;
     void operator()(tree_coordinate<T> c)
     {
-      --tree_node_count;
+      --tree_node_count();
       delete c.ptr;
     }
   };

@@ -63,22 +63,22 @@ namespace eoptest {
 
   TEST(coordinatestest, test_weight_recursive_stree)
   {
-    EXPECT_EQ(0, eop::stree_node_count) << "Before construct test EOP";
+    EXPECT_EQ(0, eop::stree_node_count()) << "Before construct test EOP";
     {
       STree x = create_stree_5();
       EXPECT_EQ(5, eop::weight_recursive(begin(x)));
     }
-    EXPECT_EQ(0, eop::stree_node_count) << "Before construct test EOP";
+    EXPECT_EQ(0, eop::stree_node_count()) << "Before construct test EOP";
   }
 
   TEST(coordinatestest, test_weight_recursive_tree)
   {
-    EXPECT_EQ(0, eop::tree_node_count) << "Before construct test";
+    EXPECT_EQ(0, eop::tree_node_count()) << "Before construct test";
     {
       Tree x = create_tree();
       EXPECT_EQ(5, eop::weight_recursive(begin(x)));
     }
-    EXPECT_EQ(0, eop::tree_node_count) << "After construct test";
+    EXPECT_EQ(0, eop::tree_node_count()) << "After construct test";
   }
 
   TEST(coordinatestest, test_height_recursive)
@@ -109,22 +109,22 @@ namespace eoptest {
 
   TEST(coordinatestest, test_height_recursive_stree)
   {
-    EXPECT_EQ(0, eop::stree_node_count) << "Before construct test";
+    EXPECT_EQ(0, eop::stree_node_count()) << "Before construct test";
     {
       STree x = create_stree_5();
       EXPECT_EQ(3, eop::height_recursive(begin(x)));
     }
-    EXPECT_EQ(0, eop::stree_node_count) << "After construct test";
+    EXPECT_EQ(0, eop::stree_node_count()) << "After construct test";
   }
 
   TEST(coordinatestest, test_height_recursive_tree)
   {
-    EXPECT_EQ(0, eop::tree_node_count) << "Before construct test";
+    EXPECT_EQ(0, eop::tree_node_count()) << "Before construct test";
     {
       Tree x = create_tree();
       EXPECT_EQ(3, eop::height_recursive(begin(x)));
     }
-    EXPECT_EQ(0, eop::tree_node_count) << "After construct test";
+    EXPECT_EQ(0, eop::tree_node_count()) << "After construct test";
   }
 
   TEST(coordinatestest, test_traverse_nonempty)

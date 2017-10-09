@@ -3928,9 +3928,7 @@ namespace eop {
         sink(f) = x;
         return z;
       }
-      std::cout << "op(source(f))" << std::endl;
       x = op(source(f), x);
-      std::cout << "sink(f)" << std::endl;
       sink(f) = z;
       f = successor(f);
     }
@@ -3955,9 +3953,7 @@ namespace eop {
     void operator()(const T& x)
     {
       // Precondition: must not be called more than 2^64 -1 times
-      std::cout << "add to counter" << std::endl; 
       T tmp = add_to_counter(f, f + n, op, x, z);
-      std::cout << "added to counter" << std::endl; 
       if (tmp != z) {
         sink(f+n) = tmp;
         n = successor(n);
@@ -3991,9 +3987,7 @@ namespace eop {
     // Precondition: (for all x is in [f, l) fun(x) is defined
     counter_machine<Op> c(op, z);
     while (f != l) {
-      std::cout << "reduce balanced step" << std::endl;
       c(fun(f));
-      std::cout << "increment f" << std::endl;
       f = successor(f);
     }
     transpose_operation<Op> t_op(op);
@@ -4026,7 +4020,6 @@ namespace eop {
     S set_link;
     linked_merger(R r, S set_link) : r(r), set_link(set_link) {}
     P operator()(P p0, P p1) {
-      std::cout << "merge: (" << source(p0.first) << ", " << source(p0.second) << "), (" << source(p1.first) << ", " << source(p1.second) << ")" << std::endl;
       return merge_linked_nonempty(p0.first, p0.second, p1.first, p1.second, r, set_link); 
     }
     
@@ -4035,7 +4028,6 @@ namespace eop {
   template<typename I>
   std::pair<I, I> sort_singleton(I f) {
     I l = successor(f);
-    std::cout << "sort singleton: " << source(f) << std::endl;
     return std::pair<I, I>(f, l);
   }
 

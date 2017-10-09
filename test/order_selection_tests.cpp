@@ -1184,21 +1184,21 @@ namespace eoptest {
 
   TEST(tree_tests, construct_stree)
   {
-    EXPECT_EQ(0, eop::stree_node_count) << "Before construct test";
+    EXPECT_EQ(0, eop::stree_node_count()) << "Before construct test";
     {
-      STree t = create_stree();
-      EXPECT_EQ(5, eop::stree_node_count);
+      STree t = create_stree_5();
+      EXPECT_EQ(5, eop::stree_node_count());
       EXPECT_FALSE(eop::empty(t));
     }
-    EXPECT_EQ(0, eop::stree_node_count);
+    EXPECT_EQ(0, eop::stree_node_count());
   }
 
   TEST(tree_tests, construct_tree)
   {
-    EXPECT_EQ(0, eop::tree_node_count) << "Before construct test";
+    EXPECT_EQ(0, eop::tree_node_count()) << "Before construct test";
     {
       Tree t = create_tree();
-      EXPECT_EQ(5, eop::tree_node_count);
+      EXPECT_EQ(5, eop::tree_node_count());
       EXPECT_FALSE(eop::empty(t));
       auto root = begin(t);       // root
       EXPECT_FALSE(eop::has_predecessor(root));
@@ -1231,7 +1231,7 @@ namespace eoptest {
       EXPECT_TRUE(eop::is_left_successor(r_l));
       EXPECT_FALSE(eop::is_right_successor(r_l));
     }
-    EXPECT_EQ(0, eop::tree_node_count);
+    EXPECT_EQ(0, eop::tree_node_count());
   }
 
   TEST(tree_tests, test_traverse_step)
