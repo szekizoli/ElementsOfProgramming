@@ -26,7 +26,8 @@
 namespace eoptest {
 
   using std::vector;
-  
+  using namespace std;  
+
   TEST(iteratorstest, testsource)
   {
     vector<int> v{ 1 };
