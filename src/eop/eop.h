@@ -3903,7 +3903,6 @@ namespace eop {
   }
 
   // 11.2 Balanced Reduction
-
   template<typename I, typename P>
     requires(ForwardIterator(I) &&
              UnaryPredicate(P) && ValueType(I) == Domain(P))
@@ -3987,8 +3986,11 @@ namespace eop {
     // Precondition: (for all x is in [f, l) fun(x) is defined
     counter_machine<Op> c(op, z);
     while (f != l) {
-      c(fun(f));
+      // calling successor firt and then fun, because merging can change the order of the iterator
+      // and f might not point to the last checked iterator
+      I current = f;
       f = successor(f);
+      c(fun(current));
     }
     transpose_operation<Op> t_op(op);
     return reduce_nonzeros(c.f, c.f + c.n, t_op, eop::deref<Domain(Op)>, z);
@@ -4020,9 +4022,8 @@ namespace eop {
     S set_link;
     linked_merger(R r, S set_link) : r(r), set_link(set_link) {}
     P operator()(P p0, P p1) {
-      return merge_linked_nonempty(p0.first, p0.second, p1.first, p1.second, r, set_link); 
+      return merge_linked_nonempty(p0.first, p0.second, p1.first, p1.second, r, set_link);
     }
-    
   };
 
   template<typename I>
@@ -4037,7 +4038,7 @@ namespace eop {
       f, l,
       linked_merger<I, S, R>(r, set_link),
       sort_singleton<I>,
-      std::pair<I, I>(f, f)
+      std::pair<I, I>()
     ).first;
   }
  

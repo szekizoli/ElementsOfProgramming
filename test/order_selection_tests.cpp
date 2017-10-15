@@ -2002,9 +2002,9 @@ namespace eoptest {
 
   TEST(chapter_11_2_partition, test_sort_linked_iterative)
   {
-    //test_sort_linked_iterative({1}, {1});
+    test_sort_linked_iterative({1}, {1});
     test_sort_linked_iterative({1, 2}, {1, 2});
-    //test_sort_linked_iterative({1, 3, 2}, {1, 2, 3});
-    //test_sort_linked_iterative({8, 4, 1, 5, 7, 3, 2, 6}, {1, 2, 3, 4, 5, 6, 7, 8});
+    test_sort_linked_iterative({3, 1, 4, 2}, {1, 2, 3, 4});
+    test_sort_linked_iterative({8, 4, 1, 5, 7, 3, 2, 6}, {1, 2, 3, 4, 5, 6, 7, 8});
   }
 }
