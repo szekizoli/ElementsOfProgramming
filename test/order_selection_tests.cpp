@@ -4,6 +4,7 @@
 #include <iterator>
 #include <list>
 #include <numeric>
+#include <random>
 #include <string>
 #include <sstream>
 #include <utility>
@@ -1964,14 +1965,16 @@ namespace eoptest {
     EXPECT_TRUE(eop::partitioned_at_point(begin(v3), m3, end(v3), eop::is_Even<int>())) << "Not partitioned at the returned iterator";
   }
 
-  template<typename T>
-  struct is_First_Even
-  {
-    typedef pair<T, T> first_argument_type;
-    typedef bool result_type;
-    typedef pair<T, T> input_type;
-    bool operator()(pair<T, T> value) {
-      return eop::even(value.first);
+  template<typename T, typename P>
+  struct first_Member {
+    P p;
+    first_Member() {}
+    first_Member(P p) : p(p) {}
+    bool operator()(pair<T, T> const& value) {
+      return p(value.first);
+    }
+    bool operator()(pair<T, T> const& lhs, pair<T, T> const& rhs) {
+      return p(lhs.first, rhs.first);
     }
   };
 
@@ -1979,15 +1982,14 @@ namespace eoptest {
   {
     using type = pair<int, int>;
     vector<type> v0 { {1, 2}, {2, 1}, {1, 1}, {2, 2} };
-    auto m0 = eop::partition_stable_iterative(begin(v0), end(v0), is_First_Even<int>());
+    auto m0 = eop::partition_stable_iterative(begin(v0), end(v0), first_Member<int, is_Even<int>>());
     vector<type> expected0 {{1, 2}, {1, 1}, {2, 1}, {2, 2}};
     EXPECT_EQ(expected0, v0);
 
     vector<type> v1 { {1, 2}, {2, 2}, {1, 1}, {2, 1} };
-    auto m1 = eop::partition_stable_iterative(begin(v1), end(v1), is_First_Even<int>());
+    auto m1 = eop::partition_stable_iterative(begin(v1), end(v1), first_Member<int, is_Even<int>>());
     vector<type> expected1 {{1, 2}, {1, 1}, {2, 2}, {2, 1}};
     EXPECT_EQ(expected1, v1);
-
   }
 
   void test_sort_linked_iterative(std::initializer_list<int> const& input, std::initializer_list<int> const& output) 
@@ -1999,7 +2001,6 @@ namespace eoptest {
     EXPECT_EQ(expected, actual);   
   }
 
-
   TEST(chapter_11_2_partition, test_sort_linked_iterative)
   {
     test_sort_linked_iterative({1}, {1});
@@ -2007,4 +2008,120 @@ namespace eoptest {
     test_sort_linked_iterative({3, 1, 4, 2}, {1, 2, 3, 4});
     test_sort_linked_iterative({8, 4, 1, 5, 7, 3, 2, 6}, {1, 2, 3, 4, 5, 6, 7, 8});
   }
-}
+
+  void test_reverse_iterative(vector<int> input, vector<int> const& expected)
+  {
+    eop::reverse_iterative(begin(input), end(input));
+    EXPECT_EQ(expected, input);
+  }
+
+  TEST(chapter_11_2_partition, test_reverse_iterative)
+  {
+    test_reverse_iterative(vector<int> {1}, vector<int> {1});
+
+    vector<int> v1 {1, 2};
+    eop::reverse_iterative(begin(v1), end(v1));
+    vector<int> e1 {2, 1};   
+    EXPECT_EQ(e1, v1);
+
+    vector<int> v1_1 {1, 2, 3};
+    eop::reverse_iterative(begin(v1_1), end(v1_1));
+    vector<int> e1_1 {3, 2, 1};   
+    EXPECT_EQ(e1_1, v1_1);
+
+    vector<int> v2 {1, 2, 3, 4, 5, 6, 7};
+    eop::reverse_iterative(begin(v2), end(v2));
+    vector<int> e2 {7, 6, 5, 4, 3, 2, 1};   
+    EXPECT_EQ(e2, v2);
+
+    vector<int> v3 {1, 2, 3, 4, 5, 6, 7, 8};
+    eop::reverse_iterative(begin(v3), end(v3));
+    vector<int> e3 {8, 7, 6, 5, 4, 3, 2, 1};   
+    EXPECT_EQ(e3, v3);
+
+    vector<int> v4 {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
+    eop::reverse_iterative(begin(v4), end(v4));
+    vector<int> e4 {9, 8, 7, 6, 5, 4, 3, 2, 1, 0};
+    EXPECT_EQ(e4, v4);
+
+ 
+  }
+
+  TEST(chapter_11_3_merging, test_merge_n_with_buffer)
+  {
+    vector<int> input {1, 3, 4, 8, 9, 0, 2, 5, 6, 7};
+    vector<int> buffer(10);
+    auto result = merge_n_with_buffer(begin(input), 5, begin(input) + 5, 5, begin(buffer), std::less<int>());
+    vector<int> expected {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
+    EXPECT_EQ(expected, input);
+    EXPECT_EQ(end(input), result);
+
+    vector<int> input1 {1, 3, 4, 5, 8, 9, 0, 2, 6, 7};
+    result = merge_n_with_buffer(begin(input1), 6, begin(input1) + 6, 4, begin(buffer), std::less<int>());
+    EXPECT_EQ(expected, input1);
+    EXPECT_EQ(end(input1), result);
+  }
+
+  TEST(chapter_11_3_merging, test_sort_n_with_buffer)
+  {
+    vector<int> empty{};
+    vector<int> buffer(5);
+    auto result = sort_n_with_buffer(begin(empty), size(empty), begin(buffer), std::less<int>());
+    EXPECT_EQ(begin(empty), result);
+    EXPECT_EQ(0, size(empty));
+
+    vector<int> input0 {1};
+    result = sort_n_with_buffer(begin(input0), size(input0), begin(buffer), std::less<int>());
+    EXPECT_EQ(1, size(input0));
+    EXPECT_EQ(end(input0), result);
+    
+    vector<int> input1 {0, 2, 5, 4, 1, 7, 6, 3};
+    std::random_device rd;
+    std::mt19937 g(rd());
+    std::shuffle(begin(input1), end(input1), g);
+    result = sort_n_with_buffer(begin(input1), size(input1), begin(buffer), std::less<int>());
+    vector<int> expected1 {0, 1, 2, 3, 4, 5, 6, 7};
+    EXPECT_EQ(expected1, input1);
+    EXPECT_EQ(end(input1), result);
+
+    using type = pair<int, int>;
+    vector<type> input2 { {0, 2}, {2, 3}, {1, 1}, {3, 3}, {2, 2}, {6, 6}, {4, 4}, {2, 1} };
+    vector<type> buffer2(10);
+    auto result2 = eop::sort_n_with_buffer(begin(input2), size(input2), begin(buffer2), first_Member<int, std::less<int>>());
+    vector<type> expected2 {{0, 2}, {1, 1}, {2, 3}, {2, 2}, {2, 1}, {3, 3}, {4, 4}, {6, 6}};
+    EXPECT_EQ(expected2, input2);
+ }
+
+ TEST(chapter_11_3_merging, test_merge_n_adaptive)
+ {
+   vector<int> buffer(5, 0);
+   vector<int> expected {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
+
+   // w/o buffer
+   vector<int> input0 {0, 2, 3, 5, 6, 1, 4, 7, 8, 9};
+   auto result0 = merge_n_adaptive(begin(input0), 5, begin(input0)+5, 5, begin(buffer), 0, std::less<int>());
+   EXPECT_EQ(expected, input0);
+   EXPECT_EQ(end(input0), result0);
+
+   // w/ buffer
+   vector<int> input1 {0, 2, 3, 5, 6, 1, 4, 7, 8, 9};
+   auto result1 = merge_n_adaptive(begin(input1), 5, begin(input1)+5, 5, begin(buffer), 3, std::less<int>());
+   EXPECT_EQ(expected, input1);
+   EXPECT_EQ(end(input1), result1);
+ }
+
+ TEST(chapter_11_3_merging, test_sort_n_adaptive)
+ {
+   vector<int> buffer(8, 0);
+   vector<int> expected {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
+   std::random_device rd;
+   std::mt19937 g(rd());
+    
+   vector<int> input0(10);
+   std::iota(begin(input0), end(input0), 0);
+   std::shuffle(begin(input0), end(input0), g);
+   auto result0 = eop::sort_n_adaptive(begin(input0), size(input0), begin(buffer), 0, std::less<int>());
+   EXPECT_EQ(expected, input0);
+
+ }
+} 

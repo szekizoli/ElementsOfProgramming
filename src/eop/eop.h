@@ -3024,7 +3024,7 @@ namespace eop {
     // Precondition: in addition to that for combine
     while(!zero(n0) && !zero(n1))
       if (r(predecessor(f_i1), predecessor(f_i0)))
-	{ copy_backward_step(f_i1, l_o); n1 = predecessor(n1); }
+	      { copy_backward_step(f_i1, l_o); n1 = predecessor(n1); }
       else
         { copy_backward_step(f_i0, l_o); n0 = predecessor(n0); }
     std::pair<I1, O> l1 = copy_backward_n(f_i1, n1, l_o);
@@ -3241,7 +3241,7 @@ namespace eop {
     const I first;
     marker(I first, DistanceType(I) n) : marked(std::vector<bool>(n, false)), first(first) {}
     void mark(I i) { marked[std::distance(first, i)] = true; }
-    auto next() const { return find(begin(), end(), false); }
+    auto next() const { return eop::find(begin(), end(), false); }
     auto begin() const { return marked.begin(); };
     auto end() const { return marked.end(); }
   };
@@ -4010,7 +4010,7 @@ namespace eop {
   }
 
   // Exercise 11.11
-  // Implement an iterative version of sort_linked_nonempty_n from Chapter 8, using reduced balanced
+  // Implement an iterative version of sort_linked_nonempty_n from Chapter 8, using reduced_balanced.
  
   template<typename I, typename S, typename R>
     requires(Readable(I) && ForwardLinker(S) && I == IteratorType(S)
@@ -4041,5 +4041,204 @@ namespace eop {
       std::pair<I, I>()
     ).first;
   }
- 
+
+  // Exercise 11.12
+  // Implement an iterative version of reverse_n_adaptive from Chapter 10, using reduce_balanced.
+
+  template<typename I>
+  struct range_n {
+    I iterator;
+    DistanceType(I) n;
+    range_n() : n(DistanceType(I)(0)) {}
+    range_n(I f, DistanceType(I) n) : iterator(f), n(n) {}
+  };
+
+  template<typename I>
+  bool operator==(range_n<I> const& lhs, range_n<I> const& rhs)
+  {
+    if (lhs.n == 0 && rhs.n == 0) return true;
+    return lhs.iterator == rhs.iterator && lhs.n == rhs.n; 
+  }
+
+  template<typename I>
+  bool operator!=(range_n<I> const& lhs, range_n<I> const& rhs)
+  {
+    return !(lhs == rhs);
+  }
+  
+  template<typename I>
+  std::ostream& operator<<(std::ostream& o, range_n<I> const& r)
+  {
+    o << "Range(" << r.n << ") { ";
+    I f = r.iterator;
+    DistanceType(I) n = r.n;
+    while(!zero(n)) { 
+      o << eop::source(f) << " "; 
+      f = successor(f);
+      n = predecessor(n);
+    }
+    return o << "}";
+  }
+
+  template<typename I>
+    requires(ForwardIterator(I) && Mutable(I))
+  range_n<I> swap_ranges_n_iterative(range_n<I> p0, range_n<I> p1)
+  {
+    std::cout << p0 << std::endl << p1 << std::endl;
+    DistanceType(I) n = p0.n == p1.n ? 0 : 1;
+    swap_ranges_n(p0.iterator, p1.iterator, std::min(p0.n, p1.n));
+    return range_n<I> (p0.iterator, p0.n + p1.n);
+  }
+
+  template<typename I>
+    requires(ForwardIterator(I) && Mutable(I))
+  range_n<I> reverse_singleton(I f)
+  {
+    return range_n<I>(f, DistanceType(I)(1));
+  }
+
+  // Incomplete
+  template<typename I>
+    requires(ForwardIterator(I) && Mutable(I))
+  void reverse_iterative(I f, I l)
+  {
+    reduce_balanced(
+      f, l,
+      swap_ranges_n_iterative<I>, 
+      reverse_singleton<I>,
+      range_n<I>(f, 0)
+    );
+  }
+
+  template<typename I, typename B, typename R>
+    requires(ForwardIterator(I) && Mutable(I) &&
+             ForwardIterator(B) && Mutable(B) &&
+             ValueType(I) == ValueType(B) &&
+             Relation(R) && ValueType(I) && Domain(R))
+  I merge_n_with_buffer(I f0, DistanceType(I) n0,
+                        I f1, DistanceType(I) n1, B f_b, R r) 
+  {
+    // Precondition: mergeable(f0 n0, f1, n1, r)
+    // Precondition: mutable_counted_range(f_b, n0)
+    eop::copy_n(f0, n0, f_b);
+    return std::get<2>(eop::merge_copy_n(f_b, n0, f1, n1, f0, r));
+    // Postcondition: increasing_counted_range(f0, n0+n1, r)
+  }
+
+  // mergeable: I x N x I x N x R (f0, n0, f1, n1, r):
+  //            f0 + n0 == f1 &&
+  //            mutable_counted_range(f0, n0+n1) &&
+  //            weak_ordering(r) &&
+  //            increasing_counted_range(f0, n0, r) &&
+  //            increasing_counted_range(f1, n1, r)
+
+  template<typename I, typename B, typename R>
+    requires(ForwardIterator(I) && Mutable(I) &&
+             ForwardIterator(B) && Mutable(B) &&
+             ValueType(I) == ValueType(B) &&
+             Relation(R) && ValueType(I) == Domain(R))
+  I sort_n_with_buffer(I f, DistanceType(I) n, B f_b, R r)
+  {
+    // Precondition: mutable_counted_range(f, n) && weak_ordering(r)
+    // Precondition: mutable_counted_range(f_b, (n+1)/2)
+    DistanceType(I) h = half_nonnegative(n);
+    if (zero(h)) return f + n;
+    I m = sort_n_with_buffer(f,   h, f_b, r);
+          sort_n_with_buffer(m, n-h, f_b, r);
+    return merge_n_with_buffer(f, h, m, n-h, f_b, r);
+    // Postcondition: increasing_counted_range(f, n, r)
+  }
+
+  // Splites two ranges r0(f0, n0) and r1(f1, n1) into four ranges:
+  // takes the middle element of r0 and finds the lower_bound in r1 for that middle element
+  // then rotates 
+  template<typename I, typename R>
+    requires(Mutable(I) && ForwardIterator(I) &&
+             Relation(R) && ValueType(I) == Domain(R))
+  void merge_n_step_0(I f0, DistanceType(I) n0,
+                      I f1, DistanceType(I) n1, R r,
+                      I& f0_0, DistanceType(I)& n0_0,
+                      I& f0_1, DistanceType(I)& n0_1,
+                      I& f1_0, DistanceType(I)& n1_0,
+                      I& f1_1, DistanceType(I)& n1_1)
+  {
+    // Precondition: mergeable(f0, n0, f1, n1, r)
+    f0_0 = f0;
+    n0_0 = half_nonnegative(n0);
+    f0_1 = f0_0 + n0_0;
+    f1_1 = lower_bound_n(f1, n1, source(f0_1), r);
+    f1_0 = eop::rotate(f0_1, f1, f1_1);
+    n0_1 = f1_0 - f0_1;
+    f1_0 = successor(f1_0);
+    n1_0 = predecessor(n0 - n0_0);
+    n1_1 = n1 - n0_1;
+  }
+
+  template<typename I, typename R>
+    requires(Mutable(I) && ForwardIterator(I) &&
+             Relation(R) && ValueType(I) == Domain(R))
+  void merge_n_step_1(I f0, DistanceType(I) n0,
+                      I f1, DistanceType(I) n1, R r,
+                      I& f0_0, DistanceType(I)& n0_0,
+                      I& f0_1, DistanceType(I)& n0_1,
+                      I& f1_0, DistanceType(I)& n1_0,
+                      I& f1_1, DistanceType(I)& n1_1)
+  {
+    // Precondition: mergeable(f0, n0, f1, n1, r)
+    f0_0 = f0;
+    n0_1 = half_nonnegative(n1);
+    f1_1 = f1 + n0_1;
+    f0_1 = upper_bound_n(f0, n0, source(f1_1), r);
+    f1_1 = successor(f1_1);
+    f1_0 = eop::rotate(f0_1, f1, f1_1);
+    n0_0 = f0_1 - f0_0;
+    n1_0 = n0 - n0_0;
+    n1_1 = predecessor(n1 - n0_1);
+  }
+
+  template<typename I, typename B, typename R>
+    requires(ForwardIterator(I) && Mutable(I) &&
+             ForwardIterator(B) && Mutable(B) &&
+             ValueType(I) == ValueType(B) &&
+             Relation(R) && ValueType(I) == Domain(R))
+  I merge_n_adaptive(I f0, DistanceType(I) n0,
+                     I f1, DistanceType(I) n1,
+                     B f_b, DistanceType(B) n_b, R r)
+  {
+    // Precondition: mergeable(f0, n0, f1, n1, r)
+    // Precondition: mutable_counted_range(f_b, n_b)
+    typedef DistanceType(I) N;
+    if (zero(n0) || zero(n1)) return f0 + n0 + n1;
+    if (n0 <= N(n_b))
+      return merge_n_with_buffer(f0, n0, f1, n1, f_b, r);
+    I f0_0; I f0_1; I f1_0; I f1_1;
+    N n0_0; N n0_1; N n1_0; N n1_1;
+    if (n0 < n1) merge_n_step_0(
+					                      f0, n0, f1, n1, r,
+                                f0_0, n0_0, f0_1, n0_1,
+                                f1_0, n1_0, f1_1, n1_1);
+    else         merge_n_step_1(
+                                f0, n0, f1, n1, r,
+                                f0_0, n0_0, f0_1, n0_1,
+                                f1_0, n1_0, f1_1, n1_1);
+               merge_n_adaptive(f0_0, n0_0, f0_1, n0_1,
+                                f_b, n_b, r);
+    return     merge_n_adaptive(f1_0, n1_0, f1_1, n1_1,
+                                f_b, n_b, r);
+  }
+
+  template<typename I, typename B, typename R>
+    requires(ForwardIterator(I) && Mutable(I) &&
+             ForwardIterator(B) && Mutable(B) &&
+             ValueType(I) == ValueType(B) &&
+             Relation(R) && ValueType(I) == Domain(R))
+  I sort_n_adaptive(I f, DistanceType(I) n, B f_b, DistanceType(B) n_b, R r)
+  {
+    DistanceType(I) h = half_nonnegative(n);
+    if (zero(h)) return f + n;
+    I m = sort_n_adaptive(f, h    , f_b, n_b, r);
+          sort_n_adaptive(m, n - h, f_b, n_b, r);
+    I result = merge_n_adaptive(f, h, m, n - h, f_b, n_b, r);
+    return result;
+  }
 } // namespace eop
